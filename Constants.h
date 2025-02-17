@@ -21,3 +21,6 @@ const int Spanning_state = 3;
 
 const string pathFont = "Assets/Fonts/";
 const string pathImage = "Assets/Images/";
+
+const Color lightmode = { 210, 230, 255, 255 };
+const Color darkmode =  { 15, 30, 60, 255 };
