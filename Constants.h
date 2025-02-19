@@ -16,11 +16,11 @@ const int Menu_state = -1;
 const int LinkedList_state = 0; 
 const int HashTable_state = 1; 
 const int Trie_state = 2; 
-const int Spanning_state = 3; 
+const int Graph_state = 3; 
 
 
 const string pathFont = "Assets/Fonts/";
 const string pathImage = "Assets/Images/";
 
-const Color lightmode = { 210, 230, 255, 255 };
-const Color darkmode =  { 15, 30, 60, 255 };
+const Color lightmode = {210, 230, 255, 255};
+const Color darkmode =  {15, 30, 60, 255};

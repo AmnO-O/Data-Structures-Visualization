@@ -14,7 +14,7 @@ struct Item {
 class Menu {
 public: 
 	string dsName[4] = {
-		"Singly Linked List", "Hash Table", "Trie",  "Spanning Tree"
+		"Linked List", "Hash Table", "Trie",  "Graph"
 	};
 
 	vector <Item> dsItem; 

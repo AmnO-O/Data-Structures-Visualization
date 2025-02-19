@@ -31,7 +31,7 @@ int Menu :: handleEvent() {
                 if (id == 0) return LinkedList_state; 
                 if (id == 1) return HashTable_state; 
                 if (id == 2) return Trie_state; 
-                return Spanning_state; 
+                return Graph_state; 
             }
 
             item.hovered = true;
