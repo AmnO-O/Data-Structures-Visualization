@@ -1,6 +1,10 @@
-#include "UI.h"
+﻿#include "UI.h"
 #include "Menu.h"
+#include "HashTable.h"
+ 
+Visualizer::Visualizer() {
 
+}
 
 void Visualizer::Process() {
 	InitWindow(Screen_w, Screen_h, "RayViz - Data Visualization");
@@ -26,17 +30,23 @@ void Visualizer::Process() {
 	Vector2 backtoPosition = {580, 20 }; /// the Position of the back-to
 	Rectangle backtoRec = {580, 20, 40, 40}; // the rect of the back-to
 
+	font = LoadFontEx("Assets/Fonts/PublicSans-Bold.ttf", 65, 0, 0);
+
 	string DataName = ""; 
 
-	Font font = LoadFontEx("Assets/Fonts/PublicSans-Bold.ttf", 65, 0, 0);
 
 	auto menu = std::make_unique<Menu>();
+	auto hashtable = make_unique<HashTableVisual>();
+
+
 
 	while (!WindowShouldClose()) {
-
+		
 		if (Program_state == Menu_state)
 			Program_state = menu->handleEvent();
-
+		
+		if (Program_state == HashTable_state)
+			Program_state = hashtable->handleEvent(); 
 
 		/// switch theme
 		Vector2 mousePos = GetMousePosition();
@@ -45,12 +55,6 @@ void Visualizer::Process() {
 		Color tint = WHITE;
 		if (isHovering) tint = { 255, 255, 255, 150 };
 		if (isHovering && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) isLight = !isLight;
-
-		if (IsKeyPressed(KEY_LEFT)) {
-			Program_state = Menu_state; 
-			/// Check if user want to go back to menu
-		}
-
 
 		BeginDrawing();
 		if (isLight) ClearBackground(lightmode);
@@ -61,7 +65,7 @@ void Visualizer::Process() {
 
 		if (Program_state == Menu_state) {
 			Vector2 textSize = MeasureTextEx(font, "RayViz", 90.0f, 2.0f);
-			DrawTextEx(font, "RayViz", Vector2{ Screen_w / 2 - textSize.x / 2, 25 }, 90.0f, 2.0f, DARKGRAY);
+			DrawTextEx(font, "RayViz", Vector2{ Screen_w / 2 - textSize.x / 2, 25 }, 90.0f, 2.0f, isLight ? DARKGRAY : WHITE);
 			menu->Draw();
 		}
 		else {
@@ -73,27 +77,27 @@ void Visualizer::Process() {
 			if (isHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) Program_state = Menu_state; 
 
 			DrawTextureEx(backto, backtoPosition, 0.0f, 1.f, BLACK);
-
 			DrawTextureEx(titlebar, titlePosition, 0.0f, 1.f, WHITE);
 
 			Vector2 textSize = MeasureTextEx(font, DataName.c_str(), 25.0f, 2.0f);
 			DrawTextEx(font, DataName.c_str(), Vector2{ 800 - textSize.x / 2, 40 - textSize.y / 2 }, 25, 2.0f, DARKGRAY);
 		}
 
+		if (Program_state == HashTable_state) hashtable->draw(); 
+
+
 		if (Program_state == Trie_state) DataName = "Trie";
-		else if (Program_state == HashTable_state) DataName = "Hash table: linear probing"; 
+		else if (Program_state == HashTable_state) DataName = "Hash table: Chainning"; 
 		else if (Program_state == LinkedList_state) DataName = "Linked List"; 
 		else if (Program_state == Graph_state) DataName = "Graph"; 
-
-
 
 		EndDrawing();
 	}
 
+	CloseWindow();
 
 	UnloadTexture(lightIcon);
 	UnloadTexture(darkIcon);
 	UnloadTexture(titlebar);
 	UnloadFont(font);
-	CloseWindow();
 }

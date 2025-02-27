@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <iostream>
 #include <cstring>
 #include <raylib.h>
@@ -22,5 +22,5 @@ const int Graph_state = 3;
 const string pathFont = "Assets/Fonts/";
 const string pathImage = "Assets/Images/";
 
-const Color lightmode = {210, 230, 255, 255};
+const Color lightmode = {190, 215, 245, 255};
 const Color darkmode =  {15, 30, 60, 255};
