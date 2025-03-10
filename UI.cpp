@@ -1,6 +1,7 @@
 ﻿#include "UI.h"
 #include "Menu.h"
 #include "HashTable.h"
+#include "Linkedlist.h"
  
 Visualizer::Visualizer() {
 
@@ -37,6 +38,7 @@ void Visualizer::Process() {
 
 	auto menu = std::make_unique<Menu>();
 	auto hashtable = make_unique<HashTableVisual>();
+	auto linkedlist = make_unique<LinkedlistVisual>();
 
 
 
@@ -47,6 +49,9 @@ void Visualizer::Process() {
 		
 		if (Program_state == HashTable_state)
 			Program_state = hashtable->handleEvent(); 
+
+		if (Program_state == LinkedList_state)
+			Program_state = linkedlist->handleEvent();
 
 		/// switch theme
 		Vector2 mousePos = GetMousePosition();
@@ -84,6 +89,8 @@ void Visualizer::Process() {
 		}
 
 		if (Program_state == HashTable_state) hashtable->draw(); 
+		if (Program_state == LinkedList_state) linkedlist->draw();
+
 
 
 		if (Program_state == Trie_state) DataName = "Trie";

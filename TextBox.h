@@ -7,7 +7,7 @@ struct TextBox {
     string outputMessage; 
 
     bool focused;          // is being typed or not
-    int pos;               // The position that we want to continue type 
+    int pos;               // The position that we want to continue type        
 
     int framesCounter;     // Blink blink 
 
@@ -72,6 +72,9 @@ struct TextBox {
             if (IsKeyPressed(KEY_ENTER)) {
                 outputMessage = text;
                 focused = 0; 
+                text = ""; 
+                pos = 0;
+                return;
             }
         }
 
