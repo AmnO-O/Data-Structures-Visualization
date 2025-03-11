@@ -32,14 +32,14 @@ struct Node {
 
 class HashTable {
 public:
-    HashTable(); 
+    HashTable(int x = 0); 
     ~HashTable(); 
     void add(int key, Vector2 startPos, Vector2 targetPos); 
     void update(float deltaTime, float baseSpeed, float speedMultiplier);
     void draw(); 
 private:
     Node** htable; 
-    int sz; 
+    int sz;
 };
 
 class HashTableVisual {
@@ -52,4 +52,5 @@ private:
     Rectangle border, info; 
     Button Random, File; 
     TextBox Size; 
+    HashTable H; 
 };

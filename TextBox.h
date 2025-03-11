@@ -78,6 +78,15 @@ struct TextBox {
         framesCounter++;
     }
 
+    int getDigit() {
+        int c = 0; 
+        for (int i = 0; i < text.size(); i++) {
+            c = c * 10 + text[i] - '0'; 
+        }
+
+        return c; 
+    }
+
     void draw() {
         Color boxColor = focused ? YELLOW : LIGHTGRAY;
 

@@ -21,8 +21,8 @@ void Visualizer::Process() {
 	Texture2D backto = LoadTexture("Assets/Images/backto.png");
 
 
-	Vector2  iconPosition = {Screen_w - 150, 40 }; /// the Position of the lighticon or darkicon
-	Rectangle iconRec = {Screen_w - 150, 40, 100, 100}; /// the rect of the lighticon or darkicon
+	Vector2  iconPosition = {Screen_w - 140, 30 }; /// the Position of the lighticon or darkicon
+	Rectangle iconRec = {Screen_w - 140, 30, 80, 80}; /// the rect of the lighticon or darkicon
 
 	Vector2 titlePosition = {638, 20}; /// the Position of the title-bar
 	Rectangle titleRec = {638, 20, 323, 40}; // the rect of the title-bar

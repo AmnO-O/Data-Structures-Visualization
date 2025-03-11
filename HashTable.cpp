@@ -1,8 +1,8 @@
 ﻿#include "HashTable.h"
 #include <string>
 
-HashTable::HashTable() {
-    sz = 0;
+HashTable::HashTable(int x) {
+    sz = x; 
 	htable = new Node * [sz]; 
 	for (int i = 0; i < sz; i++) htable[i] = NULL; 
 }
@@ -36,8 +36,7 @@ void HashTable:: draw() {
 
         Node* current = htable[i];
         while (current) {
-            current->draw();
-
+            current->draw();    
             current = current->next;
         }
     }
@@ -66,6 +65,10 @@ int HashTableVisual::handleEvent() {
         Size.update(); 
         File.update();
         Random.update();
+
+        if (Random.isPressed) {
+            H = HashTable(Size.getDigit());
+        }
     }
     else if (Input.isInsert) {
 
@@ -89,6 +92,8 @@ void HashTableVisual::draw() {
     Font font = LoadFontEx("Assets/Fonts/PublicSans-Bold.ttf", 65, 0, 0);
 
     DrawTextEx(font, "[INFO]:", {info.x + 10, info.y + 10 }, 21, 1, PURPLE);
+
+    H.draw(); 
 
     if (Input.isCreate) {
         int fontSize = 24;
