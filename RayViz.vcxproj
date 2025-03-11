@@ -130,6 +130,7 @@
     <ClInclude Include="Button.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="HashTable.h" />
+    <ClInclude Include="LinkedList.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="TextBox.h" />
     <ClInclude Include="UI.h" />
@@ -137,6 +138,7 @@
   <ItemGroup>
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="HashTable.cpp" />
+    <ClCompile Include="Linkedlist.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="UI.cpp" />
