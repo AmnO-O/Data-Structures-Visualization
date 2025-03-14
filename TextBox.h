@@ -74,6 +74,7 @@ struct TextBox {
                 focused = 0; 
                 text = ""; 
                 pos = 0;
+                framesCounter = 0; 
                 return;
             }
         }
@@ -104,10 +105,10 @@ struct TextBox {
 
         if (focused && ((framesCounter / 20) % 2 == 0)) {
             std::string textBeforeCaret = text.substr(0, pos);
-            int textWidth = MeasureText(textBeforeCaret.c_str(), 20);
+            int textWidth = MeasureTextEx(font,textBeforeCaret.c_str(), fontSize, 1).x;
 
-            DrawLine(bounds.x + 5 + textWidth, textY,
-                bounds.x + 5 + textWidth, textY + fontSize, BLACK);
+            DrawLine(bounds.x + 6 + textWidth, textY,
+                bounds.x + 6 + textWidth, textY + fontSize, BLACK);
         }
     }
 };

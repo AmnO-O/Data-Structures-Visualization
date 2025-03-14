@@ -28,18 +28,90 @@ struct Node {
         DrawCircleLines(currentPosition.x, currentPosition.y, nodeRadius, WHITE);
         DrawText(TextFormat("%d", data), currentPosition.x - 10, currentPosition.y - 10, 20, WHITE);
     }
+
+    void draw2(Vector2 pos, float width, float height, float bounceAnim){
+        // The bounceAnim can be used to scale or shift the node slightly
+        // bounceAnim is expected to be between [0..1], for a subtle pop effect
+        float scale = 1.0f + 0.05f * bounceAnim; // up to +5% bigger
+        float offset = -(width * (scale - 1.0f)) / 2;  // recenter
+
+        Rectangle r;
+        r.x = pos.x + offset;
+        r.y = pos.y + offset;
+
+        r.width = width * scale;
+        r.height = height * scale;
+
+        float roundness = 0.3f;  // 30% corner roundness
+        int   segments = 10;    // # segments for smooth corners
+
+        // 1) Draw shadow
+        DrawDropShadowRoundedRect(r, roundness, segments, 5.0f, Fade(BLACK, 0.2f));
+
+        // 2) Draw main rounded rectangle
+        //    You could also use DrawRectangleRoundedGradient() for a gradient fill,
+        //    but let's do a solid color here:
+        Color nodeColor = Color{ 230, 240, 255, 255 }; // a light pastel
+        DrawRectangleRounded(r, roundness, segments, nodeColor);
+
+        // 3) Draw an outline
+        DrawRectangleRoundedLines(r, roundness, segments, DARKBLUE);
+
+        // 4) Draw the node value
+        char buf[64];
+        sprintf_s(buf, sizeof(buf), "%d", data);
+        int fontSize = 20;
+        int textWidth = MeasureText(buf, fontSize);
+        int textHeight = fontSize; // quick approximation
+
+        float textX = r.x + (r.width - textWidth) / 2.0f;
+        float textY = r.y + (r.height - textHeight) / 2.0f;
+
+        DrawText(buf, (int)textX, (int)textY, fontSize, DARKBLUE);
+    }
 };
+
+struct AnimationData {
+    int key;
+    std::vector<int> pathIndices;  // Sequence of indices (probing path)
+    int currentPathIndex;          // Current index in the path
+    Vector2 currentPos;            // Current animated position
+    float elapsedTime;             // Timer for the current segment
+    float segmentDuration;         // Duration for each segment
+    bool active;
+};
+
 
 class HashTable {
 public:
     HashTable(int x = 0); 
-    ~HashTable(); 
-    void add(int key, Vector2 startPos, Vector2 targetPos); 
-    void update(float deltaTime, float baseSpeed, float speedMultiplier);
-    void draw(); 
+    vector <int> getInsertionPath(int val); 
+    int getSize () const;
+    int search(int val);
+    void ins(int val); 
+    void rem(int val); 
+    void draw(Font font);
+    void upd(float delta);
 private:
-    Node** htable; 
+    // Draw a creative slot (node) with rounded corners, drop shadow, and index badge.
+    void drawSlot(Rectangle rect, int index, const std::string& text, Font font, bool highlight = false);
+    Vector2 Lerp(Vector2 start, Vector2 end, float t);
+    Vector2 getCenter(int index);
+
+
+    bool isInitial = false; 
+
+    float AnimationTime = 0.f; 
+    float AnimationDuration = 0.5f; 
+
+    int htable[700]; 
     int sz;
+    int nodesPerRow = 10;
+    int slotWidth = 80;
+    int slotHeight = 80;
+    int margin = 30;
+    int startX = 500;
+    int startY = 180;
 };
 
 class HashTableVisual {
@@ -48,9 +120,10 @@ public:
     int handleEvent(); 
     void draw(); 
 private:
+
     CommonButton Input; 
     Rectangle border, info; 
-    Button Random, File; 
+    Button Random, Empty; 
     TextBox Size; 
     HashTable H; 
 };

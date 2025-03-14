@@ -137,6 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Button.cpp" />
+    <ClCompile Include="Constants.cpp" />
     <ClCompile Include="HashTable.cpp" />
     <ClCompile Include="Linkedlist.cpp" />
     <ClCompile Include="main.cpp" />
