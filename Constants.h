@@ -30,6 +30,7 @@ const Color darkmode = { 15, 30, 60, 255 };
 /// Draw arrow from start to end with thickness and color
 void DrawThickArrow(Vector2 start, Vector2 end, float thickness, Color color);
 void DrawDropShadowRoundedRect(Rectangle rec, float roundness, int segments, float shadowOffset, Color shadowColor);
+Vector2 Lerp(Vector2 start, Vector2 end, float t);
 
 extern std::mt19937 rd;
 int random(int l, int r);

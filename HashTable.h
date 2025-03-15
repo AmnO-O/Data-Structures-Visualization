@@ -73,13 +73,16 @@ struct Node {
 
 struct AnimationData {
     int key;
-    std::vector<int> pathIndices;  // Sequence of indices (probing path)
-    int currentPathIndex;          // Current index in the path
-    Vector2 currentPos;            // Current animated position
-    float elapsedTime;             // Timer for the current segment
-    float segmentDuration;         // Duration for each segment
+    std::vector<int> pathIndices;
+    int currentPathIndex;
+    Vector2 currentPos;
+    float elapsedTime;
+    float segmentDuration;
     bool active;
+    bool operationSuccess;
+    int targetIndex;
 };
+
 
 
 class HashTable {
@@ -87,22 +90,28 @@ public:
     HashTable(int x = 0); 
     vector <int> getInsertionPath(int val); 
     int getSize () const;
+    int getValue(int pos) const; 
+    
     int search(int val);
+    int search(int val, vector <int> &path);
+
     void ins(int val); 
+    void ins(int index, int val); 
     void rem(int val); 
     void draw(Font font);
+    void drawValue(int index, Font font, bool highlight = false);
     void upd(float delta);
+    Vector2 getCenter(int index);
+    void drawSlot(int index, Font font, bool highlight = false, bool Value = true);
+
 private:
     // Draw a creative slot (node) with rounded corners, drop shadow, and index badge.
-    void drawSlot(Rectangle rect, int index, const std::string& text, Font font, bool highlight = false);
-    Vector2 Lerp(Vector2 start, Vector2 end, float t);
-    Vector2 getCenter(int index);
-
+    void drawSlot(Rectangle rect, int index, const std::string& text, Font font, bool highlight = false, bool Value = true);
 
     bool isInitial = false; 
 
     float AnimationTime = 0.f; 
-    float AnimationDuration = 0.5f; 
+    float AnimationDuration = 0.2f; 
 
     int htable[700]; 
     int sz;
@@ -110,7 +119,7 @@ private:
     int slotWidth = 80;
     int slotHeight = 80;
     int margin = 30;
-    int startX = 500;
+    int startX = 490;
     int startY = 180;
 };
 
@@ -120,10 +129,25 @@ public:
     int handleEvent(); 
     void draw(); 
 private:
-
+    
+    AnimationData animation; 
     CommonButton Input; 
     Rectangle border, info; 
     Button Random, Empty; 
-    TextBox Size; 
+    TextBox Size;
+    TextBoxCenter Value;
     HashTable H; 
+    bool popActive;
+    float popElapsedTime;
+    float popDuration; // Duration for the pop effect.
+    float popScale;    // Current scale factor (from small to normal).
+
+    bool  shrinkActive;
+    float shrinkElapsedTime;
+    float shrinkDuration; // Duration for removal effect.
+    float shrinkScale;    // Scale from 1 to 0.
+
+    bool searchActive;
+    float searchElapsedTime;
+    float searchDuration; // Duration for search effect.
 };
