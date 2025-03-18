@@ -265,11 +265,11 @@ int HashTableVisual::handleEvent() {
     if (Input.isCreate) {
         Size.update(); 
 
-        if (Empty.update()) {
+        if ((Size.isEnter || Empty.update()) && Size.getDigit() > 0) {
             H = HashTable(Size.getDigit());
         }
 
-        if (Random.update()) {
+        if (Random.update() && Size.getDigit() > 0) {
             H = HashTable(Size.getDigit());
             int numOcuppied = random(1,1 + H.getSize() / 2);
 
@@ -344,6 +344,7 @@ int HashTableVisual::handleEvent() {
             int final = H.search(Value.getDigit(), path) ;
             animation.key = Value.getDigit(); 
             animation.operationSuccess = final >= 0; 
+            if (final < 0) return HashTable_state; 
             animation.targetIndex = final;
             animation.currentPathIndex = 0; 
             animation.pathIndices = path; 
@@ -454,13 +455,14 @@ void HashTableVisual::draw() {
 
     Font font = LoadFontEx("Assets/Fonts/PublicSans-Bold.ttf", 65, 0, 0);
 
-    DrawTextEx(font, "[INFO]:", {info.x + 10, info.y + 10 }, 21, 1, PURPLE);
-
     if(animation.active == false) H.draw(font);
 
     if (Input.isCreate) {
         int fontSize = 24;
         float spacing = 1.0f;
+
+        string message = "[INFO]: Construct a hash table \nwith Size = " + to_string(H.getSize()) + ".";
+        DrawTextEx(font, message.c_str(), {info.x + 10, info.y + 10}, 21, 1, PURPLE);
 
 
         DrawTextEx(font, "Size:", {185, 520}, fontSize, spacing, BLACK);
@@ -469,6 +471,9 @@ void HashTableVisual::draw() {
         Random.draw(); 
     }
     else if (Input.isInsert) {
+        string message = "[INFO]: Insert a new value to a \nhash table (Size =  " + to_string(H.getSize()) + ").";
+        DrawTextEx(font, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, PURPLE);
+
         if (animation.active) 
             for (int i = 0; i < H.getSize(); i++) H.drawSlot(i, font, (animation.pathIndices[animation.currentPathIndex] == i));
 
@@ -515,6 +520,9 @@ void HashTableVisual::draw() {
         }   
     }
     else if (Input.isRemove) {
+        string message = "[INFO]: Remove a value in a \nhash table (Size =  " + to_string(H.getSize()) + ").";
+        DrawTextEx(font, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, PURPLE);
+
         if (animation.active)
             for (int i = 0; i < H.getSize(); i++) H.drawSlot(i, font, (animation.pathIndices[animation.currentPathIndex] == i), !(animation.pathIndices.back() == i && shrinkActive));
 
@@ -559,7 +567,9 @@ void HashTableVisual::draw() {
         }
     }
     else {
-        
+        string message = "[INFO]: Search for a value in a \nhash table (Size =  " + to_string(H.getSize()) + ").";
+        DrawTextEx(font, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, PURPLE);
+
         if (animation.active) H.draw(font); 
 
         int fontSize = 24;

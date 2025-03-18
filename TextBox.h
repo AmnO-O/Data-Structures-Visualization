@@ -10,11 +10,13 @@ struct TextBox {
     int pos;               // The position that we want to continue type        
 
     int framesCounter;     // Blink blink 
+    bool isEnter = false; 
 
     Font font = LoadFontEx("Assets/Fonts/PublicSans-bold.ttf", 65, 0, 0);
     int fontSize  = 20; 
 
     void update() {
+        isEnter = false; 
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             if (CheckCollisionPointRec(GetMousePosition(), bounds)) {
                 focused = true;
@@ -72,10 +74,9 @@ struct TextBox {
             }
 
             if (IsKeyPressed(KEY_ENTER)) {
+                isEnter = true; 
                 outputMessage = text;
                 focused = 0; 
-                text = ""; 
-                pos = 0;
                 framesCounter = 0; 
                 return;
             }
@@ -87,7 +88,7 @@ struct TextBox {
     int getDigit() {
         int c = 0; 
         for (int i = 0; i < text.size(); i++) {
-            c = c * 10 + text[i] - '0'; 
+            c = c * 10 + text[i] - '0';
         }
 
         return c; 
@@ -220,9 +221,10 @@ struct TextBoxCenter { /// put the cursor in the center
         if (focused && ((framesCounter / 20) % 2 == 0)) {
             std::string textBeforeCaret = text.substr(0, pos);
             int textWidth = MeasureTextEx(font, textBeforeCaret.c_str(), fontSize, 1).x;
+            int textFull = MeasureTextEx(font, text.c_str(), fontSize, 1).x;
 
-            DrawLine(bounds.x + bounds.width / 2 + textWidth / 2 + 2, textY,
-                bounds.x + bounds.width / 2 + textWidth / 2 + 2, textY + fontSize, BLACK);
+            DrawLine(bounds.x + bounds.width / 2 - textFull / 2 + 2 + textWidth, textY,
+                bounds.x + bounds.width / 2 - textFull / 2 + 2 + textWidth, textY + fontSize, BLACK);
         }
     }
 };
