@@ -122,32 +122,3 @@ private:
     int startX = 490;
     int startY = 180;
 };
-
-class HashTableVisual {
-public:
-    HashTableVisual();
-    int handleEvent(); 
-    void draw(); 
-private:
-    
-    AnimationData animation; 
-    CommonButton Input; 
-    Rectangle border, info; 
-    Button Random, Empty; 
-    TextBox Size;
-    TextBoxCenter Value;
-    HashTable H; 
-    bool popActive;
-    float popElapsedTime;
-    float popDuration; // Duration for the pop effect.
-    float popScale;    // Current scale factor (from small to normal).
-
-    bool  shrinkActive;
-    float shrinkElapsedTime;
-    float shrinkDuration; // Duration for removal effect.
-    float shrinkScale;    // Scale from 1 to 0.
-
-    bool searchActive;
-    float searchElapsedTime;
-    float searchDuration; // Duration for search effect.
-};

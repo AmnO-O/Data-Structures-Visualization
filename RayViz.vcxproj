@@ -127,23 +127,33 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AboutScreen.h" />
     <ClInclude Include="AVL.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="HashTable.h" />
+    <ClInclude Include="HashTableScreen.h" />
+    <ClInclude Include="Helper.h" />
     <ClInclude Include="LinkedList.h" />
+    <ClInclude Include="LinkedListScreen.h" />
     <ClInclude Include="Menu.h" />
+    <ClInclude Include="SettingScreen.h" />
     <ClInclude Include="TextBox.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AboutScreen.cpp" />
     <ClCompile Include="AVL.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="HashTable.cpp" />
+    <ClCompile Include="HashTableScreen.cpp" />
+    <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Linkedlist.cpp" />
+    <ClCompile Include="LinkedListScreen.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="SettingScreen.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
