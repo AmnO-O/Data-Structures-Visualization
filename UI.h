@@ -7,10 +7,10 @@
 #include "Helper.h"
 #include "HashTableScreen.h"
 
-class Visualizer{
-public : 
-	Visualizer();
-	void Process();
+class Visualizer {
+public:
+    Visualizer();
+    void Process();
 private:
     Menu menu;
     LinkedListScreen LinkedListScr;

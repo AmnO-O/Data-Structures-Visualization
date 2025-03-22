@@ -21,7 +21,7 @@ private:
 	float insertTailAlpha = 1.0f;  // Alpha của nút Tail
 	float insertPosAlpha = 1.0f;   // Alpha của nút Pos
 
-	// Điều chỉnh vị trí bảng sang bên trái
+	// Vị trí của Panel
 	Rectangle insertButton = { PANEL_PADDING + 8, 330, 130, 40 };
 	Rectangle deleteButton = { PANEL_PADDING + 8, 390, 130, 40 };
 	Rectangle reverseButton = { PANEL_PADDING + 8, 450, 130, 40 };
@@ -35,10 +35,6 @@ private:
 	float SmoothStep(float a, float b, float t);
 
 	LinkedList linkedList;
-
-	float alphaVelocity = 3.0f;   // Tốc độ fade in/out
-	float offsetVelocity = 200.0f; // Tốc độ di chuyển menu
-	float deltaTime = GetFrameTime();
 public:
 	// Hàm khởi tạo màn hình Linked List
 	void Init();

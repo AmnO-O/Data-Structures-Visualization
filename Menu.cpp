@@ -1,5 +1,4 @@
 ﻿#include "Menu.h"
-#include "Constants.h"
 #include "SettingScreen.h"
 
 void Menu::Init() {

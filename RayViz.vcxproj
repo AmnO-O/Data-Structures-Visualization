@@ -129,6 +129,7 @@
   <ItemGroup>
     <ClInclude Include="AboutScreen.h" />
     <ClInclude Include="AVL.h" />
+    <ClInclude Include="AVLTreeScreen.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="HashTable.h" />
@@ -144,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="AboutScreen.cpp" />
     <ClCompile Include="AVL.cpp" />
+    <ClCompile Include="AVLTreeScreen.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="HashTable.cpp" />

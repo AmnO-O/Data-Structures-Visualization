@@ -28,8 +28,10 @@ const string pathImage = "Assets/Images/";
 
 const Color lightmode = { 205, 201, 250, 255 };
 const Color darkmode = { 138, 136, 164, 255 };
-const Color btnHoverColor = { 100, 150, 255, 255 };
-const Color btnNormalColor = { 200, 200, 200, 255 };
+
+extern bool isDarkMode;
+
+// ********
 
 /// Draw arrow from start to end with thickness and color
 void DrawThickArrow(Vector2 start, Vector2 end, float thickness, Color color);
@@ -38,5 +40,3 @@ Vector2 Lerp(Vector2 start, Vector2 end, float t);
 
 extern std::mt19937 rd;
 int random(int l, int r);
-
-extern bool isDarkMode;

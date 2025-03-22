@@ -4,19 +4,19 @@
 struct TextBox {
     Rectangle bounds;      // Text box 's area
     string text = "";           // Content entered
-    string outputMessage; 
+    string outputMessage;
 
     bool focused;          // is being typed or not
     int pos;               // The position that we want to continue type        
 
     int framesCounter;     // Blink blink 
-    bool isEnter = false; 
+    bool isEnter = false;
 
     Font font = LoadFontEx("Assets/Fonts/PublicSans-bold.ttf", 65, 0, 0);
-    int fontSize  = 20; 
+    int fontSize = 20;
 
     void update() {
-        isEnter = false; 
+        isEnter = false;
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             if (CheckCollisionPointRec(GetMousePosition(), bounds)) {
                 focused = true;
@@ -37,14 +37,14 @@ struct TextBox {
                     pos = i + 1;
                 }
             }
-            else 
+            else
                 focused = false;
         }
 
         if (focused) {
             int key = GetCharPressed();
             while (key > 0) {
-                if ((key >= 32) && (key <= 126)) { 
+                if ((key >= 32) && (key <= 126)) {
                     text.insert(pos, 1, (char)key);
                     pos++;
                 }
@@ -62,7 +62,7 @@ struct TextBox {
             if (IsKeyPressed(KEY_DELETE)) {
                 if (pos < text.size()) text.erase(pos, 1);
             }
-        
+
             if (IsKeyPressed(KEY_LEFT)) {
                 if (pos > 0)
                     pos--;
@@ -74,10 +74,10 @@ struct TextBox {
             }
 
             if (IsKeyPressed(KEY_ENTER)) {
-                isEnter = true; 
+                isEnter = true;
                 outputMessage = text;
-                focused = 0; 
-                framesCounter = 0; 
+                focused = 0;
+                framesCounter = 0;
                 return;
             }
         }
@@ -86,12 +86,12 @@ struct TextBox {
     }
 
     int getDigit() {
-        int c = 0; 
+        int c = 0;
         for (int i = 0; i < text.size(); i++) {
             c = c * 10 + text[i] - '0';
         }
 
-        return c; 
+        return c;
     }
 
     void draw() {
@@ -101,13 +101,13 @@ struct TextBox {
 
         DrawRectangleRec(bounds, boxColor);
         DrawRectangleLinesEx(bounds, 1, DARKGRAY);
-        
-       // DrawText(text.c_str(), bounds.x + 5, bounds.y + 5, 20, BLACK);
+
+        // DrawText(text.c_str(), bounds.x + 5, bounds.y + 5, 20, BLACK);
         DrawTextEx(font, text.c_str(), { bounds.x + 5, bounds.y + 3 }, fontSize, 1, BLACK);
 
         if (focused && ((framesCounter / 20) % 2 == 0)) {
             std::string textBeforeCaret = text.substr(0, pos);
-            int textWidth = MeasureTextEx(font,textBeforeCaret.c_str(), fontSize, 1).x;
+            int textWidth = MeasureTextEx(font, textBeforeCaret.c_str(), fontSize, 1).x;
 
             DrawLine(bounds.x + 6 + textWidth, textY,
                 bounds.x + 6 + textWidth, textY + fontSize, BLACK);
@@ -129,7 +129,7 @@ struct TextBoxCenter { /// put the cursor in the center
     int fontSize = 20;
 
     void update() {
-        isEnter = false; 
+        isEnter = false;
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             if (CheckCollisionPointRec(GetMousePosition(), bounds)) {
                 focused = true;
@@ -190,7 +190,7 @@ struct TextBoxCenter { /// put the cursor in the center
                 outputMessage = text;
                 focused = 0;
                 framesCounter = 0;
-                isEnter = 1; 
+                isEnter = 1;
                 return;
             }
         }
@@ -214,7 +214,7 @@ struct TextBoxCenter { /// put the cursor in the center
 
         DrawRectangleRec(bounds, boxColor);
         DrawRectangleLinesEx(bounds, 1, DARKGRAY);
-        
+
         int textWidth = MeasureTextEx(font, text.c_str(), fontSize, 1).x;
         DrawTextEx(font, text.c_str(), { bounds.x - textWidth / 2 + bounds.width / 2, bounds.y + 3 }, fontSize, 1, BLACK);
 

@@ -14,16 +14,17 @@ void HashTableScreen::Init() {
     myFont = LoadFont("Assets/Fonts/LilitaOne-Regular.ttf");
     SetTextureFilter(myFont.texture, TEXTURE_FILTER_BILINEAR);
 
-    border = { 166, 500, 166, 210 }; /// orange region
-    Size = { {250, 521, 65, 25} };
+    // Load font cho [INFO]
+    IN4Font = LoadFont("Assets/Fonts/Acme-Regular.ttf");
+    SetTextureFilter(IN4Font.texture, TEXTURE_FILTER_BILINEAR);
 
-    info = { 0, 350, 332, 150 };
+    Size = { {260, 350, 90, 30} };
 
-    Value = { {205, 590, 90, 30} };
+    Value = { {270, 350, 90, 30} };
     Value.fontSize = 22;
 
-    Empty = { {210, 600, 90, 30}, "Empty" };
-    Random = { {210, 650, 90, 30}, "Random" };
+    Empty = { { PANEL_PADDING + 200, 440, 130, 40 }, "Empty" };
+    Random = { { PANEL_PADDING + 200, 500, 130, 40 }, "Random" };
 
     H = HashTable(40);
 
@@ -252,11 +253,36 @@ void HashTableScreen::Update(int& state) {
 
 
 void HashTableScreen::Draw() {
-    Input.draw();
-    DrawRectangleRec(border, Color{ 220, 180, 120, 255 });
-    DrawRectangleRec(info, DARKGRAY);
+    // Vẽ nền bảng khu vực panel
+    int panelMargin = 250; // Khoảng cách lề trên với box
+    Color panelColor = isDarkMode ? Color{ 229, 229, 229, 255 } : Color{ 189, 224, 254, 255 }; // Chọn màu theo chế độ
 
-    Font font = LoadFontEx("Assets/Fonts/PublicSans-Bold.ttf", 65, 0, 0);
+    DrawRectangle(0, panelMargin, PANEL_WIDTH, Screen_h - 2 * panelMargin, panelColor);
+
+    // Vẽ nền bảng khu vực panel 2 
+    Color panelColorx = isDarkMode ? Color{ 94, 172, 240, 180 } : Color{ 94, 172, 240, 180 }; // Chọn màu theo chế độ
+
+    DrawRectangle(PANEL_WIDTH, panelMargin, PANEL_WIDTH, Screen_h - 2 * panelMargin, panelColorx);
+    // Vẽ nền bảng viết [INFO]"
+    Color panelColory = isDarkMode ? Color{ 164, 235, 185, 200 } : Color{ 77, 168, 180, 200 }; // Chọn màu theo chế độ
+
+    int rectWidth = 400;
+    int rectHeight = 240;
+    int posX = Screen_w - rectWidth;
+    int posY = Screen_h - rectHeight;
+
+    DrawRectangle(posX, posY, rectWidth, rectHeight, panelColory);
+
+    // "Operation"
+    Color operationColor = isDarkMode ? DARKBLUE : DARKBLUE;
+    DrawTextEx(myFont, "Operations", { PANEL_PADDING + 10, 280 }, 26, 2, operationColor);
+
+    // Vẽ các nút trong panel
+    Input.draw();
+
+    // "[INFO]"
+    Color IN4Color = isDarkMode ? Color{ 199, 8, 40, 255 } : Color{ 199, 8, 40, 255 };
+    DrawTextEx(myFont, "[INFO]", { (float)posX + 10, (float)posY + 10 }, 26, 2, IN4Color);
 
     // Vẽ nút "Back"
     Color backColor = backHovered ? LIGHTGRAY : RAYWHITE;
@@ -268,60 +294,61 @@ void HashTableScreen::Draw() {
         { backButton.x + (backButton.width - textSize.x) / 2, backButton.y + (backButton.height - textSize.y) / 2 },
         20, 1, DARKBLUE);
 
-    // Hiển thị tiêu đề "How to Use"
+    // Hiển thị tiêu đề "Hash Table"
     int fontSize = 50;
     float spacing = 3.0f;
     Vector2 titleSize = MeasureTextEx(hashTableFont, "Hash Table", fontSize, spacing);
 
     float titleX = (Screen_w - titleSize.x) / 2;
-    float titleY = 80; // Đưa tiêu đề lên cao hơn
+    float titleY = 80;
 
     Color titleColor = isDarkMode ? WHITE : DARKBLUE;
     DrawTextEx(hashTableFont, "Hash Table",
         { titleX, titleY }, fontSize, spacing, titleColor);
 
-    if (animation.active == false) H.draw(font);
+    // 
+
+    if (animation.active == false) H.draw(myFont);
 
     if (Input.isCreate) {
         int fontSize = 24;
         float spacing = 1.0f;
 
-        string message = "[INFO]: Construct a hash table \nwith Size = " + to_string(H.getSize()) + ".";
-        DrawTextEx(font, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, PURPLE);
+        string message = "Construct a hash table with Size = " + to_string(H.getSize()) + ".";
+        DrawTextEx(IN4Font, message.c_str(), { (float)posX + 10, (float)posY + 40 }, 26, 2, DARKGRAY);
 
-
-        DrawTextEx(font, "Size:", { 185, 520 }, fontSize, spacing, BLACK);
+        DrawTextEx(myFont, "Size: ", { 200, 350 }, fontSize, spacing, BLACK);
         Size.draw();
         Empty.draw();
         Random.draw();
     }
     else if (Input.isInsert) {
-        string message = "[INFO]: Insert a new value to a \nhash table (Size =  " + to_string(H.getSize()) + ").";
-        DrawTextEx(font, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, PURPLE);
+        string message = "Insert a new value to a hash table \n(Size =  " + to_string(H.getSize()) + ").";
+        DrawTextEx(IN4Font, message.c_str(), { (float)posX + 10, (float)posY + 40 }, 26, 2, DARKGRAY);
 
         if (animation.active)
-            for (int i = 0; i < H.getSize(); i++) H.drawSlot(i, font, (animation.pathIndices[animation.currentPathIndex] == i));
+            for (int i = 0; i < H.getSize(); i++) H.drawSlot(i, myFont, (animation.pathIndices[animation.currentPathIndex] == i));
 
         int fontSize = 24;
         float spacing = 1.0f;
 
-        int textWidth = MeasureTextEx(font, "Value", fontSize, 1.f).x;
-        DrawTextEx(font, "Value", { 205 * 1.f + 90 / 2 - textWidth / 2, 555 }, fontSize, spacing, BLACK);
+        int textWidth = MeasureTextEx(myFont, "Value", fontSize, 1.f).x;
+        DrawTextEx(myFont, "Value: ", { 200, 350 }, fontSize, spacing, BLACK);
         Value.draw();
 
         if (animation.active && !popActive) {
             int fontSize = 20;
             int cur_key = H.getValue(animation.pathIndices[animation.currentPathIndex]);
             std::string keyText = std::to_string(cur_key);
-            int textWidth = MeasureTextEx(font, keyText.c_str(), fontSize, 1.f).x;
+            int textWidth = MeasureTextEx(myFont, keyText.c_str(), fontSize, 1.f).x;
             Color markerColor = ORANGE;
 
             for (int i = 5; i > 0; i--) {
                 DrawCircleV(animation.currentPos, 20 + i * 3, Fade(markerColor, 0.1f * i));
-                H.drawValue(animation.pathIndices[animation.currentPathIndex], font);
+                H.drawValue(animation.pathIndices[animation.currentPathIndex], myFont);
             }
 
-            H.drawValue(animation.pathIndices[animation.currentPathIndex], font);
+            H.drawValue(animation.pathIndices[animation.currentPathIndex], myFont);
             /// DrawTextEx(font,keyText.c_str(), {animation.currentPos.x * 1.f - textWidth / 2, animation.currentPos.y - fontSize / 2}, fontSize, 1.f, WHITE);
         }
 
@@ -331,7 +358,7 @@ void HashTableScreen::Draw() {
             Vector2 center = H.getCenter(finalIndex);
             int fontSize = 20;
             std::string keyText = std::to_string(animation.key);
-            int textWidth = MeasureTextEx(font, keyText.c_str(), fontSize, 1).x;
+            int textWidth = MeasureTextEx(myFont, keyText.c_str(), fontSize, 1).x;
             // Draw with scaling (popScale varies from 0 to 1).
             float radius = 20 * popScale;
             for (int i = 5; i > 0; i--) {
@@ -340,36 +367,36 @@ void HashTableScreen::Draw() {
             DrawCircleV(center, radius, GREEN);
             // Scale text as well.
             int scaledFontSize = (int)(fontSize * popScale);
-            int scaledTextWidth = MeasureTextEx(font, keyText.c_str(), scaledFontSize, 1).x;
-            DrawTextEx(font, keyText.c_str(), { center.x - scaledTextWidth / 2, center.y - scaledFontSize / 2 }, scaledFontSize, 1, WHITE);
+            int scaledTextWidth = MeasureTextEx(myFont, keyText.c_str(), scaledFontSize, 1).x;
+            DrawTextEx(myFont, keyText.c_str(), { center.x - scaledTextWidth / 2, center.y - scaledFontSize / 2 }, scaledFontSize, 1, WHITE);
         }
     }
     else if (Input.isRemove) {
-        string message = "[INFO]: Remove a value in a \nhash table (Size =  " + to_string(H.getSize()) + ").";
-        DrawTextEx(font, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, PURPLE);
+        string message = "Remove a value in a hash table \n(Size =  " + to_string(H.getSize()) + ").";
+        DrawTextEx(IN4Font, message.c_str(), { (float)posX + 10, (float)posY + 40 }, 26, 2, DARKGRAY);
 
         if (animation.active)
-            for (int i = 0; i < H.getSize(); i++) H.drawSlot(i, font, (animation.pathIndices[animation.currentPathIndex] == i), !(animation.pathIndices.back() == i && shrinkActive));
+            for (int i = 0; i < H.getSize(); i++) H.drawSlot(i, myFont, (animation.pathIndices[animation.currentPathIndex] == i), !(animation.pathIndices.back() == i && shrinkActive));
 
         int fontSize = 24;
         float spacing = 1.0f;
 
-        int textWidth = MeasureTextEx(font, "Value", fontSize, 1.f).x;
-        DrawTextEx(font, "Value", { 205 * 1.f + 90 / 2 - textWidth / 2, 555 }, fontSize, spacing, BLACK);
+        int textWidth = MeasureTextEx(myFont, "Value", fontSize, 1.f).x;
+        DrawTextEx(myFont, "Value: ", { 200, 350 }, fontSize, spacing, BLACK);
         Value.draw();
 
         if (animation.active && !shrinkActive) {
             int fontSize = 20;
             int cur_key = H.getValue(animation.pathIndices[animation.currentPathIndex]);
             std::string keyText = std::to_string(cur_key);
-            int textWidth = MeasureTextEx(font, keyText.c_str(), fontSize, 1.f).x;
+            int textWidth = MeasureTextEx(myFont, keyText.c_str(), fontSize, 1.f).x;
             Color markerColor = ORANGE;
 
             for (int i = 5; i > 0; i--) {
                 DrawCircleV(animation.currentPos, 20 + i * 3, Fade(markerColor, 0.1f * i));
             }
 
-            H.drawValue(animation.pathIndices[animation.currentPathIndex], font);
+            H.drawValue(animation.pathIndices[animation.currentPathIndex], myFont);
             /// DrawTextEx(font,keyText.c_str(), {animation.currentPos.x * 1.f - textWidth / 2, animation.currentPos.y - fontSize / 2}, fontSize, 1.f, WHITE);
         }
 
@@ -386,36 +413,36 @@ void HashTableScreen::Draw() {
             }
             DrawCircleV(center, radius, RED);
             int scaledFontSize = (int)(fontSize * shrinkScale);
-            int scaledTextWidth = MeasureTextEx(font, keyText.c_str(), scaledFontSize, 1).x;
+            int scaledTextWidth = MeasureTextEx(myFont, keyText.c_str(), scaledFontSize, 1).x;
 
-            DrawTextEx(font, keyText.c_str(), { center.x - scaledTextWidth / 2, center.y - scaledFontSize / 2 }, scaledFontSize, 1, Fade(WHITE, shrinkScale));
+            DrawTextEx(myFont, keyText.c_str(), { center.x - scaledTextWidth / 2, center.y - scaledFontSize / 2 }, scaledFontSize, 1, Fade(WHITE, shrinkScale));
         }
     }
     else {
-        string message = "[INFO]: Search for a value in a \nhash table (Size =  " + to_string(H.getSize()) + ").";
-        DrawTextEx(font, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, PURPLE);
+        string message = "Search for a value in a hash table \n(Size =  " + to_string(H.getSize()) + ").";
+        DrawTextEx(IN4Font, message.c_str(), { (float)posX + 10, (float)posY + 40 }, 26, 2, DARKGRAY);
 
-        if (animation.active) H.draw(font);
+        if (animation.active) H.draw(myFont);
 
         int fontSize = 24;
         float spacing = 1.0f;
 
-        int textWidth = MeasureTextEx(font, "Value", fontSize, 1.f).x;
-        DrawTextEx(font, "Value", { 205 * 1.f + 90 / 2 - textWidth / 2, 555 }, fontSize, spacing, BLACK);
+        int textWidth = MeasureTextEx(myFont, "Value", fontSize, 1.f).x;
+        DrawTextEx(myFont, "Value: ", { 200, 350 }, fontSize, spacing, BLACK);
         Value.draw();
 
         if (animation.active && !searchActive) {
             int fontSize = 20;
             int cur_key = H.getValue(animation.pathIndices[animation.currentPathIndex]);
             std::string keyText = std::to_string(cur_key);
-            int textWidth = MeasureTextEx(font, keyText.c_str(), fontSize, 1.f).x;
+            int textWidth = MeasureTextEx(myFont, keyText.c_str(), fontSize, 1.f).x;
             Color markerColor = ORANGE;
 
             for (int i = 5; i > 0; i--) {
                 DrawCircleV(animation.currentPos, 20 + i * 3, Fade(markerColor, 0.1f * i));
             }
 
-            H.drawValue(animation.pathIndices[animation.currentPathIndex], font);
+            H.drawValue(animation.pathIndices[animation.currentPathIndex], myFont);
         }
 
         if (searchActive) {

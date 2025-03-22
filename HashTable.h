@@ -7,8 +7,8 @@
 struct Node {
     int data;
     Node* next;
-    Vector2 currentPosition;  
-    Vector2 targetPosition;   
+    Vector2 currentPosition;
+    Vector2 targetPosition;
 
     Node(int value, Vector2 startPos, Vector2 targetPos)
         : data(value), next(nullptr), currentPosition(startPos), targetPosition(targetPos) {
@@ -29,7 +29,7 @@ struct Node {
         DrawText(TextFormat("%d", data), currentPosition.x - 10, currentPosition.y - 10, 20, WHITE);
     }
 
-    void draw2(Vector2 pos, float width, float height, float bounceAnim){
+    void draw2(Vector2 pos, float width, float height, float bounceAnim) {
         // The bounceAnim can be used to scale or shift the node slightly
         // bounceAnim is expected to be between [0..1], for a subtle pop effect
         float scale = 1.0f + 0.05f * bounceAnim; // up to +5% bigger
@@ -87,17 +87,17 @@ struct AnimationData {
 
 class HashTable {
 public:
-    HashTable(int x = 0); 
-    vector <int> getInsertionPath(int val); 
-    int getSize () const;
-    int getValue(int pos) const; 
-    
-    int search(int val);
-    int search(int val, vector <int> &path);
+    HashTable(int x = 0);
+    vector <int> getInsertionPath(int val);
+    int getSize() const;
+    int getValue(int pos) const;
 
-    void ins(int val); 
-    void ins(int index, int val); 
-    void rem(int val); 
+    int search(int val);
+    int search(int val, vector <int>& path);
+
+    void ins(int val);
+    void ins(int index, int val);
+    void rem(int val);
     void draw(Font font);
     void drawValue(int index, Font font, bool highlight = false);
     void upd(float delta);
@@ -108,12 +108,12 @@ private:
     // Draw a creative slot (node) with rounded corners, drop shadow, and index badge.
     void drawSlot(Rectangle rect, int index, const std::string& text, Font font, bool highlight = false, bool Value = true);
 
-    bool isInitial = false; 
+    bool isInitial = false;
 
-    float AnimationTime = 0.f; 
-    float AnimationDuration = 0.2f; 
+    float AnimationTime = 0.f;
+    float AnimationDuration = 0.2f;
 
-    int htable[700]; 
+    int htable[700];
     int sz;
     int nodesPerRow = 10;
     int slotWidth = 80;

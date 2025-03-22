@@ -126,6 +126,19 @@ void LinkedListScreen::DrawOperationsPanel() {
 
     DrawRectangle(PANEL_WIDTH, panelMargin, PANEL_WIDTH, Screen_h - 2 * panelMargin, Fade(panelColorx, 0.8f));
 
+    // Vẽ nền bảng cho [INFO]
+    Color panelColory = isDarkMode ? Color{ 164, 235, 185, 200 } : Color{ 77, 168, 180, 200 };  // Chọn màu theo chế độ
+    int rectWidth = 400;
+    int rectHeight = 240;
+    int posX = Screen_w - rectWidth;
+    int posY = Screen_h - rectHeight;
+
+    DrawRectangle(posX, posY, rectWidth, rectHeight, panelColory);
+
+    // "[INFO]"
+    Color IN4Color = isDarkMode ? Color{ 199, 8, 40, 255 } : Color{ 199, 8, 40, 255 };
+    DrawTextEx(myFont, "[INFO]", { (float)posX + 10, (float)posY + 10 }, 26, 2, IN4Color);
+
     // Tiêu đề
     Color operationColor = isDarkMode ? DARKBLUE : DARKBLUE;
     DrawTextEx(myFont, "Operations", { PANEL_PADDING + 10, 280 }, 26, 2, operationColor);

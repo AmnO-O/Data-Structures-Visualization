@@ -1,7 +1,7 @@
 ﻿#include "UI.h"
 
 Visualizer::Visualizer() {
-    
+
 }
 
 void Visualizer::Process() {
@@ -18,7 +18,7 @@ void Visualizer::Process() {
     int currentState = Menu_state;
     while (!WindowShouldClose()) {
         audioSys.Update();  // Cập nhật âm thanh nền
-        
+
         // Định nghĩa biến màu nền
         Color bgColor = lightmode;  // Sử dụng màu từ Constants.h
 
