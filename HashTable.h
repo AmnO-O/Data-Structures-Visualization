@@ -105,7 +105,6 @@ public:
     void drawSlot(int index, Font font, bool highlight = false, bool Value = true);
 
 private:
-    // Draw a creative slot (node) with rounded corners, drop shadow, and index badge.
     void drawSlot(Rectangle rect, int index, const std::string& text, Font font, bool highlight = false, bool Value = true);
 
     bool isInitial = false;

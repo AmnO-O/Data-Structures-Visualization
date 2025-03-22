@@ -13,6 +13,7 @@ CommonButton::CommonButton() {
 	cButton.push_back({ { PANEL_PADDING + 8, 450, 130, 40 }, "Insert", btnNormal, btnHover, btnClick });
 	cButton.push_back({ { PANEL_PADDING + 8, 510, 130, 40 }, "Remove", btnNormal, btnHover, btnClick });
 
+
 	cButton[0].isChose = 1;
 }
 
@@ -32,7 +33,7 @@ void CommonButton::update() {
 }
 
 
-void CommonButton::draw() {
+void CommonButton::draw(Font font) {
 	DrawRectangleRec(rect, color);
 	Texture2D activated = LoadTexture("Assets/Images/dark-activated.png");
 
@@ -44,7 +45,7 @@ void CommonButton::draw() {
 			cButton[i].drawRect();
 		}
 
-		cButton[i].drawName();
+		cButton[i].drawName(font);
 	}
 }
 

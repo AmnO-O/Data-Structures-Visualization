@@ -4,6 +4,8 @@
 #include <raylib.h>
 #include <vector>
 #include <random>
+#include <string>
+#include <chrono>
 
 using namespace std;
 
@@ -23,20 +25,26 @@ const int Trie_state = 2;
 const int Graph_state = 3;
 const int HowToUse_state = 4;
 
+
 const string pathFont = "Assets/Fonts/";
 const string pathImage = "Assets/Images/";
 
 const Color lightmode = { 205, 201, 250, 255 };
 const Color darkmode = { 138, 136, 164, 255 };
-
-extern bool isDarkMode;
-
-// ********
+const Color btnHoverColor = { 100, 150, 255, 255 };
+const Color btnNormalColor = { 200, 200, 200, 255 };
 
 /// Draw arrow from start to end with thickness and color
-void DrawThickArrow(Vector2 start, Vector2 end, float thickness, Color color);
+void DrawThickArrow(Vector2 start, Vector2 end, float thickness, Color color, bool highlighted = false);
 void DrawDropShadowRoundedRect(Rectangle rec, float roundness, int segments, float shadowOffset, Color shadowColor);
 Vector2 Lerp(Vector2 start, Vector2 end, float t);
 
 extern std::mt19937 rd;
 int random(int l, int r);
+
+extern bool isDarkMode;
+
+
+/*
+lavander: 189, 224, 254
+*/

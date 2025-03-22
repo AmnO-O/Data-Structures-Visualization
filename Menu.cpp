@@ -1,5 +1,37 @@
 ﻿#include "Menu.h"
-#include "SettingScreen.h"
+#include "Constants.h"
+
+Menu::Menu() {
+    // Khởi tạo nút "How to Use"
+    helpButton = { 20, Screen_h - 60, 150, 40 };
+    // Khởi tạo nút "About"
+    aboutButton = { 20, Screen_h - 110, 150, 40 };
+    // Khởi tạo nút "Settings"
+    settingsButton = { 20, Screen_h - 160, 150, 40 };
+
+    helpHovered = aboutHovered = settingsHovered = 0;
+
+    myFont = LoadFont("Assets/Fonts/LilitaOne-Regular.ttf");
+    SetTextureFilter(myFont.texture, TEXTURE_FILTER_BILINEAR);
+
+    int startX = 440;
+    int startY = 200;
+
+    for (int i = 0; i < 4; i++) {
+        Item item;
+        int row = i / 2;
+        int col = i & 1;
+
+        float x = startX + col * (Item_w + 50);
+        float y = startY + row * (Item_h + 50);
+
+        item.name = dsName[i];
+        item.bounds = { x, y, Item_w, Item_h };
+        item.hovered = 0;
+
+        dsItem.push_back(item);
+    }
+}
 
 void Menu::Init() {
     int startX = (Screen_w - 2 * Item_w - Padding) / 2;
@@ -43,7 +75,6 @@ void Menu::Init() {
 int Menu::handleEvent() {
     Vector2 mouse = GetMousePosition();
 
-    // Kiểm tra xem chuột có hover vào menu item không?
     for (int id = 0; id < 4; id++) {
         Item& item = dsItem[id];
         if (CheckCollisionPointRec(mouse, item.bounds)) {
@@ -53,6 +84,7 @@ int Menu::handleEvent() {
                 if (id == 2) return Trie_state;
                 return Graph_state;
             }
+
             item.hovered = true;
         }
         else item.hovered = false;
@@ -79,41 +111,24 @@ int Menu::handleEvent() {
     return Menu_state;
 }
 
+Menu::~Menu() {
+    UnloadFont(myFont);
+}
+
 void Menu::Draw() {
-    ClearBackground(isDarkMode ? darkmode : lightmode);  // Sử dụng màu nền đã chọn
-
-    // Vẽ tiêu đề căn giữa
-    int fontSize = 70;
-    float spacing = 3.0f;
-    Vector2 titleSize = MeasureTextEx(titleFont, "Data Structure Visualization", fontSize, spacing);
-
-    float titleX = (Screen_w - titleSize.x) / 2.0f + 35;
-    float titleY = (Screen_h * 0.1f);   // Căn giữa theo chiều cao nhưng đưa lên 1/8 màn hình
-
-    Color titleColor = isDarkMode ? WHITE : DARKBLUE;
-    DrawTextEx(titleFont, "Data Structure Visualization",
-        { titleX, titleY }, fontSize, spacing, titleColor);
-
-    // Vẽ các ô Menu 
     for (Item item : dsItem) {
         Color boxColor = item.hovered ? LIGHTGRAY : RAYWHITE;
 
         DrawRectangleRounded(item.bounds, 0.2f, 4, boxColor);
-        DrawRectangleRoundedLinesEx(item.bounds, 0.2f, 4, 0.9f, Color{ 103, 89, 246, 190 });
+        DrawRectangleRoundedLinesEx(item.bounds, 0.2f, 4, 2.0f, Color{ 103, 89, 246, 190 });
 
-        int fontSize = 30;
-        float spacing = 1;
-        Vector2 textSize = MeasureTextEx(myFont, item.name.c_str(), fontSize, spacing);
+        float centerX = item.bounds.x + Item_w / 2;
+        float centerY = item.bounds.y + Item_h / 2;
 
-        float textX = item.bounds.x + (item.bounds.width - textSize.x) / 2.0f;
-        float textY = item.bounds.y + (item.bounds.height - textSize.y) / 2.0f;
-
-        DrawTextEx(myFont, item.name.c_str(),
-            { textX, textY },
-            fontSize, spacing, DARKBLUE);
+        int textWidth = MeasureTextEx(myFont, item.name.c_str(), 30, 1).x;
+        DrawTextEx(myFont, item.name.c_str(), { centerX - textWidth / 2, item.bounds.y + Item_h - 40 }, 30, 1, DARKBLUE);
     }
 
-    // Màu hover
     Color helpColor = helpHovered ? LIGHTGRAY : RAYWHITE;
     Color aboutColor = aboutHovered ? LIGHTGRAY : RAYWHITE;
     Color settingsColor = settingsHovered ? LIGHTGRAY : RAYWHITE;
@@ -142,8 +157,4 @@ void Menu::Draw() {
     DrawTextEx(myFont, "Settings",
         { settingsButton.x + (settingsButton.width - textSize.x) / 2, settingsButton.y + (settingsButton.height - textSize.y) / 2 },
         20, 1, DARKBLUE);
-}
-
-Menu::~Menu() {
-    UnloadFont(myFont);
 }

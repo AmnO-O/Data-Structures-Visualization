@@ -218,3 +218,4 @@ void HashTable::drawSlot(Rectangle rect, int index, const std::string& text, Fon
 
     DrawTextEx(font, indexStr.c_str(), { posX * 1.f, posY * 1.f }, fontSize, 1, BLUE);
 }
+

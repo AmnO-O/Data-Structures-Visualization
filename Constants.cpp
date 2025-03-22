@@ -1,8 +1,11 @@
 #include "Constants.h"
 
-void DrawThickArrow(Vector2 start, Vector2 end, float thickness, Color color) {
+
+void DrawThickArrow(Vector2 start, Vector2 end, float thickness, Color color, bool highlighted) {
+    float lineThickness = highlighted ? thickness * 2.0f : thickness;
+
     // Draw the main line
-    DrawLineEx(start, end, thickness, color);
+    DrawLineEx(start, end, lineThickness, color);
 
     // Direction vector
     Vector2 dir = { end.x - start.x, end.y - start.y };
@@ -14,7 +17,7 @@ void DrawThickArrow(Vector2 start, Vector2 end, float thickness, Color color) {
     dir.y /= length;
 
     // Arrowhead settings
-    float arrowSize = 14.0f;
+    float arrowSize = highlighted ? 15.0f : 14.0f;
     float arrowAngle = 30.0f * DEG2RAD; // 30 degrees in radians
 
     // End of arrow is the tip; we compute left/right edges
@@ -27,6 +30,21 @@ void DrawThickArrow(Vector2 start, Vector2 end, float thickness, Color color) {
     // Draw the filled triangle
     Vector2 points[3] = { end, left, right };
     DrawTriangle(points[0], points[1], points[2], color);
+
+    //// Calculate the arrow head points
+    //float arrowSize = highlighted ? 15.0f : 10.0f;
+    //Vector2 arrowLeft = {
+    //    end.x - dir.x * arrowSize - dir.y * arrowSize * 0.5f,
+    //    end.y - dir.y * arrowSize + dir.x * arrowSize * 0.5f
+    //};
+
+    //Vector2 arrowRight = {
+    //    end.x - dir.x * arrowSize + dir.y * arrowSize * 0.5f,
+    //    end.y - dir.y * arrowSize - dir.x * arrowSize * 0.5f
+    //};
+
+    //// Draw arrow head
+    //DrawTriangle(end, arrowLeft, arrowRight, color);
 }
 
 void DrawDropShadowRoundedRect(Rectangle rec, float roundness, int segments, float shadowOffset, Color shadowColor) {

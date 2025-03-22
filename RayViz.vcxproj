@@ -132,8 +132,9 @@
     <ClInclude Include="AVLTreeScreen.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="Graph.h" />
     <ClInclude Include="HashTable.h" />
-    <ClInclude Include="HashTableScreen.h" />
+    <ClInclude Include="HashTableVisual.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="LinkedList.h" />
     <ClInclude Include="LinkedListScreen.h" />
@@ -148,8 +149,9 @@
     <ClCompile Include="AVLTreeScreen.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Constants.cpp" />
+    <ClCompile Include="Graph.cpp" />
     <ClCompile Include="HashTable.cpp" />
-    <ClCompile Include="HashTableScreen.cpp" />
+    <ClCompile Include="HashTableVisual.cpp" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Linkedlist.cpp" />
     <ClCompile Include="LinkedListScreen.cpp" />

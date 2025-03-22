@@ -14,7 +14,6 @@ struct Button {
     bool isPressed = false;
     bool isChose = false;
 
-    Font font = LoadFont("Assets/Fonts/LilitaOne-Regular.ttf");
     // Hàm Update() kiểm tra di chuột, bấm chuột...
     // Trả về true nếu người dùng "click" (nhả chuột trong vùng nút)
 
@@ -52,7 +51,7 @@ struct Button {
         DrawRectangleRoundedLinesEx(rect, 0.3f, 6, 2.0f, GRAY);
     }
 
-    void drawName() {
+    void drawName(Font font) {
         int fontSize = 18;
         float spacing = 2;
         Vector2 textSize = MeasureTextEx(font, text.c_str(), fontSize, spacing);
@@ -61,7 +60,7 @@ struct Button {
         DrawTextEx(font, text.c_str(), { textX, textY }, fontSize, spacing, DARKBLUE);
     }
 
-    void draw() {
+    void draw(Font font) {
         Color drawColor = normalColor;
         if (isHovered) {
             drawColor = hoverColor;
@@ -86,7 +85,7 @@ class CommonButton {
 public:
     CommonButton();
     void update();
-    void draw();
+    void draw(Font font);
 
     bool isCreate = true;
     bool isInsert = false;
