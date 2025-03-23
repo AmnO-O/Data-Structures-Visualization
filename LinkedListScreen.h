@@ -9,13 +9,13 @@ private:
 #define PANEL_PADDING 20 // Khoảng cách lề
 	
 	//Check which function user using
-	bool linkedlistState;
-	bool insertHeadState = 1;
-	bool insertPosState = 2;
-	bool insertTailState = 3;
-	bool DelteState = 4;
-	bool SearchState = 5;
-	bool ClearHeadState = 6;
+	int linkedlistState;
+	int InsertHeadState = 1;
+	int InsertPosState = 2;
+	int InsertTailState = 3;
+	int DeleteState = 4;
+	int ReverseState = 5;
+	int ClearState = 6;
 
 
 	Font linkedListFont;   // Font chữ cho màn hình Linked List
@@ -24,6 +24,9 @@ private:
 
 	bool showInsertOptions = false;
 	bool insertHovered = false;
+	bool insertAtHeadHovered = false;
+	bool insertAtTailHovered = false;
+	bool insertPosHovered = false;
 	bool deleteHovered = false;
 	bool reverseHovered = false;
 	bool cleanHovered = false;
@@ -31,7 +34,8 @@ private:
 	float insertTailAlpha = 1.0f;  // Alpha của nút Tail
 	float insertPosAlpha = 1.0f;   // Alpha của nút Pos
 
-	TextBoxCenter Value;
+	TextBox Value;
+	TextBox Index;
 
 	// Vị trí của Panel
 	Rectangle insertButton = { PANEL_PADDING + 8, 330, 130, 40 };

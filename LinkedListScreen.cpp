@@ -15,6 +15,7 @@ void LinkedListScreen::Init() {
 
 
     Value = { {270, 350, 90, 30} };
+    Index = { {270, 400, 90, 30} };
 
 }
 
@@ -47,6 +48,15 @@ void LinkedListScreen::Update(int& state) {
     // Kiểm tra hover vào nút "Clean"
     cleanHovered = CheckCollisionPointRec(mouse, cleanButton);
 
+    //Check hover button "insertAtHead"
+    insertAtHeadHovered = CheckCollisionPointRec(mouse, insertHeadButton);
+
+    //Check hover button "insertAtTail"
+    insertAtTailHovered = CheckCollisionPointRec(mouse, insertTailButton);
+
+    //Check hover button "insertPos"
+    insertPosHovered = CheckCollisionPointRec(mouse, insertPosButton);
+
     // Xử lý sự kiện khi nhấn vào nút "Back"
     if (backHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         state = Menu_state; // Quay lại màn hình Menu
@@ -59,11 +69,11 @@ void LinkedListScreen::Update(int& state) {
 
     // Animation:  Điều chỉnh offset khi mở menu Insert
     if (showInsertOptions) {
-        // Mở menu, nút Head, Tail, Pos sẽ mất ngay lập tức
+        // Mở menu, nút Head, Tail, Pos sẽ mở ngay lập tức
         insertHeadAlpha = SmoothStep(insertHeadAlpha, 0.0f, 0.006f);  // Giảm alpha của Head từ từ
         insertTailAlpha = SmoothStep(insertTailAlpha, 0.0f, 0.006f);  // Giảm alpha của Tail từ từ
         insertPosAlpha = SmoothStep(insertPosAlpha, 0.0f, 0.006f);    // Giảm alpha của Pos từ từ
-        insertOptionsOffset = SmoothStep(insertOptionsOffset, 100.0f, 0.003f);
+        insertOptionsOffset = SmoothStep(insertOptionsOffset, 100.0f, 0.02f);
 
         // Cập nhật vị trí của các nút Delete, Reverse, Clean
         insertHeadButton.y = insertButton.y + 45;
@@ -76,21 +86,13 @@ void LinkedListScreen::Update(int& state) {
 
         // Nếu Insert đang mở, kiểm tra các nút con
         if (CheckCollisionPointRec(mouse, insertHeadButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            linkedList.InsertAtHead(rand() % 100);
-            int fontSize = 24;
-            float spacing = 1.0f;
-
-            int textWidth = MeasureTextEx(myFont, "Value", fontSize, 1.f).x;
-            DrawTextEx(myFont, "Value", { 200, 350 }, fontSize, spacing, BLACK);
-            Value.draw();
+            linkedlistState = InsertHeadState;
         }
         if (CheckCollisionPointRec(mouse, insertTailButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            linkedList.InsertAtTail(rand() % 100);
-            showInsertOptions = false;
+            linkedlistState = InsertTailState;
         }
         if (CheckCollisionPointRec(mouse, insertPosButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            linkedList.InsertAtPosition(rand() % 100, 2);
-            showInsertOptions = false;
+            linkedlistState = InsertPosState;
         }
     }
     else {
@@ -99,7 +101,7 @@ void LinkedListScreen::Update(int& state) {
         insertPosAlpha = 0.0f;   // Giảm alpha của Pos ngay lập tức
 
         // Cập nhật vị trí của các nút khi menu đóng
-        insertOptionsOffset = SmoothStep(insertOptionsOffset, 0.0f, 0.002f); // Menu sẽ thu lại khi đóng
+        insertOptionsOffset = SmoothStep(insertOptionsOffset, 0.0f, 0.02f); // Menu sẽ thu lại khi đóng
 
         // Nếu menu đã đóng xong, reset lại các nút khác
         deleteButton.y = 380 + insertOptionsOffset;
@@ -109,17 +111,48 @@ void LinkedListScreen::Update(int& state) {
 
     // Kiểm tra nút Delete
     if (CheckCollisionPointRec(mouse, deleteButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        linkedList.DeleteValue(rand() % 100); // Xóa số ngẫu nhiên (tạm thời)
+        linkedlistState = DeleteState;
     }
 
     // Kiểm tra nút Reverse
     if (CheckCollisionPointRec(mouse, reverseButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        linkedList.ReverseList();
+        linkedlistState = ReverseState;
     }
 
     // Kiểm tra nút Clean 
     if (CheckCollisionPointRec(mouse, cleanButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        linkedList.ClearList();
+        linkedlistState = ClearState;
+    }
+
+    if (linkedlistState == InsertHeadState) {
+        Value.update();
+        if (Value.outputMessage != "") {
+            linkedList.InsertAtHead(stoi(Value.outputMessage));
+            Value.outputMessage = "";
+        }
+    }
+    else if (linkedlistState == InsertHeadState){
+        Value.update();
+        if (Value.outputMessage != "") {
+            linkedList.InsertAtTail(stoi(Value.outputMessage));
+            Value.outputMessage = "";
+        }
+    }
+    else if (linkedlistState == InsertPosState) {
+        Value.update();
+        Index.update();
+        if (Value.outputMessage != ""  && Index.outputMessage != "") {
+            linkedList.InsertAtPosition(stoi(Value.outputMessage) , stoi(Index.outputMessage));
+            Value.outputMessage = "";
+            Index.outputMessage = "";
+        }
+    }
+    else if (linkedlistState == DeleteState) {
+        Value.update();
+        if (Value.outputMessage != "") {
+            linkedList.DeleteValue(stoi(Value.outputMessage));
+            Value.outputMessage = "";
+        }
     }
 }
 
@@ -169,29 +202,32 @@ void LinkedListScreen::DrawOperationsPanel() {
         int spacing = 2;    // Khoảng cách giữa các ký tự
 
         // Insert Head
+        Color InserAtHeadColor = insertAtHeadHovered ? LIGHTGRAY : RAYWHITE;
         Vector2 headSize = MeasureTextEx(myFont, "> Head", fontSize, spacing);
         float headX = insertHeadButton.x + (insertHeadButton.width - headSize.x) / 2;
         float headY = insertHeadButton.y + (insertHeadButton.height - headSize.y) / 2;
 
-        DrawRectangleRounded(insertHeadButton, 0.3f, 6, WHITE);
+        DrawRectangleRounded(insertHeadButton, 0.3f, 6, InserAtHeadColor);
         DrawRectangleRoundedLinesEx(insertHeadButton, 0.3f, 6, 2.0f, GRAY);
         DrawTextEx(myFont, "> Head", { headX, headY }, fontSize, spacing, DARKBLUE);
 
         // Insert Tail
+        Color InserAtTailColor = insertAtTailHovered ? LIGHTGRAY : RAYWHITE;
         Vector2 tailSize = MeasureTextEx(myFont, "> Tail", fontSize, spacing);
         float tailX = insertTailButton.x + (insertTailButton.width - tailSize.x) / 2;
         float tailY = insertTailButton.y + (insertTailButton.height - tailSize.y) / 2;
 
-        DrawRectangleRounded(insertTailButton, 0.3f, 6, WHITE);
+        DrawRectangleRounded(insertTailButton, 0.3f, 6, InserAtTailColor);
         DrawRectangleRoundedLinesEx(insertTailButton, 0.3f, 6, 2.0f, GRAY);
         DrawTextEx(myFont, "> Tail", { headX, tailY }, fontSize, spacing, DARKBLUE);
 
         // Insert Pos
+        Color InserPosColor = insertPosHovered ? LIGHTGRAY : RAYWHITE;
         Vector2 posSize = MeasureTextEx(myFont, "> Pos", fontSize, spacing);
         float posX = insertPosButton.x + (insertPosButton.width - posSize.x) / 2;
         float posY = insertPosButton.y + (insertPosButton.height - posSize.y) / 2;
 
-        DrawRectangleRounded(insertPosButton, 0.3f, 6, WHITE);
+        DrawRectangleRounded(insertPosButton, 0.3f, 6, InserPosColor);
         DrawRectangleRoundedLinesEx(insertPosButton, 0.3f, 6, 2.0f, GRAY);
         DrawTextEx(myFont, "> Pos", { headX, posY }, fontSize, spacing, DARKBLUE);
     }
@@ -226,6 +262,34 @@ void LinkedListScreen::DrawOperationsPanel() {
         { cleanButton.x + (cleanButton.width - cleanSize.x) / 2,
           cleanButton.y + (cleanButton.height - cleanSize.y) / 2 },
         18, 2, DARKBLUE);
+
+
+
+
+    if (linkedlistState == InsertHeadState || linkedlistState == InsertTailState || linkedlistState == DeleteState
+        ) {
+        int fontSize = 24;
+        float spacing = 1.0f;
+
+        int textWidth = MeasureTextEx(myFont, "Value", fontSize, 1.f).x;
+        DrawTextEx(myFont, "Value", { 200, 350 }, fontSize, spacing, BLACK);
+        Value.draw();
+    }
+    else if (linkedlistState == InsertPosState) {
+        int fontSize = 24;
+        float spacing = 1.0f;
+
+        int textWidth = MeasureTextEx(myFont, "Value", fontSize, 1.f).x;
+        DrawTextEx(myFont, "Value", { 200, 350 }, fontSize, spacing, BLACK);
+        Value.draw();
+        textWidth = MeasureTextEx(myFont, "Index", fontSize, 1.f).x;
+        DrawTextEx(myFont, "Index", { 200, 400 }, fontSize, spacing, BLACK);
+        Index.draw();
+    }
+    
+    else if (linkedlistState == ReverseState) {}
+    else if (linkedlistState == ClearState) {}
+
 }
 
 void LinkedListScreen::Draw() {
