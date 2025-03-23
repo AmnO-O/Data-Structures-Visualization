@@ -9,6 +9,10 @@ HashTable::HashTable(int x) {
     for (int i = 0; i < sz; i++) htable[i] = -1; /// all slots = -1
 }
 
+void HashTable::clear() {
+    for (int i = 0; i < sz; i++) htable[i] = -1; 
+}
+
 vector <int> HashTable::getInsertionPath(int val) {
     if (sz <= 0) return vector <int> {};
     vector <int> path;

@@ -7,9 +7,9 @@ HashTableVisual::HashTableVisual() {
     //hashTableFont = LoadFontEx("Assets/Fonts/LilitaOne-Regular.ttf", 64, NULL, 0);
     //SetTextureFilter(hashTableFont.texture, TEXTURE_FILTER_BILINEAR);
 
-    //// Load font nhỏ 
-    //myFont = LoadFont("Assets/Fonts/LilitaOne-Regular.ttf");
-    //SetTextureFilter(myFont.texture, TEXTURE_FILTER_BILINEAR);
+    // Load font nhỏ 
+    smallFont = LoadFont("Assets/Fonts/LilitaOne-Regular.ttf");
+    SetTextureFilter(smallFont.texture, TEXTURE_FILTER_BILINEAR);
 
     //// Load font cho [INFO]
     //IN4Font = LoadFont("Assets/Fonts/Acme-Regular.ttf");
@@ -25,17 +25,25 @@ HashTableVisual::HashTableVisual() {
     Value = { {270, 350, 90, 30} };
     Value.fontSize = 22;
 
-    Empty = { { PANEL_PADDING + 200, 440, 130, 40 }, "Empty" };
+    File = { { PANEL_PADDING + 200, 440, 130, 40 }, "File" };
     Random = { { PANEL_PADDING + 200, 500, 130, 40 }, "Random" };
-    
+
     int rectWidth = 400;
     int rectHeight = 240;
     int posX = Screen_w - rectWidth;
     int posY = Screen_h - rectHeight;
 
-    info = { posX * 1.f, posY * 1.f, rectWidth * 1.f, rectHeight * 1.f};
+    info = { posX * 1.f, posY * 1.f, rectWidth * 1.f, rectHeight * 1.f };
+
+    loadFile.show("File Format Requirement",
+        "Please provide an array of positive int,\n"
+        "separated by spaces or commas.\n\n"
+        "Example: 10,20,30,40. ");
+
+    readFile = FileLoader();
 
     H = HashTable(40);
+    Size.text = to_string(40); 
 
     animation.active = false;
     animation.segmentDuration = 1.5f;
@@ -67,8 +75,30 @@ int HashTableVisual::handleEvent() {
 
     if (Input.isCreate) {
         Size.update();
+        if (File.update())
+            loadFile.display = true;
 
-        if ((Size.isEnter || Empty.update()) && Size.getDigit() > 0) {
+        /// read file
+        if (loadFile.update()) {
+            vector<unsigned char> fileContents = readFile.loadFile();
+            H.clear(); 
+            
+            long long num = -1; 
+
+            for (unsigned char c : fileContents) {
+                if (isdigit(c)) {
+                    if (num < 0) num = c + '0';
+                    else num = num * 10 + c + '0';
+                }
+                else {
+                    if (num >= 0) H.ins(num); 
+                    num = -1;
+                }
+            }
+            if (num >= 0) H.ins(num); 
+        }
+
+        if (Size.isEnter && Size.getDigit() > 0) {
             H = HashTable(Size.getDigit());
         }
 
@@ -273,13 +303,16 @@ void HashTableVisual::draw() {
 
     // "Operation"
     Color operationColor = isDarkMode ? DARKBLUE : DARKBLUE;
-    DrawTextEx(font, "Operations", { PANEL_PADDING + 10, 280 }, 26, 2, operationColor);
+    DrawTextEx(smallFont, "Operations", { PANEL_PADDING + 10, 280 }, 26, 2, operationColor);
 
-    Input.draw(font);
     DrawRectangleRec(info, panelColory);
 
     Color IN4Color = isDarkMode ? Color{ 199, 8, 40, 255 } : Color{ 199, 8, 40, 255 };
     DrawTextEx(infoFont, "[INFO]:", { (float)posX + 10, (float)posY + 10 }, 26, 2, IN4Color);
+
+    Input.draw(smallFont);
+
+    File.isChose = Random.isChose = 0;
 
     if (animation.active == false) H.draw(font);
 
@@ -287,18 +320,18 @@ void HashTableVisual::draw() {
         int fontSize = 24;
         float spacing = 1.0f;
 
-        string message = "\nConstruct a hash table \nwith Size = " + to_string(H.getSize()) + ".";
-        DrawTextEx(font, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
+        string message = "\nConstruct a hash table with Size = " + to_string(H.getSize()) + ".";
+        DrawTextEx(smallFont, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
 
 
-        DrawTextEx(font, "Size: ", { 200, 350 }, fontSize, spacing, BLACK);
+        DrawTextEx(smallFont, "Size: ", { 200, 350 }, fontSize, spacing, BLACK);
         Size.draw();
-        Empty.draw(font);
-        Random.draw(font);
+        File.draw(smallFont);
+        Random.draw(smallFont);
     }
     else if (Input.isInsert) {
-        string message = "\nInsert a new value to a \nhash table (Size =  " + to_string(H.getSize()) + ").";
-        DrawTextEx(font, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
+        string message = "\nInsert a new value to a hash table \n(Size =  " + to_string(H.getSize()) + ").";
+        DrawTextEx(smallFont, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
 
         if (animation.active)
             for (int i = 0; i < H.getSize(); i++) H.drawSlot(i, font, (animation.pathIndices[animation.currentPathIndex] == i));
@@ -346,8 +379,8 @@ void HashTableVisual::draw() {
         }
     }
     else if (Input.isRemove) {
-        string message = "\nRemove a value in a \nhash table (Size =  " + to_string(H.getSize()) + ").";
-        DrawTextEx(font, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
+        string message = "\nRemove a value in a hash table \n(Size =  " + to_string(H.getSize()) + ").";
+        DrawTextEx(smallFont, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
 
         if (animation.active)
             for (int i = 0; i < H.getSize(); i++) H.drawSlot(i, font, (animation.pathIndices[animation.currentPathIndex] == i), !(animation.pathIndices.back() == i && shrinkActive));
@@ -393,7 +426,7 @@ void HashTableVisual::draw() {
         }
     }
     else {
-        string message = "\nSearch for a value in a \nhash table (Size =  " + to_string(H.getSize()) + ").";
+        string message = "\nSearch for a value in a hash table \n(Size =  " + to_string(H.getSize()) + ").";
         DrawTextEx(font, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
 
         if (animation.active) H.draw(font);
@@ -433,8 +466,12 @@ void HashTableVisual::draw() {
             DrawRing(center, ringRadius, ringRadius + thickness, 0, 360, 100, ringColor); // 100 là số lượng phân đoạn
         }
     }
+
+    loadFile.draw(font);
 }
 
 HashTableVisual::~HashTableVisual() {
     UnloadFont(font);
+    UnloadFont(infoFont); 
+    UnloadFont(smallFont); 
 }

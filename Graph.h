@@ -19,6 +19,7 @@ struct GraphNode {
 		color = c;
 		selected = hovered = highlighted = false;
 	}
+
 	float getPulsingRadius(float baseRadius, float time, bool selected, bool hovered, bool highlighted) {
 		if (selected) {
 			return baseRadius * (1.0f + 0.2f * sinf(time * 4.0f));
@@ -59,6 +60,35 @@ struct GraphNode {
 			};
 		}
 		return baseColor;
+	}
+
+	void draw2() {
+		//DrawCircleV(position, radius, color); 
+		//DrawCircleLines(position.x, position.y, radius, WHITE);
+		//DrawText(label .c_str(),position.x - MeasureText(label.c_str(), 18) / 2,position.y - 9,18,WHITE);
+
+		// Get color variant based on state
+		Color displayColor = getColorVariant(color, selected, hovered, highlighted);
+
+		// Drop shadow
+		DrawCircleV(Vector2{ position.x + 3, position.y + 3 }, radius, ColorAlpha(DARKGRAY, 0.3f));
+
+		// Outer glow based on state
+		if (hovered || selected || highlighted) {
+			float glowRadius = radius + (selected ? 8 : (highlighted ? 6 : 4));
+			DrawCircleV(position, glowRadius, ColorAlpha(displayColor, 0.3f));
+		}
+
+		// Main node body
+		DrawCircleV(position, radius, displayColor);
+
+		// Inner highlight for 3D effect
+		DrawCircleV(Vector2{ position.x - radius * 0.3f, position.y - radius * 0.3f },
+			radius * 0.4f, ColorAlpha(WHITE, 0.3f));
+
+		// Draw node label
+		int textWidth = MeasureText(label.c_str(), 20);
+		DrawText(label.c_str(), position.x - textWidth / 2, position.y - 10, 20, WHITE);
 	}
 
 	void draw(float currentTime) {
@@ -140,7 +170,7 @@ private:
 	const float c_rep = 3000.0f;
 	const float c_spring = 0.05f;
 	const float desiredLen = 260.0f;
-	const float damping = 0.85f;
+	const float cooling_factor = 0.85f;
 	const float timeStep = 0.82f;
 
 	float len_frunch = 35;

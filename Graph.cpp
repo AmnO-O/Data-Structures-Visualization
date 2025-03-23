@@ -204,8 +204,8 @@ void Graph::updEades() {
         nodes[i].velocity.x += forces[i].x * timeStep;
         nodes[i].velocity.y += forces[i].y * timeStep;
 
-        nodes[i].velocity.x *= damping;
-        nodes[i].velocity.y *= damping;
+        nodes[i].velocity.x *= cooling_factor;
+        nodes[i].velocity.y *= cooling_factor;
 
         nodes[i].position.x += nodes[i].velocity.x * timeStep;
         nodes[i].position.y += nodes[i].velocity.y * timeStep;
@@ -359,7 +359,7 @@ void Graph::draw() {
     }
     float deltaTime = GetFrameTime();
 
-    for (GraphNode& node : nodes) node.draw(deltaTime);
+    for (GraphNode& node : nodes) node.draw2();
 }
 
 void GraphVisual::draw() {

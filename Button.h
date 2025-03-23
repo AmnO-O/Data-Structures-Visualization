@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Constants.h"
+#include "tinyfiledialogs.h"
 
 struct Button {
     Rectangle rect;           // Vị trí & kích thước nút
@@ -187,5 +188,51 @@ struct Instruction {
         okRect.draw(font);
 
         return false;
+    }
+};
+
+class FileLoader {
+public:
+    // Default folder for file dialog (e.g. "Input/")
+    std::string defaultPath;
+
+    // Constructor: you can pass a custom default folder, otherwise "Input/" is used.
+    FileLoader(const std::string& path = "Input/") : defaultPath(path) {}
+
+    // Loads file data into a vector of unsigned char.
+    // Returns an empty vector if loading failed or if user cancels.
+    std::vector<unsigned char> loadFile() {
+        // Open file dialog with the default folder.
+        const char* filePath = tinyfd_openFileDialog(
+            "Select file",      // Dialog title
+            defaultPath.c_str(),       // Default folder
+            0,                         // Number of filter patterns (0 = no filter)
+            nullptr,                   // Filter patterns array
+            nullptr,                   // Description of filter
+            0                          // 0: allow only one file selection
+        );
+
+        // If user cancels, return an empty vector.
+        if (!filePath) {
+            return std::vector<unsigned char>();
+        }
+
+        // Load binary file data.
+        int bytesRead = 0;  // For raylib, this can be int or unsigned int based on version.
+        unsigned char* fileData = LoadFileData(filePath, &bytesRead);
+
+        std::vector<unsigned char> data;
+        if (fileData) {
+            //std::cout << "Đã load file: " << filePath << "\n";
+            //std::cout << "Kích thước: " << bytesRead << " bytes\n";
+
+            // Copy fileData into the vector.
+            data.assign(fileData, fileData + bytesRead);
+            UnloadFileData(fileData);
+        }
+        else {
+            std::cout << "Can't load file from " << filePath << std::endl;
+        }
+        return data;
     }
 };

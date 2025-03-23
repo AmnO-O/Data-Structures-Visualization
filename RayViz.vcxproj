@@ -141,6 +141,7 @@
     <ClInclude Include="Menu.h" />
     <ClInclude Include="SettingScreen.h" />
     <ClInclude Include="TextBox.h" />
+    <ClInclude Include="tinyfiledialogs.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>
   <ItemGroup>
@@ -158,6 +159,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="SettingScreen.cpp" />
+    <ClCompile Include="tinyfiledialogs.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

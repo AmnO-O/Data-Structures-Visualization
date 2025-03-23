@@ -5,8 +5,8 @@ public:
     HashTableVisual();
     int handleEvent();
     void draw();
-    
-    Font font, infoFont;
+
+    Font font, infoFont, smallFont;
 
     ~HashTableVisual();
 
@@ -17,9 +17,11 @@ private:
     AnimationData animation;
     CommonButton Input;
     Rectangle info;
-    Button Random, Empty;
+    Button Random, File;
     TextBox Size;
+    Instruction loadFile;
     TextBoxCenter Value;
+    FileLoader readFile;
     HashTable H;
 
     bool popActive;

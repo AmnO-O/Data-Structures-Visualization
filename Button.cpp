@@ -49,3 +49,4 @@ void CommonButton::draw(Font font) {
 		//cButton[i].drawName(font);
 	}
 }
+
