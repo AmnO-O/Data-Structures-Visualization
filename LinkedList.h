@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include"TextBox.h"
 
 struct LLNode {
     int value;

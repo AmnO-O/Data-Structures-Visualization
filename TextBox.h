@@ -96,21 +96,33 @@ struct TextBox {
 
     void draw() {
         Color boxColor = focused ? YELLOW : LIGHTGRAY;
-
         int textY = bounds.y + (bounds.height - fontSize) / 2;
 
         DrawRectangleRec(bounds, boxColor);
         DrawRectangleLinesEx(bounds, 1, DARKGRAY);
 
         // DrawText(text.c_str(), bounds.x + 5, bounds.y + 5, 20, BLACK);
-        DrawTextEx(font, text.c_str(), { bounds.x + 5, bounds.y + 3 }, fontSize, 1, BLACK);
+        string displayText = text;
+        int textWidth = MeasureTextEx(font, text.c_str(), fontSize, 1).x;
+        if (textWidth > bounds.width - 10) {
+            // Duyệt từ cuối về đầu để lấy phần text vừa với chiều rộng
+            int start = text.size() - 1;
+            int cumWidth = 0;
+            for (int i = start; i >= 0; i--) {
+                int charWidth = MeasureTextEx(font, text.substr(i, 1).c_str(), fontSize, 1).x;
+                if (cumWidth + charWidth > bounds.width - 15 ) {
+                    displayText = text.substr(i + 1);
+                    break;
+                }
+                cumWidth += charWidth;
+            }
+        }
+
+        DrawTextEx(font, displayText.c_str(), { bounds.x + 5, textY/1.0f }, fontSize, 1, BLACK);
 
         if (focused && ((framesCounter / 20) % 2 == 0)) {
-            std::string textBeforeCaret = text.substr(0, pos);
-            int textWidth = MeasureTextEx(font, textBeforeCaret.c_str(), fontSize, 1).x;
-
-            DrawLine(bounds.x + 6 + textWidth, textY,
-                bounds.x + 6 + textWidth, textY + fontSize, BLACK);
+            int cursorX = bounds.x + 5 + MeasureTextEx(font, displayText.substr(0, pos).c_str(), fontSize, 1).x;
+            DrawLine(cursorX, textY, cursorX, textY + fontSize, BLACK);
         }
     }
 };

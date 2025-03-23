@@ -12,6 +12,10 @@ void LinkedListScreen::Init() {
     // Load font nhỏ 
     myFont = LoadFont("Assets/Fonts/LilitaOne-Regular.ttf");
     SetTextureFilter(myFont.texture, TEXTURE_FILTER_BILINEAR);
+
+
+    Value = { {270, 350, 90, 30} };
+
 }
 
 float LinkedListScreen::Clamp(float value, float minValue, float maxValue) {
@@ -73,7 +77,12 @@ void LinkedListScreen::Update(int& state) {
         // Nếu Insert đang mở, kiểm tra các nút con
         if (CheckCollisionPointRec(mouse, insertHeadButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             linkedList.InsertAtHead(rand() % 100);
-            showInsertOptions = false;
+            int fontSize = 24;
+            float spacing = 1.0f;
+
+            int textWidth = MeasureTextEx(myFont, "Value", fontSize, 1.f).x;
+            DrawTextEx(myFont, "Value", { 200, 350 }, fontSize, spacing, BLACK);
+            Value.draw();
         }
         if (CheckCollisionPointRec(mouse, insertTailButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             linkedList.InsertAtTail(rand() % 100);

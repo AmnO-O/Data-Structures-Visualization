@@ -7,6 +7,16 @@ class LinkedListScreen {
 private:
 #define PANEL_WIDTH 188  // Độ rộng bảng
 #define PANEL_PADDING 20 // Khoảng cách lề
+	
+	//Check which function user using
+	bool linkedlistState;
+	bool insertHeadState = 1;
+	bool insertPosState = 2;
+	bool insertTailState = 3;
+	bool DelteState = 4;
+	bool SearchState = 5;
+	bool ClearHeadState = 6;
+
 
 	Font linkedListFont;   // Font chữ cho màn hình Linked List
 	float insertOptionsOffset = 0.0f; // Offset để animation trượt xuống
@@ -20,6 +30,8 @@ private:
 	float insertHeadAlpha = 1.0f;  // Alpha của nút Head
 	float insertTailAlpha = 1.0f;  // Alpha của nút Tail
 	float insertPosAlpha = 1.0f;   // Alpha của nút Pos
+
+	TextBoxCenter Value;
 
 	// Vị trí của Panel
 	Rectangle insertButton = { PANEL_PADDING + 8, 330, 130, 40 };
