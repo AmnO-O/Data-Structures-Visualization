@@ -35,17 +35,17 @@ void CommonButton::update() {
 
 void CommonButton::draw(Font font) {
 	DrawRectangleRec(rect, color);
-	Texture2D activated = LoadTexture("Assets/Images/dark-activated.png");
 
 	for (int i = 0; i < 4; i++) {
-		if (cButton[i].isChose) {
-			DrawTextureEx(activated, { cButton[i].rect.x, cButton[i].rect.y }, 0.0f, 1.f, WHITE);
-		}
-		else if (cButton[i].isHovered) {
-			cButton[i].drawRect();
-		}
+		cButton[i].draw(font);
 
-		cButton[i].drawName(font);
+		//if (cButton[i].isChose) {
+
+		//}
+		//else if (cButton[i].isHovered) {
+		//	cButton[i].drawRect();
+		//}
+
+		//cButton[i].drawName(font);
 	}
 }
-

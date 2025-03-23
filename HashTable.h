@@ -112,12 +112,12 @@ private:
     float AnimationTime = 0.f;
     float AnimationDuration = 0.2f;
 
-    int htable[700];
+    int htable[800];
     int sz;
     int nodesPerRow = 10;
-    int slotWidth = 80;
-    int slotHeight = 80;
+    int slotWidth = 70;
+    int slotHeight = 70;
     int margin = 30;
-    int startX = 490;
-    int startY = 180;
+    int startX = 480;
+    int startY = 150;
 };
