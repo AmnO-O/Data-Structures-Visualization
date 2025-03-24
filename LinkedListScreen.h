@@ -75,6 +75,7 @@ private:
 	bool isReverse = false;
 	bool isClean = false;
 
+	bool entered = false;
 	bool animating = false;   // Đang chạy animation hay không
 	float timer = 0.0f;       // Đếm thời gian animation
 	float duration = 0.5f;    // Thời gian chạy animation

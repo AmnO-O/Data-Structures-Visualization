@@ -153,6 +153,7 @@ void LinkedListScreen::Update(int& state) {
             // Kích hoạt animation sau mỗi lần thay đổi
             isHeadInserting = true;
             timer = 0.0f;
+            entered = true;
         }
     }
     else if (linkedlistState == InsertTailState) {
@@ -165,6 +166,7 @@ void LinkedListScreen::Update(int& state) {
             // Kích hoạt animation sau mỗi lần thay đổi
             isTailInserting = true;
             timer = 0.0f;
+            entered = true;
         }
     }
 
@@ -182,6 +184,7 @@ void LinkedListScreen::Update(int& state) {
             // Kích hoạt animation sau mỗi lần thay đổi
             isPosInserting = true;
             timer = 0.0f;
+            entered = true;
         }
     }
     else if (linkedlistState == DeleteState) {
@@ -190,10 +193,11 @@ void LinkedListScreen::Update(int& state) {
             valueDelete = stoi(Value.outputMessage);
             Value.isEnter = false; // Reset trạng thái ENTER 
             Value.outputMessage = "";
-            if (linkedList.SearchNode(stoi(Value.outputMessage))) {
+            if (linkedList.SearchNode(valueDelete)) {
                 // Kích hoạt animation sau mỗi lần thay đổi
                 isDeleting = true;
                 timer = 0.0f;
+                entered = true;
             }
         }
     }
@@ -201,13 +205,16 @@ void LinkedListScreen::Update(int& state) {
     // Cập nhật tiến trình animation
     if (isHeadInserting || isTailInserting || isPosInserting || isDeleting || isReverse || isClean) {
         timer += GetFrameTime();
-        if (timer >= duration) {
+        if (entered) {
             if (isHeadInserting)  linkedList.InsertAtHead(valueInsert);
             else if (isTailInserting)  linkedList.InsertAtTail(valueInsert);
             else if (isPosInserting)  linkedList.InsertAtPosition(valueInsert, indexInsert);
-            else if (isDeleting)  linkedList.DeleteValue(valueDelete);
             else if (isReverse)  linkedList.ReverseList();
             else if (isClean)  linkedList.ClearList();
+            entered = !entered;
+        }
+        if (timer >= duration) {
+            if (isDeleting)  linkedList.DeleteValue(valueDelete);
 
             isHeadInserting = isTailInserting = isPosInserting = isDeleting = isReverse = isClean = false;
             timer = 0.0f;  // Reset lại bộ đếm thời gian 
@@ -391,27 +398,34 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
     LLNode* current = linkedList.head;
     int index = 0;
 
+    Vector2 prevPos = { -1, -1 };  // Lưu vị trí của node trước đó
+
     while (current != nullptr) {
-        Color nodeColor = Color{ 103, 135, 163, 225 }; // Màu mặc định của Node 
-        Color borderColor = WHITE; // Viền mặc định của Node 
+        Color nodeColor = WHITE; // Màu mặc định của Node 
+        Color borderColor = BLACK; // Viền mặc định của Node 
 
         Vector2 targetPos = { startPos.x + index * nodeSpacing, startPos.y };
 
-        if (isHeadInserting && index == 0) {
+        if (isHeadInserting) {
             // Node mới chèn vào đầu linked list
-            targetPos.x -= (1.0f - timer / duration) * nodeSpacing;
+            targetPos.x -= (1.0f - animationProgress) * nodeSpacing;
+            if (index == 0) {
+                // Node mới sẽ đi xuống
+                targetPos.y = startPos.y - (1.0f - animationProgress) * nodeSpacing;
+            }
         }
         else if (isTailInserting && current->next == nullptr) {
             // Node mới chèn vào cuối linked list
-            targetPos.x += (1.0f - timer / duration) * nodeSpacing;
+            targetPos.x += (1.0f - animationProgress) * nodeSpacing;
         }
         else if (isPosInserting && index == indexInsert) {
             // Node mới chèn vào đúng vị trí indexInsert
-            targetPos.y += (1.0f - timer / duration) * nodeSpacing;
+            targetPos.y += (1.0f - animationProgress) * nodeSpacing;
         }
         else if (isDeleting && current->value == valueDelete) {
-            DrawCircle(targetPos.x, targetPos.y, 30, Fade(RED, 1.0f - timer / duration));
-            current = current->next;
+            DrawCircle(targetPos.x, targetPos.y, 30, Fade(RED, 1.0f - animationProgress));
+            LLNode* nextNode = current->next;
+            current = nextNode;
             index++;
             continue;
         }
@@ -424,12 +438,23 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
         // Vẽ node chính
         DrawCircle(targetPos.x, targetPos.y, 30, nodeColor);
         // Vẽ giá trị trong node
-        DrawText(TextFormat("%d", current->value), targetPos.x - 10, targetPos.y - 10, 20, WHITE);
+        DrawText(TextFormat("%d", current->value), targetPos.x - 10, targetPos.y - 10, 20, BLACK);
 
         // Vẽ mũi tên (đường nối) giữa các node
-        if (current->next != nullptr) {
-            DrawLine(targetPos.x + 30, targetPos.y, targetPos.x + nodeSpacing - 30, targetPos.y, WHITE);
+        if (prevPos.x != -1) {
+            Vector2 startLine = { prevPos.x + 30, prevPos.y }; // Cạnh phải của node trước
+            Vector2 endLine = { targetPos.x - 30, targetPos.y }; // Cạnh trái của node sau
+
+            if (isHeadInserting && index == 1) {
+                // Khi chèn vào đầu, luôn nối từ node thứ hai (node cũ) đến node mới
+                startLine = { targetPos.x - 30, targetPos.y }; // Cạnh trái của node mới
+                endLine = { prevPos.x + 30, prevPos.y };       // Cạnh phải của node cũ
+            }
+
+            DrawLine(startLine.x, startLine.y, endLine.x, endLine.y, BLACK);
         }
+
+        prevPos = targetPos; // Lưu vị trí của node hiện tại để nối với node tiếp theo
 
         current = current->next;
         index++;
