@@ -83,6 +83,11 @@ private:
 	int valueInsert;
 	int valueDelete;
 	int indexInsert;
+	int valueSearch;
+
+
+	LLNode* SearchNode;
+	LLNode* currentSearchNode;
 
 	// Hàm reset lại nội dung trong textBox 
 	void handleButtonClick(SelectedButton newButton, TextBox& textBox);

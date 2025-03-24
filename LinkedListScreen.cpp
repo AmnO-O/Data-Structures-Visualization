@@ -205,6 +205,21 @@ void LinkedListScreen::Update(int& state) {
             }
         }
     }
+    else if (linkedlistState == SearchState) {
+        Value.update();
+        if (Value.isEnter && Value.outputMessage != "") {
+            valueSearch = stoi(Value.outputMessage);
+            Value.isEnter = false; // Reset trạng thái ENTER 
+            Value.outputMessage = "";
+
+            // Kích hoạt animation sau mỗi lần thay đổi
+            isSearch = true;
+            timer = 0.0f;
+            entered = true;
+        }
+
+    }
+    if (linkedlistState != SearchState) SearchNode = NULL;
 
     // Cập nhật tiến trình animation
     if (isHeadInserting || isTailInserting || isPosInserting || isDeleting || isSearch || isClean) {
@@ -213,15 +228,23 @@ void LinkedListScreen::Update(int& state) {
             if (isHeadInserting)  linkedList.InsertAtHead(valueInsert);
             else if (isTailInserting)  linkedList.InsertAtTail(valueInsert);
             else if (isPosInserting)  linkedList.InsertAtPosition(valueInsert, indexInsert);
-            else if (isSearch) {}
+            else if (isSearch) {
+                SearchNode = linkedList.SearchNode(valueSearch);
+                currentSearchNode = linkedList.head;
+            }
             else if (isClean)  linkedList.ClearList();
             entered = !entered;
         }
         if (timer >= duration) {
             if (isDeleting)  linkedList.DeleteValue(valueDelete);
-
-            isHeadInserting = isTailInserting = isPosInserting = isDeleting = isSearch = isClean = false;
-            timer = 0.0f;  // Reset lại bộ đếm thời gian 
+            if (isSearch && currentSearchNode != SearchNode) {
+                timer = 0.0f;
+                currentSearchNode = currentSearchNode->next;
+            }
+            else {
+                isHeadInserting = isTailInserting = isPosInserting = isDeleting = isSearch = isClean = false;
+                timer = 0.0f;  // Reset lại bộ đếm thời gian 
+            }
         }
     }
 }
@@ -339,7 +362,7 @@ void LinkedListScreen::DrawOperationsPanel() {
           cleanButton.y + (cleanButton.height - cleanSize.y) / 2 },
         18, 2, DARKBLUE);
 
-    if (linkedlistState == InsertHeadState || linkedlistState == InsertTailState || linkedlistState == DeleteState) {
+    if (linkedlistState == InsertHeadState || linkedlistState == InsertTailState || linkedlistState == DeleteState || linkedlistState == SearchState) {
         int fontSize = 24;
         float spacing = 1.0f;
 
@@ -358,7 +381,6 @@ void LinkedListScreen::DrawOperationsPanel() {
         DrawTextEx(myFont, "Index", { 200, 400 }, fontSize, spacing, BLACK);
         Index.draw();
     }
-    else if (linkedlistState == SearchState) {}
     else if (linkedlistState == ClearState) {}
 }
 
@@ -433,14 +455,21 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
             index++;
             continue;
         }
-        else if (isSearch) {
-
-        }
+        
+        
 
         // Vẽ viền (Border)
         DrawCircle(targetPos.x, targetPos.y, 32, borderColor);
         // Vẽ node chính
-        DrawCircle(targetPos.x, targetPos.y, 30, nodeColor);
+        if ( isSearch && current == currentSearchNode && currentSearchNode != SearchNode) {
+            DrawCircle(targetPos.x, targetPos.y, 30, ORANGE);
+        }
+        else if (linkedlistState == SearchState && current == currentSearchNode && currentSearchNode == SearchNode) {
+            DrawCircle(targetPos.x, targetPos.y, 30, RED);
+        }
+        else DrawCircle(targetPos.x, targetPos.y, 30, nodeColor);
+
+
         // Vẽ giá trị trong node
         DrawText(TextFormat("%d", current->value), targetPos.x - 10, targetPos.y - 10, 20, BLACK);
 
