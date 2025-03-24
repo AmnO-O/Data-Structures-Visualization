@@ -3,6 +3,7 @@
 #include "SettingScreen.h"
 #include "LinkedList.h"
 #include "TextBox.h"
+#include <unordered_set>
 
 
 enum SelectedButton {
@@ -21,6 +22,8 @@ private:
 #define PANEL_PADDING 20 // Khoảng cách lề
 
 	Font linkedListFont;   // Font chữ cho màn hình Linked List
+	Font valueFont;
+	Font IN4Font;
 	float insertOptionsOffset = 0.0f; // Offset để animation trượt xuống
 	float insertAnimationTime = 0.0f;  // Offset để animation "Head", "Tail", "Pos" trượt lên
 
@@ -85,10 +88,12 @@ private:
 	int indexInsert;
 	int valueSearch;
 
-
 	LLNode* SearchNode;
 	LLNode* currentSearchNode;
 
+	int posX, posY;   // Vị trí của IN4
+	string infoMessage = "";   // Lưu dòng chữ INFO
+	float fadeProgress = 1.0f;   // Fade linked list khi Clean Linked List 
 	// Hàm reset lại nội dung trong textBox 
 	void handleButtonClick(SelectedButton newButton, TextBox& textBox);
 public:

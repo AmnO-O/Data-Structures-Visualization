@@ -11,6 +11,7 @@ struct TextBox {
 
     int framesCounter;     // Blink blink 
     bool isEnter = false;
+    bool tt = false;
 
     Font font = LoadFontEx("Assets/Fonts/PublicSans-bold.ttf", 65, 0, 0);
     int fontSize = 20;
@@ -84,6 +85,13 @@ struct TextBox {
         }
 
         framesCounter++;
+    }
+
+    void sss() {
+        if (tt == 1) {
+            outputMessage = text;
+            tt = 0;
+        }
     }
 
     int getDigit() {

@@ -36,7 +36,6 @@ void LinkedList::InsertAtPosition(int value, int position) {
     }
 }
 
-// Xóa giá trị k nếu có
 void LinkedList::DeleteValue(int value) {
     // Xóa các node đầu tiên nếu có giá trị cần xóa
     while (head && head->value == value) {
@@ -72,6 +71,19 @@ void LinkedList::ReverseList() {
         current = next;
     }
     head = prev;
+}
+
+// Trả về size của Linked List
+int LinkedList::getSize() {
+    if (!head) return 0;
+
+    int size = 0;
+    LLNode* current = head;
+    while (current) {
+        size++;
+        current = current->next;
+    }
+    return size;
 }
 
 // Tìm kiếm node có giá trị k

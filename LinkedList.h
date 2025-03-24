@@ -16,6 +16,7 @@ public:
     void InsertAtPosition(int value, int position);
     void DeleteValue(int value);
     void ReverseList();
+    int getSize();
     void ClearList();
     LLNode* SearchNode(int value);
 };
