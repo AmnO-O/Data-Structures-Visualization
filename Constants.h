@@ -25,7 +25,6 @@ const int Trie_state = 2;
 const int Graph_state = 3;
 const int HowToUse_state = 4;
 
-
 const string pathFont = "Assets/Fonts/";
 const string pathImage = "Assets/Images/";
 

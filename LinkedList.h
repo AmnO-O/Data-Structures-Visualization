@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include"TextBox.h"
 
 struct LLNode {
     int value;
@@ -8,8 +7,9 @@ struct LLNode {
 
 class LinkedList {
 private:
-    LLNode* head = nullptr; // Danh sách liên kết chính
 public:
+    LLNode* head = nullptr; // Danh sách liên kết chính
+
     // Các hàm của danh sách liên kết
     void InsertAtHead(int value);
     void InsertAtTail(int value);
@@ -18,5 +18,4 @@ public:
     void ReverseList();
     void ClearList();
     LLNode* SearchNode(int value);
-    void DrawLinkedList(LLNode* head, int startX, int startY);
 };

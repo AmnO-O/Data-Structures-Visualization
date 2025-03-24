@@ -110,7 +110,7 @@ struct TextBox {
             int cumWidth = 0;
             for (int i = start; i >= 0; i--) {
                 int charWidth = MeasureTextEx(font, text.substr(i, 1).c_str(), fontSize, 1).x;
-                if (cumWidth + charWidth > bounds.width - 15 ) {
+                if (cumWidth + charWidth > bounds.width - 15) {
                     displayText = text.substr(i + 1);
                     break;
                 }
@@ -118,7 +118,7 @@ struct TextBox {
             }
         }
 
-        DrawTextEx(font, displayText.c_str(), { bounds.x + 5, textY/1.0f }, fontSize, 1, BLACK);
+        DrawTextEx(font, displayText.c_str(), { bounds.x + 5, textY / 1.0f }, fontSize, 1, BLACK);
 
         if (focused && ((framesCounter / 20) % 2 == 0)) {
             int cursorX = bounds.x + 5 + MeasureTextEx(font, displayText.substr(0, pos).c_str(), fontSize, 1).x;
@@ -137,7 +137,7 @@ struct TextBoxCenter { /// put the cursor in the center
 
     int framesCounter;     // Blink blink 
     bool isEnter = false;
-    Font font = LoadFontEx("Assets/Fonts/PublicSans-bold.ttf", 65, 0, 0);
+    Font font = LoadFontEx("Assets/Fonts/LilitaOne-Regular.ttf", 65, 0, 0);
     int fontSize = 20;
 
     void update() {
