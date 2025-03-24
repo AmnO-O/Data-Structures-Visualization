@@ -76,6 +76,7 @@ struct TextBox {
             if (IsKeyPressed(KEY_ENTER)) {
                 isEnter = true;
                 outputMessage = text;
+                text = "";
                 focused = 0;
                 framesCounter = 0;
                 return;

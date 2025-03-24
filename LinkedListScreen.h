@@ -11,7 +11,7 @@ enum SelectedButton {
 	INSERTTAIL,
 	INSERTPOS,
 	DELETE,
-	REVERSE,
+	SEARCH,
 	CLEAN
 };
 
@@ -27,7 +27,7 @@ private:
 	bool showInsertOptions = false;
 	bool insertHovered = false;
 	bool deleteHovered = false;
-	bool reverseHovered = false;
+	bool searchHovered = false;
 	bool cleanHovered = false;
 	bool insertAtHeadHovered = false;
 	bool insertAtTailHovered = false;
@@ -40,7 +40,7 @@ private:
 	// Vị trí của Panel
 	Rectangle insertButton = { PANEL_PADDING + 8, 330, 130, 40 };
 	Rectangle deleteButton = { PANEL_PADDING + 8, 390, 130, 40 };
-	Rectangle reverseButton = { PANEL_PADDING + 8, 450, 130, 40 };
+	Rectangle searchButton = { PANEL_PADDING + 8, 450, 130, 40 };
 	Rectangle cleanButton = { PANEL_PADDING + 8, 510, 130, 40 };
 
 	// Nút con của Insert
@@ -56,7 +56,7 @@ private:
 	int InsertPosState = 2;
 	int InsertTailState = 3;
 	int DeleteState = 4;
-	int ReverseState = 5;
+	int SearchState = 5;
 	int ClearState = 6;
 
 	SelectedButton currentButton; // Xác định operation đang sử dụng
@@ -72,7 +72,7 @@ private:
 	bool isTailInserting = false;
 	bool isPosInserting = false;
 	bool isDeleting = false;
-	bool isReverse = false;
+	bool isSearch = false;
 	bool isClean = false;
 
 	bool entered = false;

@@ -38,23 +38,24 @@ void LinkedList::InsertAtPosition(int value, int position) {
 
 // Xóa giá trị k nếu có
 void LinkedList::DeleteValue(int value) {
-    if (!head) return;
-    if (head->value == value) {
+    // Xóa các node đầu tiên nếu có giá trị cần xóa
+    while (head && head->value == value) {
         LLNode* temp = head;
         head = head->next;
         delete temp;
-        return;
     }
 
+    // Duyệt danh sách và xóa các node có giá trị value
     LLNode* temp = head;
-    while (temp->next && temp->next->value != value) {
-        temp = temp->next;
-    }
-
-    if (temp->next) {
-        LLNode* toDelete = temp->next;
-        temp->next = temp->next->next;
-        delete toDelete;
+    while (temp && temp->next) {
+        if (temp->next->value == value) {
+            LLNode* toDelete = temp->next;
+            temp->next = temp->next->next;
+            delete toDelete;
+        }
+        else {
+            temp = temp->next;
+        }
     }
 }
 

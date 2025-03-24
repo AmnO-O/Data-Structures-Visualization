@@ -50,8 +50,8 @@ void LinkedListScreen::Update(int& state) {
     // Kiểm tra hover vào nút "Delete"
     deleteHovered = CheckCollisionPointRec(mouse, deleteButton);
 
-    // Kiểm tra hover vào nút "Reverse"
-    reverseHovered = CheckCollisionPointRec(mouse, reverseButton);
+    // Kiểm tra hover vào nút "Search"
+    searchHovered = CheckCollisionPointRec(mouse, searchButton);
 
     // Kiểm tra hover vào nút "Clean"
     cleanHovered = CheckCollisionPointRec(mouse, cleanButton);
@@ -81,15 +81,15 @@ void LinkedListScreen::Update(int& state) {
         insertHeadAlpha = SmoothStep(insertHeadAlpha, 0.0f, 0.006f);  // Giảm alpha của Head từ từ
         insertTailAlpha = SmoothStep(insertTailAlpha, 0.0f, 0.006f);  // Giảm alpha của Tail từ từ
         insertPosAlpha = SmoothStep(insertPosAlpha, 0.0f, 0.006f);    // Giảm alpha của Pos từ từ
-        insertOptionsOffset = SmoothStep(insertOptionsOffset, 100.0f, 0.003f);
+        insertOptionsOffset = SmoothStep(insertOptionsOffset, 100.0f, 0.02f);
 
-        // Cập nhật vị trí của các nút Delete, Reverse, Clean
+        // Cập nhật vị trí của các nút Delete, search, Clean
         insertHeadButton.y = insertButton.y + 45;
         insertTailButton.y = insertButton.y + 80;
         insertPosButton.y = insertButton.y + 115;
 
         deleteButton.y = 380 + insertOptionsOffset;
-        reverseButton.y = 430 + insertOptionsOffset;
+        searchButton.y = 430 + insertOptionsOffset;
         cleanButton.y = 480 + insertOptionsOffset;
 
         // Nếu Insert đang mở, kiểm tra các nút con
@@ -116,11 +116,11 @@ void LinkedListScreen::Update(int& state) {
         insertPosAlpha = 0.0f;   // Giảm alpha của Pos ngay lập tức
 
         // Cập nhật vị trí của các nút khi menu đóng
-        insertOptionsOffset = SmoothStep(insertOptionsOffset, 0.0f, 0.002f); // Menu sẽ thu lại khi đóng
+        insertOptionsOffset = SmoothStep(insertOptionsOffset, 0.0f, 0.02f); // Menu sẽ thu lại khi đóng
 
         // Nếu menu đã đóng xong, reset lại các nút khác
         deleteButton.y = 380 + insertOptionsOffset;
-        reverseButton.y = 430 + insertOptionsOffset;
+        searchButton.y = 430 + insertOptionsOffset;
         cleanButton.y = 480 + insertOptionsOffset;
     }
 
@@ -131,10 +131,10 @@ void LinkedListScreen::Update(int& state) {
         currentButton = DELETE;
     }
 
-    // Kiểm tra nút Reverse
-    if (CheckCollisionPointRec(mouse, reverseButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        linkedlistState = ReverseState;
-        currentButton = REVERSE;
+    // Kiểm tra nút search
+    if (CheckCollisionPointRec(mouse, searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        linkedlistState = SearchState;
+        currentButton = SEARCH;
     }
 
     // Kiểm tra nút Clean 
@@ -173,6 +173,10 @@ void LinkedListScreen::Update(int& state) {
     else if (linkedlistState == InsertPosState) {
         Value.update();
         Index.update();
+        if (Value.isEnter) Index.outputMessage = Index.text;
+
+        if (Index.isEnter) Value.outputMessage = Value.text;
+
         if (Value.outputMessage != "" && Index.outputMessage != "" && (Value.isEnter || Index.isEnter)) {
             valueInsert = stoi(Value.outputMessage);
             indexInsert = stoi(Index.outputMessage);
@@ -203,20 +207,20 @@ void LinkedListScreen::Update(int& state) {
     }
 
     // Cập nhật tiến trình animation
-    if (isHeadInserting || isTailInserting || isPosInserting || isDeleting || isReverse || isClean) {
+    if (isHeadInserting || isTailInserting || isPosInserting || isDeleting || isSearch || isClean) {
         timer += GetFrameTime();
         if (entered) {
             if (isHeadInserting)  linkedList.InsertAtHead(valueInsert);
             else if (isTailInserting)  linkedList.InsertAtTail(valueInsert);
             else if (isPosInserting)  linkedList.InsertAtPosition(valueInsert, indexInsert);
-            else if (isReverse)  linkedList.ReverseList();
+            else if (isSearch) {}
             else if (isClean)  linkedList.ClearList();
             entered = !entered;
         }
         if (timer >= duration) {
             if (isDeleting)  linkedList.DeleteValue(valueDelete);
 
-            isHeadInserting = isTailInserting = isPosInserting = isDeleting = isReverse = isClean = false;
+            isHeadInserting = isTailInserting = isPosInserting = isDeleting = isSearch = isClean = false;
             timer = 0.0f;  // Reset lại bộ đếm thời gian 
         }
     }
@@ -312,15 +316,15 @@ void LinkedListScreen::DrawOperationsPanel() {
           deleteButton.y + (deleteButton.height - deleteSize.y) / 2 },
         20, 2, DARKBLUE);
 
-    // Vẽ nút Reverse
-    Color ReverseColor = reverseHovered ? LIGHTGRAY : RAYWHITE;
-    if (currentButton == REVERSE) ReverseColor = { 250, 228, 49, 255 };
-    DrawRectangleRounded(reverseButton, 0.2f, 4, ReverseColor);
-    DrawRectangleRoundedLinesEx(reverseButton, 0.2f, 4, 2.0f, GRAY);
-    Vector2 reverseSize = MeasureTextEx(myFont, "Reverse", 20, 2);
-    DrawTextEx(myFont, "Reverse",
-        { reverseButton.x + (reverseButton.width - reverseSize.x) / 2,
-          reverseButton.y + (reverseButton.height - reverseSize.y) / 2 },
+    // Vẽ nút Search
+    Color SearchColor = searchHovered ? LIGHTGRAY : RAYWHITE;
+    if (currentButton == SEARCH) SearchColor = { 250, 228, 49, 255 };
+    DrawRectangleRounded(searchButton, 0.2f, 4, SearchColor);
+    DrawRectangleRoundedLinesEx(searchButton, 0.2f, 4, 2.0f, GRAY);
+    Vector2 searchSize = MeasureTextEx(myFont, "Search", 20, 2);
+    DrawTextEx(myFont, "Search",
+        { searchButton.x + (searchButton.width - searchSize.x) / 2,
+          searchButton.y + (searchButton.height - searchSize.y) / 2 },
         20, 2, DARKBLUE);
 
     // Vẽ nút Clean
@@ -354,7 +358,7 @@ void LinkedListScreen::DrawOperationsPanel() {
         DrawTextEx(myFont, "Index", { 200, 400 }, fontSize, spacing, BLACK);
         Index.draw();
     }
-    else if (linkedlistState == ReverseState) {}
+    else if (linkedlistState == SearchState) {}
     else if (linkedlistState == ClearState) {}
 }
 
@@ -429,7 +433,7 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
             index++;
             continue;
         }
-        else if (isReverse) {
+        else if (isSearch) {
 
         }
 
