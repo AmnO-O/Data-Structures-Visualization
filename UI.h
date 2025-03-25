@@ -6,6 +6,7 @@
 #include "AboutScreen.h"
 #include "Helper.h"
 #include "GraphVisual.h"
+#include "AVLTreeScreen.h"
 
 class Visualizer {
 public:

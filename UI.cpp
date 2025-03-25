@@ -44,6 +44,7 @@ void Visualizer::Process() {
 	auto hashtable = make_unique<HashTableVisual>();
 	auto linkedlist = make_unique<LinkedListScreen>();
 	auto graph = make_unique<GraphVisual>();
+	auto avl = make_unique<AVLTreeScreen>();
 
 
 	about->Init();
@@ -75,6 +76,8 @@ void Visualizer::Process() {
 
 		else if (Program_state == HowToUse_state)
 			helper->Update(Program_state);
+		else if (Program_state == Trie_state)
+			avl->Update(Program_state);
 
 
 		/// switch theme
@@ -116,6 +119,8 @@ void Visualizer::Process() {
 		if (Program_state == HashTable_state) hashtable->draw();
 		else if (Program_state == LinkedList_state) linkedlist->Draw();
 		else if (Program_state == Graph_state) graph->draw();
+		else if (Program_state == Trie_state) avl->Draw();
+
 
 		else if (Program_state == About_state) about->Draw();
 		else if (Program_state == Settings_state) setting->Draw();
