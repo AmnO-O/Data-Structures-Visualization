@@ -50,3 +50,54 @@ void CommonButton::draw(Font font) {
 	}
 }
 
+
+GraphButton::GraphButton() {
+	isAddedge = isRemove = isMst = 0;
+	isCreate = 1;
+
+	rect = { PANEL_PADDING + 8, 330, 130, 40 };
+	color = DARKBLUE;
+
+	cButton.push_back({ { PANEL_PADDING + 8, 330, 130, 40 }, "Create", btnNormal, btnHover, btnClick });
+	cButton.push_back({ { PANEL_PADDING + 8, 390, 130, 40 }, "Add Edge", btnNormal, btnHover, btnClick });
+	cButton.push_back({ { PANEL_PADDING + 8, 450, 130, 40 }, "Delete Edge", btnNormal, btnHover, btnClick });
+	cButton.push_back({ { PANEL_PADDING + 8, 510, 130, 40 }, "MST (Prim)", btnNormal, btnHover, btnClick });
+
+
+	cButton[0].isChose = 1;
+}
+
+void GraphButton::update() {
+	for (int i = 0; i < 4; i++) {
+		if (cButton[i].update()) {
+			for (int j = 0; j < 4; j++) cButton[j].isChose = 0;
+			cButton[i].isChose = 1;
+			isAddedge = isRemove = isMst = isCreate = 0;
+
+			if (i == 0) isCreate = 1;
+			else if (i == 1) isAddedge = 1;
+			else if (i == 2) isRemove = 1;
+			else isMst = 1;
+		}
+	}
+}
+
+
+void GraphButton::draw(Font font) {
+	DrawRectangleRec(rect, color);
+
+	for (int i = 0; i < 4; i++) {
+		cButton[i].draw(font);
+
+		//if (cButton[i].isChose) {
+
+		//}
+		//else if (cButton[i].isHovered) {
+		//	cButton[i].drawRect();
+		//}
+
+		//cButton[i].drawName(font);
+	}
+}
+
+

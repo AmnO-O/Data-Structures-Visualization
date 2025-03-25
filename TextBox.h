@@ -146,7 +146,7 @@ struct TextBoxCenter { /// put the cursor in the center
 
     int framesCounter;     // Blink blink 
     bool isEnter = false;
-    Font font = LoadFontEx("Assets/Fonts/LilitaOne-Regular.ttf", 65, 0, 0);
+    Font font = LoadFontEx("Assets/Fonts/PublicSans-bold.ttf", 65, 0, 0);
     int fontSize = 20;
 
     void update() {
@@ -232,12 +232,18 @@ struct TextBoxCenter { /// put the cursor in the center
         Color boxColor = focused ? YELLOW : LIGHTGRAY;
 
         int textY = bounds.y + (bounds.height - fontSize) / 2;
+        // Vẽ ô text box với góc bo
+        float roundness = 0.25f;   // Độ bo tròn (0.0 -> 1.0)
+        int segments = 6;         // Số segment để vẽ góc cong
+        float outlineThickness = 2.0f;
 
-        DrawRectangleRec(bounds, boxColor);
-        DrawRectangleLinesEx(bounds, 1, DARKGRAY);
+        DrawRectangleRounded(bounds, roundness, segments, boxColor);
+        DrawRectangleRoundedLinesEx(bounds, roundness, segments, outlineThickness, DARKGRAY);
+
 
         int textWidth = MeasureTextEx(font, text.c_str(), fontSize, 1).x;
-        DrawTextEx(font, text.c_str(), { bounds.x - textWidth / 2 + bounds.width / 2, bounds.y + 3 }, fontSize, 1, BLACK);
+        int textHeight = MeasureTextEx(font, text.c_str(), fontSize, 1).y;
+        DrawTextEx(font, text.c_str(), { bounds.x + (bounds.width - textWidth) / 2, bounds.y + (bounds.height - textHeight) / 2 }, fontSize, 1, BLACK);
 
         if (focused && ((framesCounter / 20) % 2 == 0)) {
             std::string textBeforeCaret = text.substr(0, pos);

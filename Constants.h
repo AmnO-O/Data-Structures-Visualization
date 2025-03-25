@@ -25,11 +25,12 @@ const int Trie_state = 2;
 const int Graph_state = 3;
 const int HowToUse_state = 4;
 
+
 const string pathFont = "Assets/Fonts/";
 const string pathImage = "Assets/Images/";
 
-const Color lightmode = { 205, 201, 250, 255 };
-const Color darkmode = { 138, 136, 164, 255 };
+const Color lightmode = { 252, 243, 227, 255 };
+const Color darkmode = { 1, 61, 90, 255 };
 const Color btnHoverColor = { 100, 150, 255, 255 };
 const Color btnNormalColor = { 200, 200, 200, 255 };
 
@@ -43,7 +44,8 @@ int random(int l, int r);
 
 extern bool isDarkMode;
 
-
 /*
 lavander: 189, 224, 254
+khoai mon dark: { 138, 136, 164, 255 };
+khoai mon light: { 205, 201, 250, 255 };
 */

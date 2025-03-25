@@ -133,6 +133,7 @@
     <ClInclude Include="Button.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Graph.h" />
+    <ClInclude Include="GraphVisual.h" />
     <ClInclude Include="HashTable.h" />
     <ClInclude Include="HashTableVisual.h" />
     <ClInclude Include="Helper.h" />
@@ -151,6 +152,7 @@
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="Graph.cpp" />
+    <ClCompile Include="GraphVisual.cpp" />
     <ClCompile Include="HashTable.cpp" />
     <ClCompile Include="HashTableVisual.cpp" />
     <ClCompile Include="Helper.cpp" />

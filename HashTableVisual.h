@@ -18,7 +18,7 @@ private:
     CommonButton Input;
     Rectangle info;
     Button Random, File;
-    TextBox Size;
+    TextBoxCenter Size;
     Instruction loadFile;
     TextBoxCenter Value;
     FileLoader readFile;

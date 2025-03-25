@@ -20,10 +20,11 @@ HashTableVisual::HashTableVisual() {
     infoFont = LoadFont("Assets/Fonts/Acme-Regular.ttf");
     SetTextureFilter(infoFont.texture, TEXTURE_FILTER_BILINEAR);
 
-    Size = { {260, 350, 90, 30} };
+    Size = { {270, 350, 90, 30} };
 
     Value = { {270, 350, 90, 30} };
     Value.fontSize = 22;
+    Size.fontSize = 22;
 
     File = { { PANEL_PADDING + 200, 440, 130, 40 }, "File" };
     Random = { { PANEL_PADDING + 200, 500, 130, 40 }, "Random" };
@@ -43,7 +44,7 @@ HashTableVisual::HashTableVisual() {
     readFile = FileLoader();
 
     H = HashTable(40);
-    Size.text = to_string(40); 
+    Size.text = to_string(40);
 
     animation.active = false;
     animation.segmentDuration = 1.5f;
@@ -81,9 +82,9 @@ int HashTableVisual::handleEvent() {
         /// read file
         if (loadFile.update()) {
             vector<unsigned char> fileContents = readFile.loadFile();
-            H.clear(); 
-            
-            long long num = -1; 
+            H.clear();
+
+            long long num = -1;
 
             for (unsigned char c : fileContents) {
                 if (isdigit(c)) {
@@ -91,11 +92,11 @@ int HashTableVisual::handleEvent() {
                     else num = num * 10 + c + '0';
                 }
                 else {
-                    if (num >= 0) H.ins(num); 
+                    if (num >= 0) H.ins(num);
                     num = -1;
                 }
             }
-            if (num >= 0) H.ins(num); 
+            if (num >= 0) H.ins(num);
         }
 
         if (Size.isEnter && Size.getDigit() > 0) {
@@ -290,7 +291,7 @@ void HashTableVisual::draw() {
     // Vẽ nền bảng khu vực panel 2 
     Color panelColorx = isDarkMode ? Color{ 94, 172, 240, 180 } : Color{ 94, 172, 240, 180 }; // Chọn màu theo chế độ
 
-    DrawRectangle(PANEL_WIDTH, panelMargin, PANEL_WIDTH, Screen_h - 2 * panelMargin, panelColorx);
+    // DrawRectangle(PANEL_WIDTH, panelMargin, PANEL_WIDTH, Screen_h - 2 * panelMargin, panelColorx);
 
     Color panelColory = isDarkMode ? Color{ 164, 235, 185, 200 } : Color{ 77, 168, 180, 200 }; // Chọn màu theo chế độ
 
@@ -317,6 +318,8 @@ void HashTableVisual::draw() {
     if (animation.active == false) H.draw(font);
 
     if (Input.isCreate) {
+        DrawRectangle(PANEL_WIDTH, panelMargin, PANEL_WIDTH, Screen_h - 2 * panelMargin, panelColorx);
+
         int fontSize = 24;
         float spacing = 1.0f;
 
@@ -324,13 +327,16 @@ void HashTableVisual::draw() {
         DrawTextEx(smallFont, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
 
 
-        DrawTextEx(smallFont, "Size: ", { 200, 350 }, fontSize, spacing, BLACK);
+        DrawTextEx(smallFont, "Size: ", { 207, 352 }, fontSize, spacing, BLACK);
         Size.draw();
         File.draw(smallFont);
         Random.draw(smallFont);
     }
     else if (Input.isInsert) {
-        string message = "\nInsert a new value to a hash table \n(Size =  " + to_string(H.getSize()) + ").";
+
+        Value.bounds.y = Input.cButton[2].rect.y + 5;
+
+        string message = "\nInsert a new value to a hash table (Size =  " + to_string(H.getSize()) + ").";
         DrawTextEx(smallFont, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
 
         if (animation.active)
@@ -340,7 +346,7 @@ void HashTableVisual::draw() {
         float spacing = 1.0f;
 
         int textWidth = MeasureTextEx(font, "Value", fontSize, 1.f).x;
-        DrawTextEx(font, "Value", { 200, 350 }, fontSize, spacing, BLACK);
+        DrawTextEx(font, "Value", { Value.bounds.x - 74, Value.bounds.y + 1 }, fontSize, spacing, isDarkMode ? WHITE : BLACK);
         Value.draw();
 
         if (animation.active && !popActive) {
@@ -379,7 +385,9 @@ void HashTableVisual::draw() {
         }
     }
     else if (Input.isRemove) {
-        string message = "\nRemove a value in a hash table \n(Size =  " + to_string(H.getSize()) + ").";
+        Value.bounds.y = Input.cButton[3].rect.y + 5;
+
+        string message = "\nRemove a value in a hash table (Size =  " + to_string(H.getSize()) + ").";
         DrawTextEx(smallFont, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
 
         if (animation.active)
@@ -389,7 +397,7 @@ void HashTableVisual::draw() {
         float spacing = 1.0f;
 
         int textWidth = MeasureTextEx(font, "Value", fontSize, 1.f).x;
-        DrawTextEx(font, "Value", { 200, 350 }, fontSize, spacing, BLACK);
+        DrawTextEx(font, "Value", { Value.bounds.x - 74, Value.bounds.y + 1 }, fontSize, spacing, isDarkMode ? WHITE : BLACK);
         Value.draw();
 
         if (animation.active && !shrinkActive) {
@@ -426,8 +434,10 @@ void HashTableVisual::draw() {
         }
     }
     else {
-        string message = "\nSearch for a value in a hash table \n(Size =  " + to_string(H.getSize()) + ").";
-        DrawTextEx(font, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
+        Value.bounds.y = Input.cButton[1].rect.y + 5;
+
+        string message = "\nSearch for a value in a hash table (Size =  " + to_string(H.getSize()) + ").";
+        DrawTextEx(smallFont, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
 
         if (animation.active) H.draw(font);
 
@@ -435,7 +445,7 @@ void HashTableVisual::draw() {
         float spacing = 1.0f;
 
         int textWidth = MeasureTextEx(font, "Value", fontSize, 1.f).x;
-        DrawTextEx(font, "Value", { 200, 350 }, fontSize, spacing, BLACK);
+        DrawTextEx(font, "Value", { Value.bounds.x - 74, Value.bounds.y + 1 }, fontSize, spacing, isDarkMode ? WHITE : BLACK);
         Value.draw();
 
         if (animation.active && !searchActive) {
@@ -472,6 +482,6 @@ void HashTableVisual::draw() {
 
 HashTableVisual::~HashTableVisual() {
     UnloadFont(font);
-    UnloadFont(infoFont); 
-    UnloadFont(smallFont); 
+    UnloadFont(infoFont);
+    UnloadFont(smallFont);
 }

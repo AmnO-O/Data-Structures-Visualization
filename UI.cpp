@@ -95,7 +95,7 @@ void Visualizer::Process() {
 
 		if (Program_state == Menu_state) {
 			Vector2 textSize = MeasureTextEx(font, "RayViz", 70.0f, 2.0f);
-			DrawTextEx(font, "RayViz", Vector2{ Screen_w / 2 - textSize.x / 2, 25 }, 70.0f, 2.0f, !isDarkMode ? BLACK : WHITE);
+			DrawTextEx(font, "RayViz", Vector2{ Screen_w / 2 - textSize.x / 2, 25 }, 70.0f, 2.0f, !isDarkMode ? DARKBLUE : WHITE);
 			menu->Draw();
 		}
 		else {

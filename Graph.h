@@ -62,7 +62,7 @@ struct GraphNode {
 		return baseColor;
 	}
 
-	void draw2() {
+	void draw2(Font& font) {
 		//DrawCircleV(position, radius, color); 
 		//DrawCircleLines(position.x, position.y, radius, WHITE);
 		//DrawText(label .c_str(),position.x - MeasureText(label.c_str(), 18) / 2,position.y - 9,18,WHITE);
@@ -87,11 +87,11 @@ struct GraphNode {
 			radius * 0.4f, ColorAlpha(WHITE, 0.3f));
 
 		// Draw node label
-		int textWidth = MeasureText(label.c_str(), 20);
-		DrawText(label.c_str(), position.x - textWidth / 2, position.y - 10, 20, WHITE);
+		int textWidth = MeasureTextEx(font, label.c_str(), 20, 1).x;
+		DrawTextEx(font, label.c_str(), { position.x - textWidth / 2, position.y - 10 }, 20, 1, WHITE);
 	}
 
-	void draw(float currentTime) {
+	void draw(float currentTime, Font& font) {
 		//DrawCircleV(position, radius, color); 
 		//DrawCircleLines(position.x, position.y, radius, WHITE);
 		//DrawText(label .c_str(),position.x - MeasureText(label.c_str(), 18) / 2,position.y - 9,18,WHITE);
@@ -119,8 +119,8 @@ struct GraphNode {
 			displayRadius * 0.4f, ColorAlpha(WHITE, 0.3f));
 
 		// Draw node label
-		int textWidth = MeasureText(label.c_str(), 20);
-		DrawText(label.c_str(), position.x - textWidth / 2, position.y - 10, 20, WHITE);
+		int textWidth = MeasureTextEx(font, label.c_str(), 20, 1).x;
+		DrawTextEx(font, label.c_str(), { position.x - textWidth / 2, position.y - 10 }, 20, 1, WHITE);
 	}
 };
 
@@ -153,11 +153,11 @@ public:
 	void findMST();
 	void updEades();
 	void updFruchterman();
-	void upd();
-	void draw();
+	void update();
+	void draw(Font& font);
 private:
 
-	void drawEdge(const Edge& edge);
+	void drawEdge(const Edge& edge, Font& font);
 	vector <GraphNode> nodes;
 	vector <Edge> edges;
 
@@ -176,13 +176,4 @@ private:
 	float len_frunch = 35;
 	float coolingFactor_fruch = 0.98;
 
-};
-
-class GraphVisual {
-public:
-	GraphVisual();
-	int handleEvent();
-	void draw();
-private:
-	Graph G;
 };

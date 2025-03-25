@@ -3,24 +3,24 @@
 Graph::Graph() {
     n = 0;
     for (int i = 0; i < 14; i++) addNode(i);
-    addEdge(5, 10, 57);
-    addEdge(10, 6, 8);
-    addEdge(10, 2, 51);
-    addEdge(1, 2, 97);
-    addEdge(2, 8, 17);
-    addEdge(2, 11, 38);
-    addEdge(2, 14, 51);
-    addEdge(5, 14, 45);
-    addEdge(14, 11, 77);
-    addEdge(11, 9, 62);
-    addEdge(9, 7, 45);
-    addEdge(9, 12, 30);
-    addEdge(9, 4, 31);
-    addEdge(4, 3, 36);
-    addEdge(3, 12, 26);
-    addEdge(3, 13, 28);
-    addEdge(13, 8, 4);
-    addEdge(13, 11, 86);
+    //addEdge(5, 10, 57, 1);
+    //addEdge(10, 6, 8, 1);
+    //addEdge(10, 2, 51, 1);
+    //addEdge(1, 2, 97, 1);
+    //addEdge(2, 8, 17);
+    //addEdge(2, 11, 38);
+    //addEdge(2, 14, 51);
+    //addEdge(5, 14, 45);
+    //addEdge(14, 11, 77);
+    //addEdge(11, 9, 62);
+    //addEdge(9, 7, 45);
+    //addEdge(9, 12, 30);
+    //addEdge(9, 4, 31);
+    //addEdge(4, 3, 36);
+    //addEdge(3, 12, 26);
+    //addEdge(3, 13, 28);
+    //addEdge(13, 8, 4);
+    //addEdge(13, 11, 86);
 
     generateRandom();
     selectedNode = -1;
@@ -99,7 +99,7 @@ void Graph::generateRandom() {
 }
 
 
-void Graph::drawEdge(const Edge& edge) {
+void Graph::drawEdge(const Edge& edge, Font& font) {
     Vector2 start = nodes[edge.from].position;
     Vector2 end = nodes[edge.to].position;
 
@@ -142,10 +142,10 @@ void Graph::drawEdge(const Edge& edge) {
 
         char weightText[10];
         sprintf_s(weightText, "%.1f", edge.weight);
-        int textWidth = MeasureText(weightText, 16);
+        int textWidth = MeasureTextEx(font, weightText, 16, 1).x;
 
         DrawRectangle(midpoint.x - textWidth / 2 - 4, midpoint.y - 8, textWidth + 8, 16, ColorAlpha(RAYWHITE, 0.7f));
-        DrawText(weightText, midpoint.x - textWidth / 2, midpoint.y - 8, 16, DARKGRAY);
+        DrawTextEx(font, weightText, { midpoint.x - textWidth / 2, midpoint.y - 8 }, 16, 1, DARKGRAY);
     }
 }
 
@@ -211,8 +211,8 @@ void Graph::updEades() {
         nodes[i].position.y += nodes[i].velocity.y * timeStep;
 
         float padding = 100.0f;
-        if (nodes[i].position.x < padding + nodes[i].radius) {
-            nodes[i].position.x = padding + nodes[i].radius;
+        if (nodes[i].position.x < padding + 200 + nodes[i].radius) {
+            nodes[i].position.x = padding + 200 + nodes[i].radius;
             nodes[i].velocity.x *= -0.5f;
         }
         if (nodes[i].position.x > Screen_w - padding - nodes[i].radius) {
@@ -315,7 +315,7 @@ void Graph::updFruchterman() {
     }
 }
 
-void Graph::upd() {
+void Graph::update() {
     updEades();
 
     Vector2 mousePos = GetMousePosition();
@@ -342,26 +342,12 @@ void Graph::upd() {
     }
 }
 
-GraphVisual::GraphVisual() {
-
-}
-
-int GraphVisual::handleEvent() {
-    float deltaTime = GetFrameTime();
-    G.upd();
-    return Graph_state;
-}
-
-void Graph::draw() {
+void Graph::draw(Font& font) {
 
     for (const Edge& edge : edges) {
-        drawEdge(edge);
+        drawEdge(edge, font);
     }
     float deltaTime = GetFrameTime();
 
-    for (GraphNode& node : nodes) node.draw2();
-}
-
-void GraphVisual::draw() {
-    G.draw();
+    for (GraphNode& node : nodes) node.draw(deltaTime, font);
 }

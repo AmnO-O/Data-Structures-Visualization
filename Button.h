@@ -107,13 +107,34 @@ public:
     bool isInsert = false;
     bool isRemove = false;
     bool isSearch = false;
+    vector <Button> cButton;
 
 private:
     Color btnNormal = RAYWHITE;
     Color btnHover = LIGHTGRAY;
     Color btnClick = LIGHTGRAY;
 
+    Rectangle rect;
+    Color color;
+};
+
+class GraphButton {
+public:
+    GraphButton();
+    void update();
+    void draw(Font font);
+
+    bool isCreate = true;
+    bool isAddedge = false;
+    bool isRemove = false;
+    bool isMst = true;
     vector <Button> cButton;
+
+private:
+    Color btnNormal = RAYWHITE;
+    Color btnHover = LIGHTGRAY;
+    Color btnClick = LIGHTGRAY;
+
     Rectangle rect;
     Color color;
 };

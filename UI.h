@@ -5,7 +5,7 @@
 #include "LinkedlistScreen.h"
 #include "AboutScreen.h"
 #include "Helper.h"
-#include "Graph.h"
+#include "GraphVisual.h"
 
 class Visualizer {
 public:
