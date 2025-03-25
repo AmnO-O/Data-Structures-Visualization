@@ -132,7 +132,7 @@ void Menu::Draw() {
     Color helpColor = helpHovered ? LIGHTGRAY : RAYWHITE;
     Color aboutColor = aboutHovered ? LIGHTGRAY : RAYWHITE;
     Color settingsColor = settingsHovered ? LIGHTGRAY : RAYWHITE;
-    Color textColor =  !isDarkMode ? DARKBLUE : ORANGE;
+    Color textColor = !isDarkMode ? DARKBLUE : ORANGE;
     Color rounded = isDarkMode ? ORANGE : GRAY;
 
     // Vẽ nút "How to Use"
