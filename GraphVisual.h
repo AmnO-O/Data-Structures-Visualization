@@ -14,8 +14,9 @@ private:
 #define PANEL_WIDTH 188  // Độ rộng bảng
 #define PANEL_PADDING 20 // Khoảng cách lề
 	GraphButton Input;
-	TextBoxCenter Nodes, Edges;
+	TextBoxCenter Vertices, Edges;
 	Font font, infoFont, smallFont;
 	Rectangle info;
+	Button fileMatrixs, fileEdges; 
 	Graph G;
 };

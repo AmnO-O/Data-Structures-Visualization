@@ -167,11 +167,12 @@ private:
 
 	int selectedNode = -1;
 
-	const float c_rep = 3000.0f;
-	const float c_spring = 0.05f;
-	const float desiredLen = 260.0f;
+	const float c_rep = 2000.0f;
+	const float c_spring = 0.007f;
+	const float desiredLen = 250.0f;
 	const float cooling_factor = 0.85f;
 	const float timeStep = 0.82f;
+	const float c_centripetal = 0.02f; 
 
 	float len_frunch = 35;
 	float coolingFactor_fruch = 0.98;

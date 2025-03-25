@@ -35,7 +35,7 @@ void Graph::addNode(int id) {
 
 void Graph::addEdge(int from, int to, int weight, bool dir) {
     if (from < 0 || from >= n || to < 0 || to >= n) return;
-    edges.push_back(Edge(from, to, weight, WHITE, dir));
+    edges.push_back(Edge(from, to, weight, isDarkMode ? WHITE : BLACK, dir));
 }
 
 void Graph::generateRandom() {
@@ -92,7 +92,7 @@ void Graph::generateRandom() {
                     180  // Semi-transparent
                 };
 
-                edges.push_back(Edge(from, to, random(1, 20), edgeColor));
+                edges.push_back(Edge(from, to, random(1, 20), BLACK));
             }
         }
     }
@@ -127,12 +127,12 @@ void Graph::drawEdge(const Edge& edge, Font& font) {
     } :
         edge.color;
 
-    float thickness = edge.highlighted ? 4.0f : 2.5f;
+    float thickness = edge.highlighted ? 4.0f : 2.0f;
 
     if (edge.directed)
         DrawThickArrow(adjustedStart, adjustedEnd, thickness, displayColor, edge.highlighted);
     else
-        DrawLineEx(adjustedStart, adjustedEnd, thickness, displayColor);
+        DrawLineEx(adjustedStart, adjustedEnd, thickness, isDarkMode ? WHITE : BLACK);
 
     if (edge.highlighted || edge.weight > 1.0f) {
         Vector2 midpoint = {
@@ -155,6 +155,8 @@ void Graph::updEades() {
         forces[i] = { 0, 0 };
     }
 
+    Vector2 ScreenCenter = { Screen_w / 2 + 150, Screen_h / 2 }; 
+
     /// repulsive forces
     for (int i = 0; i < n; i++) {
         for (int j = i + 1; j < n; j++) {
@@ -176,6 +178,18 @@ void Graph::updEades() {
             forces[j].x -= force.x;
             forces[j].y -= force.y;
         }
+
+        Vector2 posA = nodes[i].position;
+        Vector2 dir = { ScreenCenter.x - posA.x, ScreenCenter.y - posA.y };
+
+        float distance = sqrt(dir.x * dir.x + dir.y * dir.y);
+        if (distance < 1.0f) distance = 1.0f;  // Prevent division by zero
+        
+        Vector2 unitDir = { dir.x / distance, dir.y / distance };
+        Vector2 force = { unitDir.x * c_centripetal, unitDir.y * c_centripetal };
+
+        forces[i].x += force.x; 
+        forces[i].y += force.y; 
     }
 
     // Compute attractive (spring) forces for each edge.

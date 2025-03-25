@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "HashTable.h"
+
 class HashTableVisual {
 public:
     HashTableVisual();
@@ -18,11 +19,16 @@ private:
     CommonButton Input;
     Rectangle info;
     Button Random, File;
-    TextBoxCenter Size;
+    TextBoxCenter Size, Value;
     Instruction loadFile;
-    TextBoxCenter Value;
     FileLoader readFile;
     HashTable H;
+
+
+    Button valueButton; 
+    float valueTime = 0;
+    float valueDuration = 2.f;
+    bool valueAnimation = 0; 
 
     bool popActive;
     float popElapsedTime;

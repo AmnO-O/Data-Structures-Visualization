@@ -16,6 +16,7 @@ HashTableVisual::HashTableVisual() {
     //SetTextureFilter(IN4Font.texture, TEXTURE_FILTER_BILINEAR);
 
     font = LoadFontEx("Assets/Fonts/PublicSans-Bold.ttf", 65, 0, 0);
+    SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
 
     infoFont = LoadFont("Assets/Fonts/Acme-Regular.ttf");
     SetTextureFilter(infoFont.texture, TEXTURE_FILTER_BILINEAR);
@@ -23,6 +24,8 @@ HashTableVisual::HashTableVisual() {
     Size = { {270, 350, 90, 30} };
 
     Value = { {270, 350, 90, 30} };
+    valueButton = { { PANEL_PADDING + 100, 440, 80, 30 }, ">Value" };
+
     Value.fontSize = 22;
     Size.fontSize = 22;
 
@@ -69,7 +72,24 @@ HashTableVisual::HashTableVisual() {
 }
 
 int HashTableVisual::handleEvent() {
-    Input.update();
+    
+    if (Input.update()) {
+        valueAnimation = true;
+
+        if (Input.isSearch) {
+            Value.bounds.x = -500; 
+            Value.bounds.y = Input.cButton[1].rect.y; 
+        }
+        else if (Input.isInsert) {
+            Value.bounds.x = -500;
+            Value.bounds.y = Input.cButton[2].rect.y;
+        }
+        else if (Input.isRemove) {
+            Value.bounds.x = -500;
+            Value.bounds.y = Input.cButton[3].rect.y;
+        }
+    }
+
     float deltaTime = GetFrameTime();
 
     H.upd(deltaTime);
@@ -114,6 +134,29 @@ int HashTableVisual::handleEvent() {
         }
     }
     else if (Input.isInsert) {
+
+        if (valueAnimation) {
+            valueTime += deltaTime;
+
+            float t = valueTime / valueDuration;
+            if (t > 1.0f) t = 1.0f;
+            float smoothT = t * t * (3 - 2 * t);
+
+            Vector2 move = Lerp({ Value.bounds.x, Value.bounds.y }, {290, Input.cButton[2].rect.y + 5}, smoothT);
+            
+            Value.bounds.x = move.x; 
+            Value.bounds.y = move.y; 
+
+            valueButton.rect.x = move.x - 95; 
+            valueButton.rect.y = move.y + 1;
+
+            if (valueTime >= valueDuration) {
+                valueTime = 0; 
+                valueAnimation = 0; 
+                valueAnimation = 0; 
+            }
+        }
+
         Value.update();
         if (animation.active == false && Value.isEnter) {
             vector <int> path = H.getInsertionPath(Value.getDigit());
@@ -170,7 +213,29 @@ int HashTableVisual::handleEvent() {
         }
     }
     else if (Input.isRemove) {
+        if (valueAnimation) {
+            valueTime += deltaTime;
 
+            float t = valueTime / valueDuration;
+            if (t > 1.0f) t = 1.0f;
+            float smoothT = t * t * (3 - 2 * t);
+
+            Vector2 move = Lerp({ Value.bounds.x, Value.bounds.y }, { 290, Input.cButton[3].rect.y + 5 }, smoothT);
+
+            Value.bounds.x = move.x;
+            Value.bounds.y = move.y;
+
+            valueButton.rect.x = move.x - 95;
+            valueButton.rect.y = move.y + 1;
+
+            if (valueTime >= valueDuration) {
+                valueTime = 0;
+                valueAnimation = 0;
+                valueAnimation = 0;
+            }
+        }
+
+        valueButton.update(); 
         Value.update();
 
         if (animation.active == false && Value.isEnter) {
@@ -226,6 +291,37 @@ int HashTableVisual::handleEvent() {
         }
     }
     else {
+        if (valueAnimation) {
+            valueTime += deltaTime;
+
+            float t = valueTime / valueDuration;
+            if (t > 1.0f) t = 1.0f;
+            float smoothT = t * t * (3 - 2 * t);
+
+            Vector2 move = Lerp({ Value.bounds.x, Value.bounds.y }, { 290, Input.cButton[1].rect.y + 5 }, smoothT);
+
+            Value.bounds.x = move.x;
+            Value.bounds.y = move.y;
+
+            valueButton.rect.x = move.x - 95;
+            valueButton.rect.y = move.y + 1;
+
+            if (valueTime >= valueDuration) {
+                valueTime = 0;
+                valueAnimation = 0;
+                valueAnimation = 0;
+            }
+        }
+        if (valueAnimation) {
+            valueTime += deltaTime;
+
+            if (valueTime >= valueDuration) {
+                valueTime = 0;
+                valueAnimation = 0;
+                valueAnimation = 0;
+            }
+        }
+
         Value.update();
 
         if (animation.active == false && Value.isEnter) {
@@ -293,7 +389,7 @@ void HashTableVisual::draw() {
 
     // DrawRectangle(PANEL_WIDTH, panelMargin, PANEL_WIDTH, Screen_h - 2 * panelMargin, panelColorx);
 
-    Color panelColory = isDarkMode ? Color{ 164, 235, 185, 200 } : Color{ 77, 168, 180, 200 }; // Chọn màu theo chế độ
+    Color panelColory = isDarkMode ? Color{ 189, 211, 206, 255 } : Color{ 112, 140, 105, 100 }; // Chọn màu theo chế độ
 
     int rectWidth = 400;
     int rectHeight = 240;
@@ -334,8 +430,6 @@ void HashTableVisual::draw() {
     }
     else if (Input.isInsert) {
 
-        Value.bounds.y = Input.cButton[2].rect.y + 5;
-
         string message = "\nInsert a new value to a hash table (Size =  " + to_string(H.getSize()) + ").";
         DrawTextEx(smallFont, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
 
@@ -345,8 +439,8 @@ void HashTableVisual::draw() {
         int fontSize = 24;
         float spacing = 1.0f;
 
-        int textWidth = MeasureTextEx(font, "Value", fontSize, 1.f).x;
-        DrawTextEx(font, "Value", { Value.bounds.x - 74, Value.bounds.y + 1 }, fontSize, spacing, isDarkMode ? WHITE : BLACK);
+        Value.bounds.y = Input.cButton[2].rect.y + 5;
+        valueButton.draw(smallFont); 
         Value.draw();
 
         if (animation.active && !popActive) {
@@ -354,7 +448,7 @@ void HashTableVisual::draw() {
             int cur_key = H.getValue(animation.pathIndices[animation.currentPathIndex]);
             std::string keyText = std::to_string(cur_key);
             int textWidth = MeasureTextEx(font, keyText.c_str(), fontSize, 1.f).x;
-            Color markerColor = ORANGE;
+            Color markerColor = isDarkMode ? ORANGE : Color{189, 211, 206, 255};
 
             for (int i = 5; i > 0; i--) {
                 DrawCircleV(animation.currentPos, 20 + i * 3, Fade(markerColor, 0.1f * i));
@@ -396,8 +490,9 @@ void HashTableVisual::draw() {
         int fontSize = 24;
         float spacing = 1.0f;
 
-        int textWidth = MeasureTextEx(font, "Value", fontSize, 1.f).x;
-        DrawTextEx(font, "Value", { Value.bounds.x - 74, Value.bounds.y + 1 }, fontSize, spacing, isDarkMode ? WHITE : BLACK);
+        //int textWidth = MeasureTextEx(font, "Value", fontSize, 1.f).x;
+        //DrawTextEx(font, "Value", { Value.bounds.x - 74, Value.bounds.y + 1 }, fontSize, spacing, isDarkMode ? WHITE : BLACK);
+        valueButton.draw(smallFont); 
         Value.draw();
 
         if (animation.active && !shrinkActive) {
@@ -444,8 +539,9 @@ void HashTableVisual::draw() {
         int fontSize = 24;
         float spacing = 1.0f;
 
-        int textWidth = MeasureTextEx(font, "Value", fontSize, 1.f).x;
-        DrawTextEx(font, "Value", { Value.bounds.x - 74, Value.bounds.y + 1 }, fontSize, spacing, isDarkMode ? WHITE : BLACK);
+        //int textWidth = MeasureTextEx(font, "Value", fontSize, 1.f).x;
+        //DrawTextEx(font, "Value", { Value.bounds.x - 74, Value.bounds.y + 1 }, fontSize, spacing, isDarkMode ? WHITE : BLACK);
+        valueButton.draw(smallFont);
         Value.draw();
 
         if (animation.active && !searchActive) {

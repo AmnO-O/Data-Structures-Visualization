@@ -8,8 +8,14 @@ GraphVisual::GraphVisual() {
     smallFont = LoadFont("Assets/Fonts/LilitaOne-Regular.ttf");
     SetTextureFilter(smallFont.texture, TEXTURE_FILTER_BILINEAR);
 
-    Nodes = { {PANEL_WIDTH + 10, 250 + 80, PANEL_WIDTH / 2 - 20, 30} };
-    Edges = { {PANEL_WIDTH + PANEL_WIDTH / 2 + 10, 250 + 80, PANEL_WIDTH / 2 - 20, 30} };
+    Vertices = { {PANEL_WIDTH + 100, 250 + 80, PANEL_WIDTH / 2 - 10, 30} };
+    Edges = { {PANEL_WIDTH + 100, 250 + 120, PANEL_WIDTH / 2 - 10, 30} };
+    
+    Vertices.text = "RANDOM"; 
+    Vertices.textColor = GREEN; 
+    
+    fileMatrixs = { { PANEL_PADDING + 200, 440, 130, 40 }, "File Matrixs" };
+    fileEdges = { { PANEL_PADDING + 200, 500, 130, 40 }, "File Edges" };
 }
 
 int GraphVisual::handleEvent() {
@@ -17,8 +23,10 @@ int GraphVisual::handleEvent() {
     Input.update();
 
     if (Input.isCreate) {
-        Nodes.update();
+        Vertices.update();
         Edges.update();
+        fileMatrixs.update(); 
+        fileEdges.update(); 
     }
 
     G.update();
@@ -59,21 +67,23 @@ void GraphVisual::draw() {
     Input.draw(smallFont);
 
     if (Input.isCreate) {
-        int fontSize = 24;
+        int fontSize = 22;
         float spacing = 1.0f;
 
-        Nodes.draw();
+        Vertices.draw();
         Edges.draw();
-        string text = "Nodes";
-        int textwidth = MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
-        DrawTextEx(font, text.c_str(), { PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 300 }, fontSize, spacing, BLACK);
+        
+        fileMatrixs.draw(font);
+        fileEdges.draw(font);
 
-        DrawLine(PANEL_WIDTH + 10 + PANEL_WIDTH / 2 - 10, 250,
-            PANEL_WIDTH + 10 + PANEL_WIDTH / 2 - 10, 250 + 200, BLACK);
+        string text = "Vertices";
+        int textwidth = MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
+        DrawTextEx(font, text.c_str(), {PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 80 }, fontSize, spacing, BLACK);
+
 
         text = "Edges";
         textwidth = MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
-        DrawTextEx(font, text.c_str(), { PANEL_WIDTH + PANEL_WIDTH / 2 + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 300 }, fontSize, spacing, BLACK);
+        DrawTextEx(font, text.c_str(), { PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 120 }, fontSize, spacing, BLACK);
     }
 
     /// Draw graph

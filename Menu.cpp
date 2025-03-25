@@ -120,41 +120,43 @@ void Menu::Draw() {
         Color boxColor = item.hovered ? LIGHTGRAY : RAYWHITE;
 
         DrawRectangleRounded(item.bounds, 0.2f, 4, boxColor);
-        DrawRectangleRoundedLinesEx(item.bounds, 0.2f, 4, 2.0f, Color{ 103, 89, 246, 190 });
+        DrawRectangleRoundedLinesEx(item.bounds, 0.2f, 4, 2.0f, isDarkMode ? Color{ 244, 162, 88, 255 } : Color{ 103, 89, 246, 190 });
 
         float centerX = item.bounds.x + Item_w / 2;
         float centerY = item.bounds.y + Item_h / 2;
 
         int textWidth = MeasureTextEx(myFont, item.name.c_str(), 30, 1).x;
-        DrawTextEx(myFont, item.name.c_str(), { centerX - textWidth / 2, item.bounds.y + Item_h - 40 }, 30, 1, DARKBLUE);
+        DrawTextEx(myFont, item.name.c_str(), { centerX - textWidth / 2, item.bounds.y + Item_h - 40 }, 30, 1, isDarkMode ? Color{ 244, 162, 88, 255 } : DARKBLUE);
     }
 
     Color helpColor = helpHovered ? LIGHTGRAY : RAYWHITE;
     Color aboutColor = aboutHovered ? LIGHTGRAY : RAYWHITE;
     Color settingsColor = settingsHovered ? LIGHTGRAY : RAYWHITE;
+    Color textColor =  !isDarkMode ? DARKBLUE : ORANGE;
+    Color rounded = isDarkMode ? ORANGE : GRAY;
 
     // Vẽ nút "How to Use"
     DrawRectangleRounded(helpButton, 0.2f, 4, helpColor);
-    DrawRectangleRoundedLinesEx(helpButton, 0.2f, 4, 2.0f, GRAY);
+    DrawRectangleRoundedLinesEx(helpButton, 0.2f, 4, 2.0f, rounded);
 
     Vector2 textSize = MeasureTextEx(myFont, "How to Use", 20, 1);
     DrawTextEx(myFont, "How to Use",
         { helpButton.x + (helpButton.width - textSize.x) / 2, helpButton.y + (helpButton.height - textSize.y) / 2 },
-        20, 1, DARKBLUE);
+        20, 1, textColor);
     // Vẽ nút "About"
     DrawRectangleRounded(aboutButton, 0.2f, 4, aboutColor);
-    DrawRectangleRoundedLinesEx(aboutButton, 0.2f, 4, 2.0f, GRAY);
+    DrawRectangleRoundedLinesEx(aboutButton, 0.2f, 4, 2.0f, rounded);
 
     textSize = MeasureTextEx(myFont, "About", 20, 1);
     DrawTextEx(myFont, "About",
         { aboutButton.x + (aboutButton.width - textSize.x) / 2, aboutButton.y + (aboutButton.height - textSize.y) / 2 },
-        20, 1, DARKBLUE);
+        20, 1, textColor);
     // Vẽ nút "Settings"
     DrawRectangleRounded(settingsButton, 0.2f, 4, settingsColor);
-    DrawRectangleRoundedLinesEx(settingsButton, 0.2f, 4, 2.0f, GRAY);
+    DrawRectangleRoundedLinesEx(settingsButton, 0.2f, 4, 2.0f, rounded);
 
     textSize = MeasureTextEx(myFont, "Settings", 20, 1);
     DrawTextEx(myFont, "Settings",
         { settingsButton.x + (settingsButton.width - textSize.x) / 2, settingsButton.y + (settingsButton.height - textSize.y) / 2 },
-        20, 1, DARKBLUE);
+        20, 1, textColor);
 }

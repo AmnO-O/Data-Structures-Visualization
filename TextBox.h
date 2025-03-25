@@ -148,6 +148,7 @@ struct TextBoxCenter { /// put the cursor in the center
     bool isEnter = false;
     Font font = LoadFontEx("Assets/Fonts/PublicSans-bold.ttf", 65, 0, 0);
     int fontSize = 20;
+    Color textColor = BLACK; 
 
     void update() {
         isEnter = false;
@@ -229,7 +230,7 @@ struct TextBoxCenter { /// put the cursor in the center
     }
 
     void draw() {
-        Color boxColor = focused ? YELLOW : LIGHTGRAY;
+        Color boxColor = focused ? YELLOW : Color{ 244, 162, 83, 210 };
 
         int textY = bounds.y + (bounds.height - fontSize) / 2;
         // Vẽ ô text box với góc bo
@@ -243,7 +244,7 @@ struct TextBoxCenter { /// put the cursor in the center
 
         int textWidth = MeasureTextEx(font, text.c_str(), fontSize, 1).x;
         int textHeight = MeasureTextEx(font, text.c_str(), fontSize, 1).y;
-        DrawTextEx(font, text.c_str(), { bounds.x + (bounds.width - textWidth) / 2, bounds.y + (bounds.height - textHeight) / 2 }, fontSize, 1, BLACK);
+        DrawTextEx(font, text.c_str(), { bounds.x + (bounds.width - textWidth) / 2, bounds.y + (bounds.height - textHeight) / 2 }, fontSize, 1, textColor);
 
         if (focused && ((framesCounter / 20) % 2 == 0)) {
             std::string textBeforeCaret = text.substr(0, pos);

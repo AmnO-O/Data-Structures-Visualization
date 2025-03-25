@@ -178,11 +178,12 @@ void HashTable::drawSlot(Rectangle rect, int index, const std::string& text, Fon
 
     // Drop shadow.
     Rectangle shadowRect = { rect.x + 5, rect.y + 5, rect.width, rect.height };
+
     DrawRectangleRounded(shadowRect, roundness, segments, Fade(BLACK, 0.3f));
 
     // Slot background.
-    DrawRectangleRounded(rect, roundness, segments, baseColor);
-    DrawRectangleRoundedLines(rect, roundness, segments, BLACK);
+    DrawRectangleRounded(rect, roundness, segments, isDarkMode ? GRAY : Color{ 244, 162, 88, 210 });
+    DrawRectangleRoundedLines(rect, roundness, segments, isDarkMode ? BLACK : Color{ 244, 162, 88, 210 });
 
     // If occupied, draw the key centered.
     if (text.size() && Value) {
@@ -220,6 +221,6 @@ void HashTable::drawSlot(Rectangle rect, int index, const std::string& text, Fon
     int posX = rect.x + (rect.width - textWidth) / 2;
     int posY = rect.y + rect.height + 5; // 5 pixels below the slot.
 
-    DrawTextEx(font, indexStr.c_str(), { posX * 1.f, posY * 1.f }, fontSize, 1, BLUE);
+    DrawTextEx(font, indexStr.c_str(), { posX * 1.f, posY * 1.f }, fontSize, 1, isDarkMode ? Color {252, 243, 227, 255} : BLUE);
 }
 

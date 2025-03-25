@@ -17,7 +17,8 @@ CommonButton::CommonButton() {
 	cButton[0].isChose = 1;
 }
 
-void CommonButton::update() {
+bool CommonButton::update() {
+	bool ok = false; 
 	for (int i = 0; i < 4; i++) {
 		if (cButton[i].update()) {
 			for (int j = 0; j < 4; j++) cButton[j].isChose = 0;
@@ -28,8 +29,12 @@ void CommonButton::update() {
 			else if (i == 1) isSearch = 1;
 			else if (i == 2) isInsert = 1;
 			else isRemove = 1;
+
+			ok = true; 
 		}
 	}
+
+	return ok; 
 }
 
 
@@ -38,15 +43,6 @@ void CommonButton::draw(Font font) {
 
 	for (int i = 0; i < 4; i++) {
 		cButton[i].draw(font);
-
-		//if (cButton[i].isChose) {
-
-		//}
-		//else if (cButton[i].isHovered) {
-		//	cButton[i].drawRect();
-		//}
-
-		//cButton[i].drawName(font);
 	}
 }
 

@@ -15,6 +15,7 @@ struct Button {
     bool isChose = false;
     bool debugMode = false;
 
+
     // Hàm Update() kiểm tra di chuột, bấm chuột...
     // Trả về true nếu người dùng "click" (nhả chuột trong vùng nút)
     bool update() {
@@ -30,7 +31,6 @@ struct Button {
             }
             // Nếu thả chuột ra (sau khi hover), tính là "click"
             if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-                // Toggle trạng thái isChose
                 isChose = !isChose;
                 return true;
             }
@@ -100,7 +100,7 @@ struct Button {
 class CommonButton {
 public:
     CommonButton();
-    void update();
+    bool update();
     void draw(Font font);
 
     bool isCreate = true;
