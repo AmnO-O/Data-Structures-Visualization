@@ -10,7 +10,8 @@ enum SelectedButtonAVL {
 	INSERTAVL,
 	DELETEAVL,
 	SEARCHAVL,
-	CLEANAVL
+	CLEANAVL,
+	OKAVL,
 };
 
 class AVLTreeScreen {
@@ -27,6 +28,7 @@ private:
 	bool deleteHovered = false;
 	bool searchHovered = false;
 	bool cleanHovered = false;
+	bool okHovered = false;
 
 
 	// Vị trí của Panel
@@ -34,6 +36,9 @@ private:
 	Rectangle deleteButton = { PANEL_PADDING + 8, 390, 130, 40 };
 	Rectangle searchButton = { PANEL_PADDING + 8, 450, 130, 40 };
 	Rectangle cleanButton = { PANEL_PADDING + 8, 510, 130, 40 };
+
+	// Nút OK dưới textBox
+	Rectangle okButton = { PANEL_PADDING + 217, 470, 90, 30 };
 
 
 	float Clamp(float value, float minValue, float maxValue);

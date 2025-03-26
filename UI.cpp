@@ -52,6 +52,7 @@ void Visualizer::Process() {
 	helper->Init();
 	linkedlist->Init();
 	audioSys.Init();
+	avl->Init();
 
 	while (!WindowShouldClose()) {
 		audioSys.Update();
@@ -127,9 +128,9 @@ void Visualizer::Process() {
 		else if (Program_state == HowToUse_state) helper->Draw();
 
 
-		if (Program_state == Trie_state) DataName = "Trie";
+		if (Program_state == Trie_state) DataName = "AVL tree";
 		else if (Program_state == HashTable_state) DataName = "Hash table: Linear Probing";
-		else if (Program_state == LinkedList_state) DataName = "Linked List";
+		else if (Program_state == LinkedList_state) DataName = "Singly Linked List";
 		else if (Program_state == Graph_state) DataName = "Graph";
 		else if (Program_state == About_state) DataName = "About";
 		else if (Program_state == Settings_state) DataName = "Settings";

@@ -43,6 +43,7 @@ float AVLTreeScreen::SmoothStep(float a, float b, float t) {
     return a + (b - a) * t;
 }
 
+
 void AVLTreeScreen::Update(int& state) {
     Vector2 mouse = GetMousePosition();
 
@@ -60,6 +61,8 @@ void AVLTreeScreen::Update(int& state) {
 
     // Kiểm tra hover vào nút "Clean"
     cleanHovered = CheckCollisionPointRec(mouse, cleanButton);
+    // Kiểm tra hover vào nút "OK"
+    okHovered = CheckCollisionPointRec(mouse, okButton);
 
     // Xử lý sự kiện khi nhấn vào nút "Back"
     if (backHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -93,6 +96,10 @@ void AVLTreeScreen::Update(int& state) {
         currentButton = CLEANAVL;
     }
 
+    if (okHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        Value.isClickedEnter = true;
+    }
+    
     if (AVLtreeState == InsertState) {
         Value.update();
         if (Value.isEnter && Value.outputMessage != "") {
@@ -105,6 +112,21 @@ void AVLTreeScreen::Update(int& state) {
             isInsert = true;
             timer = 0.0f;
             entered = true;
+        }
+        if (Value.isClickedEnter) {
+            Value.getMessage();
+            if (Value.outputMessage != "") {
+                valueInsert = stoi(Value.outputMessage);
+                infoMessage = "Inserting " + to_string(valueInsert) + " into AVL tree.";  // Cập nhật infoMessage
+                Value.isEnter = false; // Reset trạng thái ENTER 
+                Value.outputMessage = "";
+
+                // Kích hoạt animation sau mỗi lần thay đổi
+                isInsert = true;
+                timer = 0.0f;
+                entered = true;
+            }
+            Value.isClickedEnter = false;
         }
     }
     else if (AVLtreeState == DeleteState) {
@@ -124,6 +146,26 @@ void AVLTreeScreen::Update(int& state) {
                 infoMessage = "There is no node with the value\n" + to_string(valueDelete) + " in the current AVLtree.";
             }
         }
+        else if (Value.isClickedEnter) {
+            Value.getMessage();
+            if (Value.outputMessage != "") {
+                valueDelete = stoi(Value.outputMessage);
+                Value.isEnter = false; // Reset trạng thái ENTER 
+                Value.outputMessage = "";
+                if (AVLtree.Search(valueDelete)) {
+                    // Kích hoạt animation sau mỗi lần thay đổi
+                    isDeleting = true;
+                    timer = 0.0f;
+                    entered = true;
+                    infoMessage = "Deleting " + to_string(valueDelete) + " of AVL tree.";  // Cập nhật infoMessage
+                }
+                else {
+                    infoMessage = "There is no node with the value\n" + to_string(valueDelete) + " in the current AVLtree.";
+                }
+                Value.isClickedEnter = false;
+            }
+        }
+
     }
     else if (AVLtreeState == SearchState) {
         Value.update();
@@ -137,9 +179,24 @@ void AVLTreeScreen::Update(int& state) {
             timer = 0.0f;
             entered = true;
         }
+        else if (Value.isClickedEnter) {
+            Value.getMessage();
+            if (Value.outputMessage != "") {
+                valueSearch = stoi(Value.outputMessage);
+                Value.isEnter = false; // Reset trạng thái ENTER 
+                Value.outputMessage = "";
+
+                // Kích hoạt animation sau mỗi lần thay đổi
+                isSearch = true;
+                timer = 0.0f;
+                entered = true;
+            }
+            Value.isClickedEnter = false;
+        }
         if (!AVLtree.Search(valueSearch)) {
             infoMessage = "There is no node with the value \n" + to_string(valueSearch) + " in the current AVLtree.";
         }
+        
     }
     else if (AVLtreeState == ClearState) {
         isClean = true;
@@ -263,6 +320,17 @@ void AVLTreeScreen::DrawOperationsPanel() {
         int textWidth = MeasureTextEx(myFont, "Value", fontSize, 1.f).x;
         DrawTextEx(myFont, "Value", { 200, 350 }, fontSize, spacing, BLACK);
         Value.draw();
+        // Vẽ nút "OK"
+        Color okColor = okHovered ? LIGHTGRAY : RAYWHITE;
+        if (currentButton == OKAVL) okColor = { 250, 228, 49, 255 };
+        DrawRectangleRounded(okButton, 0.2f, 4, okColor);
+        DrawRectangleRoundedLinesEx(okButton, 0.2f, 4, 2.0f, GRAY);
+
+        Vector2 okSize = MeasureTextEx(myFont, "OK", 18, 2);
+        DrawTextEx(myFont, "OK",
+            { okButton.x + (okButton.width - okSize.x) / 2,
+              okButton.y + (okButton.height - okSize.y) / 2 },
+            18, 2, DARKBLUE);
     }
     else if (AVLtreeState == ClearState) {}
 }

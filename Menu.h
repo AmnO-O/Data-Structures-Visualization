@@ -24,7 +24,7 @@ public:
 	Menu();
 
 	string dsName[4] = {
-		"Linked List", "Hash Table", "Trie",  "Graph"
+		"Singly Linked List", "Hash Table", "AVL",  "Graph"
 	};
 
 	vector <Item> dsItem;

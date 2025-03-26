@@ -94,7 +94,7 @@ void LinkedListScreen::Update(int& state) {
         insertHeadAlpha = SmoothStep(insertHeadAlpha, 0.0f, 0.006f);  // Giảm alpha của Head từ từ
         insertTailAlpha = SmoothStep(insertTailAlpha, 0.0f, 0.006f);  // Giảm alpha của Tail từ từ
         insertPosAlpha = SmoothStep(insertPosAlpha, 0.0f, 0.006f);    // Giảm alpha của Pos từ từ
-        insertOptionsOffset = SmoothStep(insertOptionsOffset, 100.0f, 0.003f);
+        insertOptionsOffset = SmoothStep(insertOptionsOffset, 100.0f, 0.04f);
 
         // Cập nhật vị trí của các nút Delete, Reverse, Clean
         insertHeadButton.y = insertButton.y + 45;
@@ -129,7 +129,7 @@ void LinkedListScreen::Update(int& state) {
         insertPosAlpha = 0.0f;   // Giảm alpha của Pos ngay lập tức
 
         // Cập nhật vị trí của các nút khi menu đóng
-        insertOptionsOffset = SmoothStep(insertOptionsOffset, 0.0f, 0.002f); // Menu sẽ thu lại khi đóng
+        insertOptionsOffset = SmoothStep(insertOptionsOffset, 0.0f, 0.04f); // Menu sẽ thu lại khi đóng
 
         // Nếu menu đã đóng xong, reset lại các nút khác
         deleteButton.y = 380 + insertOptionsOffset;
@@ -566,19 +566,39 @@ void LinkedListScreen::Draw() {
     drawLinkedList(animationProgress);
 }
 
+Vector2 LinkedListScreen::TargetPos(int index) {
+    Vector2 targetPos;
+    if (index < 11) {
+        // Hàng đầu tiên (từ trái qua phải)
+        targetPos = { startPos.x + index * nodeSpacing, startPos.y };
+    }
+    else {
+        // Hàng thứ hai (từ phải qua trái)
+        int reversedIndex = index - 11; // Đếm số phần tử sau 11
+        targetPos = { startPos2ndrow.x - reversedIndex * nodeSpacing, startPos2ndrow.y };
+    }
+    return targetPos;
+}
+
 void LinkedListScreen::drawLinkedList(float animationProgress) {
     LLNode* current = linkedList.head;
 
     int index = 0;
+    int numsDelete = 0;
+
 
     Vector2 prevPos = { -1, -1 };  // Lưu vị trí của node trước đó
 
     while (current != nullptr) {
-        Vector2 targetPos = { startPos.x + index * nodeSpacing, startPos.y };
+       Vector2 targetPos = TargetPos(index);
+
 
         if (isHeadInserting) {
             // Node mới chèn vào đầu linked list
-            targetPos.x -= (1.0f - animationProgress) * nodeSpacing;
+            if (index < 11)targetPos.x -= (1.0f - animationProgress) * nodeSpacing;
+            else if (index == 11) targetPos.y -= (1.0f - animationProgress) * nodeSpacing;
+            else targetPos.x += (1.0f - animationProgress) * nodeSpacing;
+
             if (index == 0) {
                 targetPos.y = startPos.y - nodeSpacing * 2.0f; // Cao hơn bình thường
                 // Node mới sẽ đi xuống
@@ -586,15 +606,31 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
             }
         }
         else if (isTailInserting && current->next == nullptr) {
+            if (index < 11) {
             // Node mới sẽ đi xuống
             targetPos.x += nodeSpacing * (1.0f - animationProgress); // Dịch từ phải sang trái
             targetPos.y -= nodeSpacing * (1.0f - animationProgress); // Đi từ trên xuống
+            }
+            else if (index >= 11) {
+                targetPos.x -= nodeSpacing * (1.0f - animationProgress); // Dịch từ phải sang trái
+                targetPos.y += nodeSpacing * (1.0f - animationProgress); // Đi từ trên xuống
+            }
         }
-        else if (isPosInserting && index == indexInsert) {
-            // Node mới chèn vào đúng vị trí indexInsert
-            targetPos.y += (1.0f - animationProgress) * nodeSpacing;
+        else if (isPosInserting ) {
+            if (index == indexInsert) {
+                // Node mới chèn vào đúng vị trí indexInsert
+                if (index < 11) targetPos.y -= (1.0f - animationProgress) * nodeSpacing;
+                else if (index > 11)targetPos.y += (1.0f - animationProgress) * nodeSpacing;
+            }
+            else if (index > indexInsert) {
+                if (index < 11)targetPos.x -= (1.0f - animationProgress) * nodeSpacing;
+                else if (index == 11) targetPos.y -= (1.0f - animationProgress) * nodeSpacing;
+                else targetPos.x += (1.0f - animationProgress) * nodeSpacing;
+            }
+
         }
         else if (isDeleting && current->value == valueDelete) {
+            numsDelete++;
             DrawCircle(targetPos.x, targetPos.y, 30, Fade(Color{ 246, 50, 130, 255 }, 1.0f - animationProgress));
             current = current->next;
             indexDelete = index;
@@ -603,11 +639,12 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
         }
         else if (isDeleting && index > indexDelete) {
             // Vị trí ban đầu của node bên phải node bị xóa
-            Vector2 initialPos = { startPos.x + index * nodeSpacing, startPos.y };
+            Vector2 initialPos = TargetPos(index);
             // Vị trí của node bị xóa
-            Vector2 newPos = { startPos.x + (index - 1) * nodeSpacing, startPos.y };
+            Vector2 newPos = TargetPos(index-numsDelete);
             // Đưa node bên phải node bị xóa sang bên trái đến vị trí của node bị xóa để thay thế
             targetPos.x = initialPos.x * (1.0f - animationProgress) + newPos.x * animationProgress;
+            targetPos.y = initialPos.y * (1.0f - animationProgress) + newPos.y * animationProgress;
         }
 
         Color nodeColor = (fadeProgress == 1.0f) ? WHITE : Fade(Color{ 246, 50, 130, 255 }, fadeProgress); // Màu mặc định của Node 
@@ -634,34 +671,95 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
 
         // Vẽ mũi tên (đường nối) giữa các node
         if (prevPos.x != -1) {
-            Vector2 startLine = { prevPos.x + 30, prevPos.y }; // Cạnh phải của node trước
-            Vector2 endLine = { targetPos.x - 30, targetPos.y }; // Cạnh trái của node sau
+            if (index < 11) {
+                Vector2 startLine = { prevPos.x + 30, prevPos.y }; // Cạnh phải của node trước
+                Vector2 endLine = { targetPos.x - 30, targetPos.y }; // Cạnh trái của node sau
 
-            DrawLineEx(startLine, endLine, 1.5f, Fade(BLACK, fadeProgress));
+                DrawLineEx(startLine, endLine, 1.5f, Fade(BLACK, fadeProgress));
 
-            // Tính toán góc của đường thẳng
-            float dx = endLine.x - startLine.x;
-            float dy = endLine.y - startLine.y;
-            float angle = atan2(dy, dx);
+                // Tính toán góc của đường thẳng
+                float dx = endLine.x - startLine.x;
+                float dy = endLine.y - startLine.y;
+                float angle = atan2(dy, dx);
 
-            // Độ dài đầu mũi tên (có thể điều chỉnh)
-            float arrowLength = 10.0f;
-            float arrowAngle = 25 * DEG2RAD; // Góc nghiêng của mũi tên (25 độ)
+                // Độ dài đầu mũi tên (có thể điều chỉnh)
+                float arrowLength = 10.0f;
+                float arrowAngle = 25 * DEG2RAD; // Góc nghiêng của mũi tên (25 độ)
 
-            // Tính toán hai điểm cho đầu mũi tên
-            Vector2 arrowPoint1 = {
-                endLine.x - arrowLength * cos(angle + arrowAngle),
-                endLine.y - arrowLength * sin(angle + arrowAngle)
-            };
-            Vector2 arrowPoint2 = {
-                endLine.x - arrowLength * cos(angle - arrowAngle),
-                endLine.y - arrowLength * sin(angle - arrowAngle)
-            };
+                // Tính toán hai điểm cho đầu mũi tên
+                Vector2 arrowPoint1 = {
+                    endLine.x - arrowLength * cos(angle + arrowAngle),
+                    endLine.y - arrowLength * sin(angle + arrowAngle)
+                };
+                Vector2 arrowPoint2 = {
+                    endLine.x - arrowLength * cos(angle - arrowAngle),
+                    endLine.y - arrowLength * sin(angle - arrowAngle)
+                };
 
-            // Vẽ hai đoạn thẳng tạo thành đầu mũi tên
-            DrawLineEx(endLine, arrowPoint1, 1.5f, Fade(BLACK, fadeProgress));
-            DrawLineEx(endLine, arrowPoint2, 1.5f, Fade(BLACK, fadeProgress));
+                // Vẽ hai đoạn thẳng tạo thành đầu mũi tên
+                DrawLineEx(endLine, arrowPoint1, 1.5f, Fade(BLACK, fadeProgress));
+                DrawLineEx(endLine, arrowPoint2, 1.5f, Fade(BLACK, fadeProgress));
+            }
+            else if (index == 11) {
+                Vector2 startLine = { prevPos.x, prevPos.y + 30 }; // Cạnh phải của node trước
+                Vector2 endLine = { targetPos.x , targetPos.y -30}; // Cạnh trái của node sau
+
+                DrawLineEx(startLine, endLine, 1.5f, Fade(BLACK, fadeProgress));
+
+                // Tính toán góc của đường thẳng
+                float dx = endLine.x - startLine.x;
+                float dy = endLine.y - startLine.y;
+                float angle = atan2(dy, dx);
+
+                // Độ dài đầu mũi tên (có thể điều chỉnh)
+                float arrowLength = 10.0f;
+                float arrowAngle = 25 * DEG2RAD; // Góc nghiêng của mũi tên (25 độ)
+
+                // Tính toán hai điểm cho đầu mũi tên
+                Vector2 arrowPoint1 = {
+                    endLine.x - arrowLength * cos(angle + arrowAngle),
+                    endLine.y - arrowLength * sin(angle + arrowAngle)
+                };
+                Vector2 arrowPoint2 = {
+                    endLine.x - arrowLength * cos(angle - arrowAngle),
+                    endLine.y - arrowLength * sin(angle - arrowAngle)
+                };
+
+                // Vẽ hai đoạn thẳng tạo thành đầu mũi tên
+                DrawLineEx(endLine, arrowPoint1, 1.5f, Fade(BLACK, fadeProgress));
+                DrawLineEx(endLine, arrowPoint2, 1.5f, Fade(BLACK, fadeProgress));
+            }
+            else {
+                Vector2 startLine = { prevPos.x - 30, prevPos.y }; // Cạnh phải của node trước
+                Vector2 endLine = { targetPos.x + 30, targetPos.y }; // Cạnh trái của node sau
+
+                DrawLineEx(startLine, endLine, 1.5f, Fade(BLACK, fadeProgress));
+
+                // Tính toán góc của đường thẳng
+                float dx = endLine.x - startLine.x;
+                float dy = endLine.y - startLine.y;
+                float angle = atan2(dy, dx);
+
+                // Độ dài đầu mũi tên (có thể điều chỉnh)
+                float arrowLength = 10.0f;
+                float arrowAngle = 25 * DEG2RAD; // Góc nghiêng của mũi tên (25 độ)
+
+                // Tính toán hai điểm cho đầu mũi tên
+                Vector2 arrowPoint1 = {
+                    endLine.x - arrowLength * cos(angle + arrowAngle),
+                    endLine.y - arrowLength * sin(angle + arrowAngle)
+                };
+                Vector2 arrowPoint2 = {
+                    endLine.x - arrowLength * cos(angle - arrowAngle),
+                    endLine.y - arrowLength * sin(angle - arrowAngle)
+                };
+
+                // Vẽ hai đoạn thẳng tạo thành đầu mũi tên
+                DrawLineEx(endLine, arrowPoint1, 1.5f, Fade(BLACK, fadeProgress));
+                DrawLineEx(endLine, arrowPoint2, 1.5f, Fade(BLACK, fadeProgress));
+            }
         }
+
 
         prevPos = targetPos; // Lưu vị trí của node hiện tại để nối với node tiếp theo
 

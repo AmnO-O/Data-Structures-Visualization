@@ -58,6 +58,8 @@ private:
 
 	float Clamp(float value, float minValue, float maxValue);
 	float SmoothStep(float a, float b, float t);
+	Vector2 TargetPos(int index);
+
 
 	// Kiểm tra trang hiện tại người dùng đang sử dụng
 	int linkedlistState;
@@ -103,6 +105,7 @@ private:
 	float fadeProgress = 1.0f;   // Fade linked list khi Clean Linked List 
 
 	Vector2 startPos = { 500, 300 };
+	Vector2 startPos2ndrow = { 1500, 400 };
 	float nodeSpacing = 100.0f;
 
 	// Hàm reset lại nội dung trong textBox 
