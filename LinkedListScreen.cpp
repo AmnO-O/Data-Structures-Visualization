@@ -70,6 +70,9 @@ void LinkedListScreen::Update(int& state) {
     // Kiểm tra hover vào nút "Insert Pos"
     insertPosHovered = CheckCollisionPointRec(mouse, insertPosButton);
 
+    // Kiểm tra hover vào nút "OK"
+    okHovered = CheckCollisionPointRec(mouse, okButton);
+
     // Xử lý sự kiện khi nhấn vào nút "Back"
     if (backHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         state = Menu_state; // Quay lại màn hình Menu
@@ -78,6 +81,11 @@ void LinkedListScreen::Update(int& state) {
     // Kiểm tra nút Insert
     if (insertHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         showInsertOptions = !showInsertOptions;
+    }
+
+    // Xử lý sự kiện khi nhấn vào nút "OK"
+    if (okHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        Value.isClickedEnter = true;
     }
 
     // Animation:  Điều chỉnh offset khi mở menu Insert
@@ -161,6 +169,20 @@ void LinkedListScreen::Update(int& state) {
             timer = 0.0f;
             entered = true;
         }
+        if (Value.isClickedEnter) {
+            Value.getMessage();
+            if (Value.outputMessage != "") {
+                valueInsert = stoi(Value.outputMessage);
+                infoMessage = "Inserting " + to_string(valueInsert) + " at Head of Linked List.";  // Cập nhật infoMessage
+                Value.outputMessage = "";
+
+                // Kích hoạt animation sau mỗi lần thay đổi
+                isHeadInserting = true;
+                timer = 0.0f;
+                entered = true;
+            }
+            Value.isClickedEnter = false;
+        }
     }
     else if (linkedlistState == InsertTailState) {
         Value.update();
@@ -174,6 +196,20 @@ void LinkedListScreen::Update(int& state) {
             isTailInserting = true;
             timer = 0.0f;
             entered = true;
+        }
+        if (Value.isClickedEnter) {
+            Value.getMessage();
+            if (Value.outputMessage != "") {
+                valueInsert = stoi(Value.outputMessage);
+                infoMessage = "Inserting " + to_string(valueInsert) + " at Tail of Linked List.";  // Cập nhật infoMessage
+                Value.outputMessage = "";
+
+                // Kích hoạt animation sau mỗi lần thay đổi
+                isTailInserting = true;
+                timer = 0.0f;
+                entered = true;
+            }
+            Value.isClickedEnter = false;
         }
     }
     else if (linkedlistState == InsertPosState) {
@@ -198,13 +234,39 @@ void LinkedListScreen::Update(int& state) {
             }
             Value.isEnter = false; // Reset trạng thái ENTER 
             Index.isEnter = false; // Reset trạng thái ENTER 
-            Value.outputMessage = "";
-            Index.outputMessage = "";
 
             // Kích hoạt animation sau mỗi lần thay đổi
             isPosInserting = true;
             timer = 0.0f;
             entered = true;
+        }
+        if (Value.isClickedEnter) {
+            Index.isClickedEnter = true;
+            Value.getMessage();
+            Index.getMessage();
+            Value.text = "";
+            Index.text = "";
+            if (Value.outputMessage != "" && Index.outputMessage != "") {
+                valueInsert = stoi(Value.outputMessage);
+                indexInsert = stoi(Index.outputMessage);
+
+                if (indexInsert < linkedList.getSize() + 1) {
+                    infoMessage = "Inserting " + to_string(valueInsert) + " at Position " + to_string(indexInsert) + " of Linked \nList (0-indexed).";  // Cập nhật infoMessage
+                }
+                else {
+                    infoMessage = "The size of Linked List is smaller \nthan the position you need.";
+                }
+
+                Value.outputMessage = "";
+                Index.outputMessage = "";
+
+                // Kích hoạt animation sau mỗi lần thay đổi
+                isPosInserting = true;
+                timer = 0.0f;
+                entered = true;
+            }
+            Value.isClickedEnter = false;
+            Index.isClickedEnter = false;
         }
     }
     else if (linkedlistState == DeleteState) {
@@ -224,6 +286,23 @@ void LinkedListScreen::Update(int& state) {
                 infoMessage = "There is no node with the value\n" + to_string(valueDelete) + " in the current Linked List.";
             }
         }
+        if (Value.isClickedEnter) {
+            Value.getMessage();
+            if (Value.outputMessage != "") {
+                valueDelete = stoi(Value.outputMessage);
+                if (linkedList.SearchNode(valueDelete)) {
+                    // Kích hoạt animation sau mỗi lần thay đổi
+                    isDeleting = true;
+                    timer = 0.0f;
+                    infoMessage = "Deleting " + to_string(valueDelete) + " of Linked List.";  // Cập nhật infoMessage
+                }
+                else {
+                    infoMessage = "There is no node with the value\n" + to_string(valueDelete) + " in the current Linked List.";
+                }
+                Value.outputMessage = "";
+            }
+            Value.isClickedEnter = false;
+        }
     }
     else if (linkedlistState == SearchState) {
         Value.update();
@@ -236,6 +315,19 @@ void LinkedListScreen::Update(int& state) {
             isSearch = true;
             timer = 0.0f;
             entered = true;
+        }
+        if (Value.isClickedEnter) {
+            Value.getMessage();
+            if (Value.outputMessage != "") {
+                valueSearch = stoi(Value.outputMessage);
+                Value.outputMessage = "";
+
+                // Kích hoạt animation sau mỗi lần thay đổi
+                isSearch = true;
+                timer = 0.0f;
+                entered = true;
+            }
+            Value.isClickedEnter = false;
         }
         if (!linkedList.SearchNode(valueSearch)) {
             infoMessage = "There is no node with the value \n" + to_string(valueSearch) + " in the current Linked List.";
@@ -401,6 +493,18 @@ void LinkedListScreen::DrawOperationsPanel() {
         int textWidth = MeasureTextEx(myFont, "Value", fontSize, 1.f).x;
         DrawTextEx(myFont, "Value", { 200, 350 }, fontSize, spacing, BLACK);
         Value.draw();
+
+        // Vẽ nút "OK"
+        Color okColor = okHovered ? LIGHTGRAY : RAYWHITE;
+        if (currentButton == OK) okColor = { 250, 228, 49, 255 };
+        DrawRectangleRounded(okButton, 0.2f, 4, okColor);
+        DrawRectangleRoundedLinesEx(okButton, 0.2f, 4, 2.0f, GRAY);
+
+        Vector2 okSize = MeasureTextEx(myFont, "OK", 18, 2);
+        DrawTextEx(myFont, "OK",
+            { okButton.x + (okButton.width - okSize.x) / 2,
+              okButton.y + (okButton.height - okSize.y) / 2 },
+            18, 2, DARKBLUE);
     }
     else if (linkedlistState == InsertPosState) {
         int fontSize = 24;
@@ -412,6 +516,18 @@ void LinkedListScreen::DrawOperationsPanel() {
         textWidth = MeasureTextEx(myFont, "Index", fontSize, 1.f).x;
         DrawTextEx(myFont, "Index", { 200, 400 }, fontSize, spacing, BLACK);
         Index.draw();
+
+        // Vẽ nút "OK"
+        Color okColor = okHovered ? LIGHTGRAY : RAYWHITE;
+        if (currentButton == OK) okColor = { 250, 228, 49, 255 };
+        DrawRectangleRounded(okButton, 0.2f, 4, okColor);
+        DrawRectangleRoundedLinesEx(okButton, 0.2f, 4, 2.0f, GRAY);
+
+        Vector2 okSize = MeasureTextEx(myFont, "OK", 18, 2);
+        DrawTextEx(myFont, "OK",
+            { okButton.x + (okButton.width - okSize.x) / 2,
+              okButton.y + (okButton.height - okSize.y) / 2 },
+            18, 2, DARKBLUE);
     }
     else if (linkedlistState == ClearState) {}
 }
@@ -451,8 +567,6 @@ void LinkedListScreen::Draw() {
 }
 
 void LinkedListScreen::drawLinkedList(float animationProgress) {
-    Vector2 startPos = { 500, 300 };
-    float nodeSpacing = 100.0f;
     LLNode* current = linkedList.head;
 
     int index = 0;
@@ -483,8 +597,17 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
         else if (isDeleting && current->value == valueDelete) {
             DrawCircle(targetPos.x, targetPos.y, 30, Fade(Color{ 246, 50, 130, 255 }, 1.0f - animationProgress));
             current = current->next;
+            indexDelete = index;
             index++;
             continue;
+        }
+        else if (isDeleting && index > indexDelete) {
+            // Vị trí ban đầu của node bên phải node bị xóa
+            Vector2 initialPos = { startPos.x + index * nodeSpacing, startPos.y };
+            // Vị trí của node bị xóa
+            Vector2 newPos = { startPos.x + (index - 1) * nodeSpacing, startPos.y };
+            // Đưa node bên phải node bị xóa sang bên trái đến vị trí của node bị xóa để thay thế
+            targetPos.x = initialPos.x * (1.0f - animationProgress) + newPos.x * animationProgress;
         }
 
         Color nodeColor = (fadeProgress == 1.0f) ? WHITE : Fade(Color{ 246, 50, 130, 255 }, fadeProgress); // Màu mặc định của Node 

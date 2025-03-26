@@ -12,6 +12,7 @@ struct TextBox {
     int framesCounter;     // Blink blink 
     bool isEnter = false;
     bool tt = false;
+    bool isClickedEnter = false;
 
     Font font = LoadFontEx("Assets/Fonts/PublicSans-bold.ttf", 65, 0, 0);
     int fontSize = 20;
@@ -87,13 +88,6 @@ struct TextBox {
         framesCounter++;
     }
 
-    void sss() {
-        if (tt == 1) {
-            outputMessage = text;
-            tt = 0;
-        }
-    }
-
     int getDigit() {
         int c = 0;
         for (int i = 0; i < text.size(); i++) {
@@ -101,6 +95,23 @@ struct TextBox {
         }
 
         return c;
+    }
+
+    void sss() {
+        if (tt = 1) {
+            outputMessage = text;
+            tt = 0;
+        }
+    }
+    
+    void getMessage() {
+        if (isClickedEnter) {
+            outputMessage = text;
+            text = "";
+            focused = 0;
+            framesCounter = 0;
+        }
+        return;
     }
 
     void draw() {

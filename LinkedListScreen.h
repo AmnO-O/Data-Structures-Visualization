@@ -13,7 +13,8 @@ enum SelectedButton {
 	INSERTPOS,
 	DELETE,
 	SEARCH,
-	CLEAN
+	CLEAN,
+	OK,
 };
 
 class LinkedListScreen {
@@ -35,6 +36,7 @@ private:
 	bool insertAtHeadHovered = false;
 	bool insertAtTailHovered = false;
 	bool insertPosHovered = false;
+	bool okHovered = false;
 
 	float insertHeadAlpha = 1.0f;  // Alpha của nút Head
 	float insertTailAlpha = 1.0f;  // Alpha của nút Tail
@@ -50,6 +52,10 @@ private:
 	Rectangle insertHeadButton = { PANEL_PADDING + 37, 350, 100, 30 };
 	Rectangle insertTailButton = { PANEL_PADDING + 37, 390, 100, 30 };
 	Rectangle insertPosButton = { PANEL_PADDING + 37, 430, 100, 30 };
+
+	// Nút OK dưới textBox
+	Rectangle okButton = { PANEL_PADDING + 217, 470, 90, 30 };
+
 	float Clamp(float value, float minValue, float maxValue);
 	float SmoothStep(float a, float b, float t);
 
@@ -88,12 +94,17 @@ private:
 	int indexInsert;
 	int valueSearch;
 
+	int indexDelete;   //  index của Node bị xóa 
 	LLNode* SearchNode;
 	LLNode* currentSearchNode;
 
 	int posX, posY;   // Vị trí của IN4
 	string infoMessage = "";   // Lưu dòng chữ INFO
 	float fadeProgress = 1.0f;   // Fade linked list khi Clean Linked List 
+
+	Vector2 startPos = { 500, 300 };
+	float nodeSpacing = 100.0f;
+
 	// Hàm reset lại nội dung trong textBox 
 	void handleButtonClick(SelectedButton newButton, TextBox& textBox);
 public:
