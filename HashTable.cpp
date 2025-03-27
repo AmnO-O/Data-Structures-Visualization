@@ -10,7 +10,7 @@ HashTable::HashTable(int x) {
 }
 
 void HashTable::clear() {
-    for (int i = 0; i < sz; i++) htable[i] = -1; 
+    for (int i = 0; i < sz; i++) htable[i] = -1;
 }
 
 vector <int> HashTable::getInsertionPath(int val) {
@@ -172,7 +172,7 @@ void HashTable::drawSlot(int index, Font font, bool highlight, bool Value) {
 }
 
 void HashTable::drawSlot(Rectangle rect, int index, const std::string& text, Font font, bool highlight, bool Value) {
-    Color baseColor = highlight ? SKYBLUE : LIGHTGRAY;
+    Color baseColor = highlight ? SKYBLUE : (isDarkMode ? LIGHTGRAY : Color{ 244, 162, 88, 210 });
     float roundness = 0.3f;
     int segments = 8;
 
@@ -182,7 +182,7 @@ void HashTable::drawSlot(Rectangle rect, int index, const std::string& text, Fon
     DrawRectangleRounded(shadowRect, roundness, segments, Fade(BLACK, 0.3f));
 
     // Slot background.
-    DrawRectangleRounded(rect, roundness, segments, isDarkMode ? GRAY : Color{ 244, 162, 88, 210 });
+    DrawRectangleRounded(rect, roundness, segments, baseColor);
     DrawRectangleRoundedLines(rect, roundness, segments, isDarkMode ? BLACK : Color{ 244, 162, 88, 210 });
 
     // If occupied, draw the key centered.
@@ -221,6 +221,5 @@ void HashTable::drawSlot(Rectangle rect, int index, const std::string& text, Fon
     int posX = rect.x + (rect.width - textWidth) / 2;
     int posY = rect.y + rect.height + 5; // 5 pixels below the slot.
 
-    DrawTextEx(font, indexStr.c_str(), { posX * 1.f, posY * 1.f }, fontSize, 1, isDarkMode ? Color {252, 243, 227, 255} : BLUE);
+    DrawTextEx(font, indexStr.c_str(), { posX * 1.f, posY * 1.f }, fontSize, 1, isDarkMode ? Color{ 252, 243, 227, 255 } : BLUE);
 }
-

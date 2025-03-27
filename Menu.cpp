@@ -126,13 +126,13 @@ void Menu::Draw() {
         float centerY = item.bounds.y + Item_h / 2;
 
         int textWidth = MeasureTextEx(myFont, item.name.c_str(), 30, 1).x;
-        DrawTextEx(myFont, item.name.c_str(), { centerX - textWidth / 2, item.bounds.y + Item_h - 40 }, 30, 1, isDarkMode ? Color{ 244, 162, 88, 255 } : DARKBLUE);
+        DrawTextEx(myFont, item.name.c_str(), { centerX - textWidth / 2, item.bounds.y + Item_h - 40 }, 30, 1, isDarkMode ? Color{ 253, 111, 59, 255 } : DARKBLUE);
     }
 
     Color helpColor = helpHovered ? LIGHTGRAY : RAYWHITE;
     Color aboutColor = aboutHovered ? LIGHTGRAY : RAYWHITE;
     Color settingsColor = settingsHovered ? LIGHTGRAY : RAYWHITE;
-    Color textColor = !isDarkMode ? DARKBLUE : ORANGE;
+    Color textColor = !isDarkMode ? DARKBLUE : Color{ 253, 111, 59, 255 };
     Color rounded = isDarkMode ? ORANGE : GRAY;
 
     // Vẽ nút "How to Use"
