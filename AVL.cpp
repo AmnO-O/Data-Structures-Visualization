@@ -40,15 +40,16 @@ AVLNode* AVLtree::rightRotate(AVLNode* x) {
     return y;
 }
 
-AVLNode* AVLtree::insert(AVLNode*& root, int key) {
+AVLNode* AVLtree::insert(AVLNode*& root, int key, float Ox , float Oy) {
     //if node is null insert new node 
     if (!root) {
-        root = new AVLNode(key);
+        root = new AVLNode(key , Ox , Oy);
         return root;
     }
+
     // choose subtree to insert
-    if (key < root->val) root->left = insert(root->left, key);
-    else if (key > root->val) root->right = insert(root->right, key);
+    if (key < root->val) root->left = insert(root->left, key , root->x - 50.0 , root->y+50.0);
+    else if (key > root->val) root->right = insert(root->right, key, root->x+ 50.0, root->y+ 50.0);
     else return root;
 
 
@@ -90,14 +91,10 @@ AVLNode* AVLtree::Search(AVLNode* root, int key) {
     else return Search(root->right, key);
 }
 
-AVLNode* AVLtree::Search(int key) {
-    return Search(root, key);
-}
-
-AVLNode* AVLtree::DeleteNode(AVLNode* root, int key) {
+AVLNode* AVLtree::Delete(AVLNode* root, int key) {
     if (!root) return root;
-    if (key < root->val) root->left = DeleteNode(root->left, key);
-    else if (key > root->val) root->right = DeleteNode(root->right, key);
+    if (key < root->val) root->left = Delete(root->left, key);
+    else if (key > root->val) root->right = Delete(root->right, key);
     else {
         if (!root->left || !root->right) {
             AVLNode* temp = root->left ? root->left : root->right;
@@ -112,7 +109,7 @@ AVLNode* AVLtree::DeleteNode(AVLNode* root, int key) {
             AVLNode* temp = root->right;
             while (temp->left) temp = temp->left;
             root->val = temp->val;
-            root->right = DeleteNode(root->right, temp->val);
+            root->right = Delete(root->right, temp->val);
         }
     }
     if (!root) return root;
@@ -141,4 +138,20 @@ void AVLtree::Clear(AVLNode* root) {
     delete temp;
     temp = NULL;
 
+}
+
+void AVLtree::Clear() {
+    Clear(m_root);
+}
+
+AVLNode* AVLtree::Search(int key) {
+    return Search(m_root, key);
+}
+
+void AVLtree::Insert(int key) {
+    m_root = insert(m_root, key, 800 , 200);
+}
+
+void AVLtree::Delete(int key) {
+    Delete(m_root, key);
 }

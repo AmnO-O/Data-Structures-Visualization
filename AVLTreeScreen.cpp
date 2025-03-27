@@ -32,20 +32,9 @@ void AVLTreeScreen::Init() {
 
 }
 
-float AVLTreeScreen::Clamp(float value, float minValue, float maxValue) {
-    if (value < minValue) return minValue;
-    if (value > maxValue) return maxValue;
-    return value;
-}
-
-float AVLTreeScreen::SmoothStep(float a, float b, float t) {
-    t = Clamp(t, 0.0f, 1.0f); // Đảm bảo t trong khoảng [0,1]
-    return a + (b - a) * t;
-}
-
-
 void AVLTreeScreen::Update(int& state) {
     Vector2 mouse = GetMousePosition();
+    UpdatePos(AVLtree.m_root);
 
     // Kiểm tra hover vào nút "Back"
     backHovered = CheckCollisionPointRec(mouse, backButton);
@@ -205,33 +194,55 @@ void AVLTreeScreen::Update(int& state) {
 
     if (AVLtreeState != SearchState)   SearchNode = nullptr;
 
-    // Cập nhật tiến trình animation
-    //if (isInsert|| isDeleting || isSearch) {
-    //    timer += GetFrameTime();
-    //    if (entered) {
-    //        if (isInsert)  AVLtree.root =AVLtree.insert(AVLtree.root,valueInsert);
-    //        else if (isSearch) {
-    //            SearchNode = AVLtree.Search(valueSearch);
-    //            currentSearchNode = AVLtree.root;
-    //        }
-    //        entered = !entered;
-    //    }
-    //    if (timer >= duration) {
-    //        if (isDeleting)  AVLtree.DeleteValue(valueDelete);
-
-    //        if (isSearch && currentSearchNode != SearchNode) {
-    //            timer = 0.0f;
-    //            currentSearchNode = currentSearchNode->next;
-    //        }
-    //        else {
-    //            isInsert = isDeleting = isSearch = false;
-    //            timer = 0.0f;  // Reset lại bộ đếm thời gian
-    //        }
-    //    }
-    //}
+     //Cập nhật tiến trình animation
+    if (isInsert || isDeleting || isSearch) {
+        timer += GetFrameTime();
+        if (entered) {
+            if (isInsert)  AVLtree.Insert(valueInsert);
+            else if (isDeleting) currentDeleteNode = AVLtree.m_root;
+            else if (isSearch) {
+                SearchNode = AVLtree.Search(valueSearch);
+                currentSearchNode = AVLtree.m_root;
+            }
+            entered = !entered;
+        }
+        if (timer >= duration) {
+            if (isDeleting)  AVLtree.Delete(valueDelete);
+            if ( ( isSearch || isDeleting) && ( currentSearchNode->val != valueSearch || currentSearchNode->val != valueDelete) ) {
+                timer = 0.0f;
+                currentSearchNode = valueSearch < currentSearchNode->val ? currentSearchNode->left : currentSearchNode->right;
+            }
+            else {
+                isInsert = isDeleting = isSearch = false;
+                timer = 0.0f;  // Reset lại bộ đếm thời gian
+            }
+        }
+    }
 
     if (fadeProgress == 0.0f)   fadeProgress = 1.0f;
 }
+
+void AVLTreeScreen::UpdatePos(AVLNode* root) {
+    if (root == nullptr) return;
+
+    if (AVLtree.m_root == root) {
+        root->newx = 800;
+        root->newy = 200;
+    }
+    int maxleaf = root->height > 1 ? root->height - 2 : 0;
+    maxleaf = 1 << maxleaf;
+    if (root->left) {
+        root->left->newx = root->newx - maxleaf * nodeSpacing/ 2.0;
+        root->left->newy = root->newy + nodeSpacing;
+        UpdatePos(root->left);
+    }
+    if (root->right) {
+        root->right->newx = root->newx + maxleaf * nodeSpacing / 2.0;
+        root->right->newy = root->newy + nodeSpacing;
+        UpdatePos(root->right);
+    }
+}
+
 
 void AVLTreeScreen::DrawOperationsPanel() {
     // Vẽ nền bảng
@@ -366,12 +377,40 @@ void AVLTreeScreen::Draw() {
 
     // Gọi vẽ danh sách với progress từ 0 -> 1
     float animationProgress = timer / duration;
-    //drawAVLtree(animationProgress);
+    drawAVLtree(animationProgress,AVLtree.m_root);
+}
+
+void AVLTreeScreen::drawAVLtree(float animationProgress, AVLNode* root) {
+    if (!root) return;
+    // Interpolate positions using animation progress
+
+    if (!isDeleting && !isInsert) {
+        root->x = root->newx;
+        root->y = root->newy;
+    }
+    root->displayX = root->x * (1.0f - animationProgress) + root->newx * animationProgress;
+    root->displayY = root->y * (1.0f - animationProgress) + root->newy * animationProgress;
+    // Draw edges
+    if (root->left) {
+        DrawLine(root->displayX, root->displayY, root->left->displayX, root->left->displayY,BLACK);
+        drawAVLtree(animationProgress, root->left);
+    }
+    if (root->right) {
+        DrawLine(root->displayX, root->displayY, root->right->displayX, root->right->displayY,BLACK);
+        drawAVLtree(animationProgress, root->right);
+    }
+
+    // Draw node
+    DrawCircleV({ root->displayX,root->displayY }, 20, WHITE);
+    string nodeText = TextFormat("%d", root->val);
+    Vector2 textSize = MeasureTextEx(myFont, nodeText.c_str(), 25, 1.25);
+
+    Vector2 textPos = { root->displayX - textSize.x / 2,  root->displayY - textSize.y / 2 }; // Căn giữa Node 
+    DrawTextEx(myFont, nodeText.c_str(), textPos, 25, 1.25, Fade(BLACK, fadeProgress));
 }
 
 //void AVLTreeScreen::drawAVLtree(float animationProgress) {
-//    Vector2 startPos = { 500, 300 };
-//    float nodeSpacing = 100.0f;
+//    Vector2 Origin = { 500, 800 };
 //    AVLNode* current = AVLtree.root;
 //
 //    int index = 0;

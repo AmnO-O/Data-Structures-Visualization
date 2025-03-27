@@ -18,7 +18,7 @@ class AVLTreeScreen {
 private:
 #define PANEL_WIDTH 188  // Độ rộng bảng
 #define PANEL_PADDING 20 // Khoảng cách lề
-
+	float nodeSpacing = 50.0f;
 	Font AVLtreeFont;   // Font chữ cho màn hình AVL
 	Font valueFont;
 	Font IN4Font;
@@ -39,10 +39,6 @@ private:
 
 	// Nút OK dưới textBox
 	Rectangle okButton = { PANEL_PADDING + 217, 470, 90, 30 };
-
-
-	float Clamp(float value, float minValue, float maxValue);
-	float SmoothStep(float a, float b, float t);
 
 	// Kiểm tra trang hiện tại người dùng đang sử dụng
 	int AVLtreeState;
@@ -76,6 +72,8 @@ private:
 	AVLNode* SearchNode;
 	AVLNode* currentSearchNode;
 
+	AVLNode* currentDeleteNode;
+
 
 
 	int posX, posY;   // Vị trí của IN4
@@ -90,6 +88,9 @@ public:
 	// Hàm cập nhật trạng thái của màn hình AVL
 	void Update(int& state);
 
+	// UpdatePos
+	void UpdatePos(AVLNode* root);
+
 	// Hàm vẽ mành hình AVL
 	void Draw();
 
@@ -100,5 +101,5 @@ public:
 	void DrawOperationsPanel();
 
 	// Vẽ AVLtree lên màn hình
-	void drawAVLtree(float animationProgress);
+	void drawAVLtree(float animationProgress , AVLNode* root);
 };
