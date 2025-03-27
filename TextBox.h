@@ -14,7 +14,7 @@ struct TextBox {
     bool tt = false;
     bool isClickedEnter = false;
 
-    Font font = LoadFontEx("Assets/Fonts/PublicSans-bold.ttf", 65, 0, 0);
+    Font font = LoadFont("Assets/Fonts/PublicSans-bold.ttf");
     int fontSize = 20;
 
     void update() {
@@ -103,7 +103,7 @@ struct TextBox {
             tt = 0;
         }
     }
-    
+
     void getMessage() {
         if (isClickedEnter) {
             outputMessage = text;
@@ -157,9 +157,9 @@ struct TextBoxCenter { /// put the cursor in the center
 
     int framesCounter;     // Blink blink 
     bool isEnter = false;
-    Font font = LoadFontEx("Assets/Fonts/PublicSans-bold.ttf", 65, 0, 0);
+    Font font = LoadFont("Assets/Fonts/PublicSans-bold.ttf");
     int fontSize = 20;
-    Color textColor = BLACK; 
+    Color textColor = BLACK;
 
     void update() {
         isEnter = false;
