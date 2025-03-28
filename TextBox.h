@@ -243,6 +243,8 @@ struct TextBoxCenter { /// put the cursor in the center
     void draw() {
         Color boxColor = focused ? YELLOW : Color{ 244, 162, 83, 210 };
 
+        if (focused && text == "Random") text = "", pos = 0;
+
         int textY = bounds.y + (bounds.height - fontSize) / 2;
         // Vẽ ô text box với góc bo
         float roundness = 0.25f;   // Độ bo tròn (0.0 -> 1.0)

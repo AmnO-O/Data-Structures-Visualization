@@ -2,31 +2,102 @@
 
 GraphVisual::GraphVisual() {
 
-    font = LoadFontEx("Assets/Fonts/PublicSans-Bold.ttf", 65, 0, 0);
+    font = LoadFont("Assets/Fonts/PublicSans-Bold.ttf");
+    SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
+
     infoFont = LoadFont("Assets/Fonts/Acme-Regular.ttf");
     SetTextureFilter(infoFont.texture, TEXTURE_FILTER_BILINEAR);
     smallFont = LoadFont("Assets/Fonts/LilitaOne-Regular.ttf");
     SetTextureFilter(smallFont.texture, TEXTURE_FILTER_BILINEAR);
 
-    Vertices = { {PANEL_WIDTH + 100, 250 + 80, PANEL_WIDTH / 2 - 10, 30} };
-    Edges = { {PANEL_WIDTH + 100, 250 + 120, PANEL_WIDTH / 2 - 10, 30} };
-    
-    Vertices.text = "RANDOM"; 
-    Vertices.textColor = GREEN; 
-    
-    fileMatrixs = { { PANEL_PADDING + 200, 440, 130, 40 }, "File Matrixs" };
-    fileEdges = { { PANEL_PADDING + 200, 500, 130, 40 }, "File Edges" };
+    Vertices = { {PANEL_WIDTH + 100, 250 + 60, PANEL_WIDTH / 2 - 10, 30}, "Random" };
+    Edges = { {PANEL_WIDTH + 100, 250 + 100, PANEL_WIDTH / 2 - 10, 30}, "Random" };
+
+    Vertices.textColor = DARKGRAY;
+    Edges.textColor = DARKGRAY;
+
+    Go = { { PANEL_PADDING + 200, 420, 130, 40 }, "Go!" };
+
+    fileMatrix = { { PANEL_PADDING + 200, 510, 130, 40 }, "File Matrix" };
+    fileEdges = { { PANEL_PADDING + 200, 570, 130, 40 }, "File Edges" };
+
+    loadFileEdges.width = 600;
+    loadFileEdges.height = 300;
+
+    loadFileEdges.show("File Format Requirement",
+        " Every line in the file corresponds to one edge.\n"
+        " Each line contains exactly two or three integers.\n"
+        " - Two numbers: Represents an edge between two vertices.\n"
+        " - Three numbers: Represents an edge with weight\n (the third number).\n\n"
+        " Example: \n"
+        " 1 2\n"
+        " 2 3 2\n"
+        " 4 5\n"
+        " 5 6 5\n");
+
+    readFileEdges = FileLoader();
 }
 
 int GraphVisual::handleEvent() {
     float deltaTime = GetFrameTime();
     Input.update();
 
+    Vertices.update();
+    Edges.update();
+
     if (Input.isCreate) {
-        Vertices.update();
-        Edges.update();
-        fileMatrixs.update(); 
-        fileEdges.update(); 
+        if (Go.update()) {
+            G.genRandom((Vertices.text == "Random" ? -1 : Vertices.getDigit()), (Edges.text == "Random" ? -1 : Edges.getDigit()));
+            if (G.numNodes >= 0) Vertices.text = to_string(G.numNodes);
+            if (G.numEdges >= 0) Edges.text = to_string(G.numEdges);
+        }
+
+        fileMatrix.update();
+
+        if (fileEdges.update()) {
+            loadFileEdges.display = true;
+        }
+
+        if (loadFileEdges.update()) { /// load file Edges
+            vector <string> lines = readFileEdges.loadFileLines();
+
+            if (!lines.empty()) {
+                G.reset();
+
+                for (string each : lines) {
+                    int from = -1, to = -1, digit = -1;
+                    int weight = -1e9 - 7 - 2 - 2006;
+
+                    for (int i = 0; i < each.size(); i++) {
+                        if (each[i] == '-') {
+                            weight = -1;
+                            i++;
+                        }
+                        else if (isdigit(each[i])) {
+                            if (digit < 0) digit = each[i] - '0';
+                            else {
+                                digit = digit * 10 + each[i] - '0';
+                            }
+                        }
+                        else {
+                            if (from < 0) from = digit, digit = -1;
+                            else if (to < 0) to = digit, digit = -1;
+                        }
+                    }
+
+                    if (to < 0) to = digit;
+                    else if (digit != -1) weight = (weight == -1e9 - 7 - 2 - 2006 ? digit : -digit);
+
+                    while (G.numNodes <= max(from, to)) G.addNode(G.numNodes);
+                    if (from >= 0 && to >= 0 && from != to) G.addEdge(from, to, weight);
+                }
+
+                if (G.numNodes >= 0) Vertices.text = to_string(G.numNodes);
+                if (G.numEdges >= 0) Edges.text = to_string(G.numEdges);
+
+                cout << Vertices.text << ' ' << Edges.text << '\n';
+            }
+        }
     }
 
     G.update();
@@ -44,7 +115,7 @@ void GraphVisual::draw() {
     // Vẽ nền bảng khu vực panel 2 
     Color panelColorx = isDarkMode ? Color{ 94, 172, 240, 180 } : Color{ 94, 172, 240, 180 }; // Chọn màu theo chế độ
 
-    DrawRectangle(PANEL_WIDTH, panelMargin, PANEL_WIDTH, Screen_h - 2 * panelMargin, panelColorx);
+    DrawRectangle(PANEL_WIDTH, panelMargin, PANEL_WIDTH + 4, Screen_h - 2 * panelMargin, panelColorx);
 
     Color panelColory = isDarkMode ? Color{ 164, 235, 185, 200 } : Color{ 77, 168, 180, 200 }; // Chọn màu theo chế độ
 
@@ -66,30 +137,35 @@ void GraphVisual::draw() {
 
     Input.draw(smallFont);
 
+    if (Vertices.text == "") Vertices.text = "Random";
+    if (Edges.text == "") Edges.text = "Random";
+
+    Vertices.draw();
+    Edges.draw();
+    int fontSize = 22;
+    float spacing = 1.0f;
+
+    string text = "Vertices";
+    int textwidth = MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
+    DrawTextEx(font, text.c_str(), { PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 60 }, fontSize, spacing, BLACK);
+
+    text = "Edges";
+    textwidth = MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
+    DrawTextEx(font, text.c_str(), { PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 100 }, fontSize, spacing, BLACK);
+
+
     if (Input.isCreate) {
-        int fontSize = 22;
-        float spacing = 1.0f;
+        fileEdges.isChose = fileMatrix.isChose = Go.isChose = 0;
+        fileMatrix.draw(smallFont);
+        fileEdges.draw(smallFont);
+        Go.draw(smallFont);
 
-        Vertices.draw();
-        Edges.draw();
-        
-        fileMatrixs.draw(font);
-        fileEdges.draw(font);
-
-        string text = "Vertices";
-        int textwidth = MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
-        DrawTextEx(font, text.c_str(), {PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 80 }, fontSize, spacing, BLACK);
-
-
-        text = "Edges";
-        textwidth = MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
-        DrawTextEx(font, text.c_str(), { PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 120 }, fontSize, spacing, BLACK);
+        DrawLineEx(Vector2{ PANEL_WIDTH, 485 }, Vector2{ PANEL_WIDTH * 2 + 4, 485 }, 2, BLACK);
     }
 
     /// Draw graph
     G.draw(font);
-
-
+    loadFileEdges.draw(font);
 }
 
 GraphVisual::~GraphVisual() {

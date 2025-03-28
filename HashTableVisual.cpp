@@ -15,7 +15,7 @@ HashTableVisual::HashTableVisual() {
     //IN4Font = LoadFont("Assets/Fonts/Acme-Regular.ttf");
     //SetTextureFilter(IN4Font.texture, TEXTURE_FILTER_BILINEAR);
 
-    font = LoadFontEx("Assets/Fonts/PublicSans-Bold.ttf", 65, 0, 0);
+    font = LoadFont("Assets/Fonts/PublicSans-Bold.ttf");
     SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
 
     infoFont = LoadFont("Assets/Fonts/Acme-Regular.ttf");
@@ -25,6 +25,7 @@ HashTableVisual::HashTableVisual() {
 
     Value = { {270, 350, 90, 30} };
     valueButton = { { PANEL_PADDING + 100, 440, 80, 30 }, ">Value" };
+    valueRect = { -500, -500, 210, 55 };
 
     Value.fontSize = 22;
     Size.fontSize = 22;
@@ -42,7 +43,8 @@ HashTableVisual::HashTableVisual() {
     loadFile.show("File Format Requirement",
         "Please provide an array of positive int,\n"
         "separated by spaces or commas.\n\n"
-        "Example: 10,20,30,40. ");
+        "Example:\n "
+        " 10, 20, 30, 40. ");
 
     readFile = FileLoader();
 
@@ -72,13 +74,14 @@ HashTableVisual::HashTableVisual() {
 }
 
 int HashTableVisual::handleEvent() {
-    
+
     if (Input.update()) {
         valueAnimation = true;
+        valueTime = 0;
 
         if (Input.isSearch) {
-            Value.bounds.x = -500; 
-            Value.bounds.y = Input.cButton[1].rect.y; 
+            Value.bounds.x = -500;
+            Value.bounds.y = Input.cButton[1].rect.y;
         }
         else if (Input.isInsert) {
             Value.bounds.x = -500;
@@ -142,18 +145,18 @@ int HashTableVisual::handleEvent() {
             if (t > 1.0f) t = 1.0f;
             float smoothT = t * t * (3 - 2 * t);
 
-            Vector2 move = Lerp({ Value.bounds.x, Value.bounds.y }, {290, Input.cButton[2].rect.y + 5}, smoothT);
-            
-            Value.bounds.x = move.x; 
-            Value.bounds.y = move.y; 
+            Vector2 move = Lerp({ Value.bounds.x, Value.bounds.y }, { 295.5, Input.cButton[2].rect.y + 5 }, smoothT);
 
-            valueButton.rect.x = move.x - 95; 
+            Value.bounds.x = move.x;
+            Value.bounds.y = move.y;
+
+            valueButton.rect.x = move.x - 95;
             valueButton.rect.y = move.y + 1;
 
             if (valueTime >= valueDuration) {
-                valueTime = 0; 
-                valueAnimation = 0; 
-                valueAnimation = 0; 
+                valueTime = 0;
+                valueAnimation = 0;
+                valueAnimation = 0;
             }
         }
 
@@ -220,7 +223,7 @@ int HashTableVisual::handleEvent() {
             if (t > 1.0f) t = 1.0f;
             float smoothT = t * t * (3 - 2 * t);
 
-            Vector2 move = Lerp({ Value.bounds.x, Value.bounds.y }, { 290, Input.cButton[3].rect.y + 5 }, smoothT);
+            Vector2 move = Lerp({ Value.bounds.x, Value.bounds.y }, { 295.5, Input.cButton[3].rect.y + 5 }, smoothT);
 
             Value.bounds.x = move.x;
             Value.bounds.y = move.y;
@@ -235,7 +238,6 @@ int HashTableVisual::handleEvent() {
             }
         }
 
-        valueButton.update(); 
         Value.update();
 
         if (animation.active == false && Value.isEnter) {
@@ -298,7 +300,7 @@ int HashTableVisual::handleEvent() {
             if (t > 1.0f) t = 1.0f;
             float smoothT = t * t * (3 - 2 * t);
 
-            Vector2 move = Lerp({ Value.bounds.x, Value.bounds.y }, { 290, Input.cButton[1].rect.y + 5 }, smoothT);
+            Vector2 move = Lerp({ Value.bounds.x, Value.bounds.y }, { 295.5, Input.cButton[1].rect.y + 5 }, smoothT);
 
             Value.bounds.x = move.x;
             Value.bounds.y = move.y;
@@ -382,8 +384,6 @@ void HashTableVisual::draw() {
     int panelMargin = 250; // Khoảng cách lề trên với box
     Color panelColor = isDarkMode ? Color{ 229, 229, 229, 255 } : Color{ 189, 224, 254, 255 }; // Chọn màu theo chế độ
 
-    DrawRectangle(0, panelMargin, PANEL_WIDTH, Screen_h - 2 * panelMargin, panelColor);
-
     // Vẽ nền bảng khu vực panel 2 
     Color panelColorx = isDarkMode ? Color{ 94, 172, 240, 180 } : Color{ 94, 172, 240, 180 }; // Chọn màu theo chế độ
 
@@ -407,7 +407,6 @@ void HashTableVisual::draw() {
     Color IN4Color = isDarkMode ? Color{ 199, 8, 40, 255 } : Color{ 199, 8, 40, 255 };
     DrawTextEx(infoFont, "[INFO]:", { (float)posX + 10, (float)posY + 10 }, 26, 2, IN4Color);
 
-    Input.draw(smallFont);
 
     File.isChose = Random.isChose = 0;
 
@@ -439,16 +438,20 @@ void HashTableVisual::draw() {
         int fontSize = 24;
         float spacing = 1.0f;
 
-        Value.bounds.y = Input.cButton[2].rect.y + 5;
-        valueButton.draw(smallFont); 
+        valueRect.x = Value.bounds.x - 108;
+        valueRect.y = Value.bounds.y - 7 - 5;
+        DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
+
+        valueButton.draw(smallFont);
         Value.draw();
+
 
         if (animation.active && !popActive) {
             int fontSize = 20;
             int cur_key = H.getValue(animation.pathIndices[animation.currentPathIndex]);
             std::string keyText = std::to_string(cur_key);
             int textWidth = MeasureTextEx(font, keyText.c_str(), fontSize, 1.f).x;
-            Color markerColor = isDarkMode ? ORANGE : Color{189, 211, 206, 255};
+            Color markerColor = isDarkMode ? ORANGE : Color{ 189, 211, 206, 255 };
 
             for (int i = 5; i > 0; i--) {
                 DrawCircleV(animation.currentPos, 20 + i * 3, Fade(markerColor, 0.1f * i));
@@ -456,7 +459,6 @@ void HashTableVisual::draw() {
             }
 
             H.drawValue(animation.pathIndices[animation.currentPathIndex], font);
-            /// DrawTextEx(font,keyText.c_str(), {animation.currentPos.x * 1.f - textWidth / 2, animation.currentPos.y - fontSize / 2}, fontSize, 1.f, WHITE);
         }
 
 
@@ -490,9 +492,11 @@ void HashTableVisual::draw() {
         int fontSize = 24;
         float spacing = 1.0f;
 
-        //int textWidth = MeasureTextEx(font, "Value", fontSize, 1.f).x;
-        //DrawTextEx(font, "Value", { Value.bounds.x - 74, Value.bounds.y + 1 }, fontSize, spacing, isDarkMode ? WHITE : BLACK);
-        valueButton.draw(smallFont); 
+        valueRect.x = Value.bounds.x - 108;
+        valueRect.y = Value.bounds.y - 7 - 5;
+        DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
+
+        valueButton.draw(smallFont);
         Value.draw();
 
         if (animation.active && !shrinkActive) {
@@ -500,7 +504,7 @@ void HashTableVisual::draw() {
             int cur_key = H.getValue(animation.pathIndices[animation.currentPathIndex]);
             std::string keyText = std::to_string(cur_key);
             int textWidth = MeasureTextEx(font, keyText.c_str(), fontSize, 1.f).x;
-            Color markerColor = ORANGE;
+            Color markerColor = isDarkMode ? ORANGE : Color{ 189, 211, 206, 255 };
 
             for (int i = 5; i > 0; i--) {
                 DrawCircleV(animation.currentPos, 20 + i * 3, Fade(markerColor, 0.1f * i));
@@ -539,8 +543,10 @@ void HashTableVisual::draw() {
         int fontSize = 24;
         float spacing = 1.0f;
 
-        //int textWidth = MeasureTextEx(font, "Value", fontSize, 1.f).x;
-        //DrawTextEx(font, "Value", { Value.bounds.x - 74, Value.bounds.y + 1 }, fontSize, spacing, isDarkMode ? WHITE : BLACK);
+        valueRect.x = Value.bounds.x - 108;
+        valueRect.y = Value.bounds.y - 7 - 5;
+        DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
+
         valueButton.draw(smallFont);
         Value.draw();
 
@@ -549,7 +555,7 @@ void HashTableVisual::draw() {
             int cur_key = H.getValue(animation.pathIndices[animation.currentPathIndex]);
             std::string keyText = std::to_string(cur_key);
             int textWidth = MeasureTextEx(font, keyText.c_str(), fontSize, 1.f).x;
-            Color markerColor = ORANGE;
+            Color markerColor = isDarkMode ? ORANGE : Color{ 189, 211, 206, 255 };
 
             for (int i = 5; i > 0; i--) {
                 DrawCircleV(animation.currentPos, 20 + i * 3, Fade(markerColor, 0.1f * i));
@@ -573,6 +579,8 @@ void HashTableVisual::draw() {
         }
     }
 
+    DrawRectangle(0, panelMargin, PANEL_WIDTH, Screen_h - 2 * panelMargin, panelColor);
+    Input.draw(smallFont);
     loadFile.draw(font);
 }
 

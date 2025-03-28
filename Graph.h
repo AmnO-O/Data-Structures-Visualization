@@ -149,12 +149,16 @@ public:
 	void addNode(int id);
 	void addEdge(int from, int to, int weight = 1, bool dir = false);
 
-	void generateRandom();
+	void genRandom(int nodes = -1, int edges = -1);
 	void findMST();
 	void updEades();
 	void updFruchterman();
+	void updGPT();
 	void update();
 	void draw(Font& font);
+	void reset();
+	int numNodes, numEdges;
+
 private:
 
 	void drawEdge(const Edge& edge, Font& font);
@@ -163,16 +167,16 @@ private:
 
 	int matrix[1000][1000];
 	Vector2 forces[1000];
-	int n;
 
 	int selectedNode = -1;
 
-	const float c_rep = 2000.0f;
-	const float c_spring = 0.007f;
-	const float desiredLen = 250.0f;
-	const float cooling_factor = 0.85f;
-	const float timeStep = 0.82f;
-	const float c_centripetal = 0.02f; 
+	float c_rep = 1000.0f;
+	float c_spring = 0.007f;
+	float desiredLen = 200.0f;
+	float cooling_factor = 0.85f;
+	float timeStep = 0.7f;
+
+	float c_centripetal = 0.0002f;
 
 	float len_frunch = 35;
 	float coolingFactor_fruch = 0.98;

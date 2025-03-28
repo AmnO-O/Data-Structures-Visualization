@@ -127,7 +127,6 @@ void HashTable::draw(Font font) {
             currentCenter = Lerp(commonStart, finalCenter, speed);
         }
 
-        // Create rectangle from center.
         Rectangle rect = { currentCenter.x - slotWidth / 2.0f, currentCenter.y - slotHeight / 2.0f, (float)slotWidth, (float)slotHeight };
 
         bool occupied = htable[i] >= 0;
@@ -223,3 +222,4 @@ void HashTable::drawSlot(Rectangle rect, int index, const std::string& text, Fon
 
     DrawTextEx(font, indexStr.c_str(), { posX * 1.f, posY * 1.f }, fontSize, 1, isDarkMode ? Color{ 252, 243, 227, 255 } : BLUE);
 }
+

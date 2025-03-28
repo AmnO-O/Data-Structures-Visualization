@@ -5,6 +5,7 @@ Visualizer::Visualizer() {
 }
 
 void Visualizer::Process() {
+	SetConfigFlags(FLAG_MSAA_4X_HINT);
 	InitWindow(Screen_w, Screen_h, "RayViz - Data Visualization");
 	SetTargetFPS(60);
 
@@ -52,7 +53,6 @@ void Visualizer::Process() {
 	helper->Init();
 	linkedlist->Init();
 	audioSys.Init();
-	avl->Init();
 
 	while (!WindowShouldClose()) {
 		audioSys.Update();
@@ -128,9 +128,9 @@ void Visualizer::Process() {
 		else if (Program_state == HowToUse_state) helper->Draw();
 
 
-		if (Program_state == Trie_state) DataName = "AVL tree";
+		if (Program_state == Trie_state) DataName = "Trie";
 		else if (Program_state == HashTable_state) DataName = "Hash table: Linear Probing";
-		else if (Program_state == LinkedList_state) DataName = "Singly Linked List";
+		else if (Program_state == LinkedList_state) DataName = "Linked List";
 		else if (Program_state == Graph_state) DataName = "Graph";
 		else if (Program_state == About_state) DataName = "About";
 		else if (Program_state == Settings_state) DataName = "Settings";

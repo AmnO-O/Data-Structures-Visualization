@@ -17,7 +17,7 @@ private:
 
     AnimationData animation;
     CommonButton Input;
-    Rectangle info;
+    Rectangle info, valueRect;
     Button Random, File;
     TextBoxCenter Size, Value;
     Instruction loadFile;
@@ -25,10 +25,10 @@ private:
     HashTable H;
 
 
-    Button valueButton; 
+    Button valueButton;
     float valueTime = 0;
     float valueDuration = 2.f;
-    bool valueAnimation = 0; 
+    bool valueAnimation = 0;
 
     bool popActive;
     float popElapsedTime;

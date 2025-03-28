@@ -17,6 +17,8 @@ private:
 	TextBoxCenter Vertices, Edges;
 	Font font, infoFont, smallFont;
 	Rectangle info;
-	Button fileMatrixs, fileEdges; 
+	Button fileMatrix, fileEdges, Go;
 	Graph G;
+	Instruction loadFileEdges;
+	FileLoader readFileEdges;
 };
