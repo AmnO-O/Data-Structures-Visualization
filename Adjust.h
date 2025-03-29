@@ -1,21 +1,27 @@
-#pragma once
-#include <string>
+#ifndef ADJUST_H
+#define ADJUST_H
+
+#include "raylib.h"
 #include <vector>
 
-class Adjust
-{
-public:
-    Adjust();
-    ~Adjust();
-
-    void CreateToolbar();
-    void SetDarkMode(bool enable);
-    void LoadIcons(const std::string& iconFolder);
-
-    bool IsDarkMode() const;
-    std::vector<std::string> GetIcons() const;
-
+class Toolbar {
 private:
-    bool darkMode;
-    std::vector<std::string> icons;
+    bool isOpen;
+    bool isSpeedMenuOpen;
+    float slidePos;
+    float speed;
+    Rectangle toolbarRect;
+    Rectangle menuIconRect;
+    Rectangle buttons[5]; // Back, Pause, Play, Next, Speed
+    Rectangle speedButtons[2]; // Speed-, Speed+
+    std::vector<Texture2D> textures; // Store all textures
+    const char* labels[5] = { "Back", "Pause", "Play", "Next", "Speed" };
+
+public:
+    Toolbar();
+    ~Toolbar();
+    void Update();
+    void Draw();
 };
+
+#endif
