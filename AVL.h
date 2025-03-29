@@ -1,5 +1,8 @@
 #pragma once
 #include"Constants.h"
+#include"deque"
+const float nodeSpacing = 50.0f;
+
 
 
 struct AVLNode {
@@ -7,44 +10,57 @@ struct AVLNode {
     AVLNode* left;
     AVLNode* right;
     int height;
+	bool firstAnimationFinished = false;
     float x, y, newx, newy , displayX , displayY;
+    deque<Vector2> queuexy;
+    deque<  pair<AVLNode*, AVLNode*  > > QueueChildren;
     AVLNode(int key) {
         val = key;
         left = NULL;
         right = NULL;
         height = 1;
         x = y = newx = newy = displayX = displayY = -1;
+		firstAnimationFinished = false;
     }
     AVLNode(int key , float Ox , float Oy) {
         val = key;
         left = NULL;
         right = NULL;
         height = 1;
-        x = newx = displayX = Ox;
-        newy = Oy;
-        displayY = y = Oy + 200.0;
-        
+        newx = Ox; newy = Oy;
+        x = displayX = Ox;
+		y = displayY = Oy + 200;    
+		firstAnimationFinished = false;
     }
-
+	~AVLNode() {
+		if (left) delete left;
+		if (right) delete right;
+	}
 };
 
 class AVLtree {
 public:
+    int waitinganimation;
     AVLNode* m_root = NULL;
     int height(AVLNode* node);
     AVLNode* Search( int key);
     void Clear();
     void Insert(int key);
     void Delete(int key);
+    void UpdatePos(AVLNode* root);
+	deque< AVLNode* > mroot;
 
 private:
     void Clear(AVLNode* root);
-    AVLNode* Delete(AVLNode* root, int key);
+    AVLNode* Delete(AVLNode*& root, int key);
     AVLNode* rightRotate(AVLNode* y);
     AVLNode* leftRotate(AVLNode* x);
     AVLNode* insert(AVLNode*& root, int key , float Ox , float Oy);
     int difference(AVLNode* node);
     AVLNode* Search(AVLNode* root, int key);
+    void PushAnimation(AVLNode* root , float target_x, float target_y);
+
+    //void PushAnimationDelete(AVLNode* root, AVLNode* DeleteN);
 };
 
 

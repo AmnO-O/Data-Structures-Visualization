@@ -18,24 +18,25 @@ class AVLTreeScreen {
 private:
 #define PANEL_WIDTH 188  // Độ rộng bảng
 #define PANEL_PADDING 20 // Khoảng cách lề
-	float nodeSpacing = 50.0f;
 	Font AVLtreeFont;   // Font chữ cho màn hình AVL
 	Font valueFont;
 	Font IN4Font;
+	bool finnishAnimation = false;
+
 
 
 	bool insertHovered = false;
 	bool deleteHovered = false;
 	bool searchHovered = false;
-	bool cleanHovered = false;
+	bool createHovered = false;
 	bool okHovered = false;
 
 
 	// Vị trí của Panel
-	Rectangle insertButton = { PANEL_PADDING + 8, 330, 130, 40 };
-	Rectangle deleteButton = { PANEL_PADDING + 8, 390, 130, 40 };
-	Rectangle searchButton = { PANEL_PADDING + 8, 450, 130, 40 };
-	Rectangle cleanButton = { PANEL_PADDING + 8, 510, 130, 40 };
+	Rectangle createButton = { PANEL_PADDING + 8, 330, 130, 40 };
+	Rectangle insertButton = { PANEL_PADDING + 8, 390, 130, 40 };
+	Rectangle deleteButton = { PANEL_PADDING + 8, 450, 130, 40 };
+	Rectangle searchButton = { PANEL_PADDING + 8, 510, 130, 40 };
 
 	// Nút OK dưới textBox
 	Rectangle okButton = { PANEL_PADDING + 217, 470, 90, 30 };
@@ -45,7 +46,7 @@ private:
 	int InsertState = 3;
 	int DeleteState = 4;
 	int SearchState = 5;
-	int ClearState = 6;
+	int CreateState = 6;
 
 	SelectedButtonAVL currentButton; // Xác định operation đang sử dụng
 
@@ -58,12 +59,12 @@ private:
 	bool isInsert = false;
 	bool isDeleting = false;
 	bool isSearch = false;
-	bool isClean = false;
+	bool isCreate = false;
 
 	bool entered = false;
 	bool animating = false;   // Đang chạy animation hay không
 	float timer = 0.0f;       // Đếm thời gian animation
-	float duration = 0.5f;    // Thời gian chạy animation
+	float duration = 1.0f;    // Thời gian chạy animation
 
 	int valueInsert;
 	int valueDelete;
@@ -73,6 +74,11 @@ private:
 	AVLNode* currentSearchNode;
 
 	AVLNode* currentDeleteNode;
+
+	bool SearchAnimationFinished = true;
+	int ValueSearchAnimation;
+
+	AVLNode* Animationmroot;
 
 
 
@@ -88,14 +94,13 @@ public:
 	// Hàm cập nhật trạng thái của màn hình AVL
 	void Update(int& state);
 
-	// UpdatePos
-	void UpdatePos(AVLNode* root);
-
 	// Hàm vẽ mành hình AVL
 	void Draw();
 
 	// Giải phóng tài nguyên màn hình AVL
 	void Unload();
+
+	void SearchAnimation(int key);
 
 	// Vẽ bảng điều khiển trong AVL Screen
 	void DrawOperationsPanel();

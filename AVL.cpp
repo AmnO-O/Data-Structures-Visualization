@@ -48,8 +48,22 @@ AVLNode* AVLtree::insert(AVLNode*& root, int key, float Ox , float Oy) {
     }
 
     // choose subtree to insert
-    if (key < root->val) root->left = insert(root->left, key , root->x - 50.0 , root->y+50.0);
-    else if (key > root->val) root->right = insert(root->right, key, root->x+ 50.0, root->y+ 50.0);
+    if (key < root->val) {
+        AVLNode* cur = root->left;
+        root->left = insert(root->left, key, root->x - nodeSpacing/2.0, root->y+ nodeSpacing);
+        if (cur != root->left) {
+            PushAnimation(m_root,900.0, 200.0);
+            waitinganimation++;
+        }   
+    }
+    else if (key > root->val) {
+        AVLNode* cur = root->right; 
+        root->right = insert(root->right, key, root->x + nodeSpacing/2.0, root->y + nodeSpacing);
+        if (cur != root->right) {
+            PushAnimation(m_root, 900.0, 200.0);
+            waitinganimation++;
+        }
+    }
     else return root;
 
 
@@ -67,11 +81,15 @@ AVLNode* AVLtree::insert(AVLNode*& root, int key, float Ox , float Oy) {
     // left right problem
     else if (dif > 1 && leftdif < 0) {
         root->left = leftRotate(root->left);
+        PushAnimation(m_root,  900.0, 200.0);
+        waitinganimation++;
         return rightRotate(root);
     }
     //right left problem
     else if (dif < -1 && rightdif > 0) {
         root->right = rightRotate(root->right);
+        PushAnimation(m_root, 900.0, 200.0);
+        waitinganimation++;
         return leftRotate(root);
     }
     return root;
@@ -91,25 +109,40 @@ AVLNode* AVLtree::Search(AVLNode* root, int key) {
     else return Search(root->right, key);
 }
 
-AVLNode* AVLtree::Delete(AVLNode* root, int key) {
+AVLNode* AVLtree::Delete(AVLNode*& root, int key) {
     if (!root) return root;
     if (key < root->val) root->left = Delete(root->left, key);
     else if (key > root->val) root->right = Delete(root->right, key);
     else {
-        if (!root->left || !root->right) {
-            AVLNode* temp = root->left ? root->left : root->right;
-            if (!temp) {
-                temp = root;
-                root = NULL;
-            }
-            else *root = *temp;
-            delete temp;
+        if (!root->left && !root->right) {
+			root = NULL;
+
+			PushAnimation(m_root, 900.0, 200.0);
+			waitinganimation++;
+        }
+        else if (!root->left ) {
+            AVLNode* temp = root->right;
+            /*PushAnimationDelete(m_root, root);
+            waitinganimation++;*/
+            root = temp;
+            PushAnimation(m_root, 900.0, 200.0);
+            waitinganimation++;
+        }
+        else if (!root->right) {
+            AVLNode* temp = root->left;
+			/*PushAnimationDelete(m_root, root);
+			waitinganimation++;*/
+            root = temp;
+            PushAnimation(m_root, 900.0, 200.0);
+            waitinganimation++;
         }
         else {
             AVLNode* temp = root->right;
             while (temp->left) temp = temp->left;
             root->val = temp->val;
             root->right = Delete(root->right, temp->val);
+            PushAnimation(m_root, 900.0, 200.0);
+            waitinganimation++;
         }
     }
     if (!root) return root;
@@ -121,10 +154,14 @@ AVLNode* AVLtree::Delete(AVLNode* root, int key) {
     else if (dif < -1 && rightdif < 0) return leftRotate(root);
     else if (dif > 1 && leftdif < 0) {
         root->left = leftRotate(root->left);
+        PushAnimation(m_root, 900.0, 200.0);
+        waitinganimation++;
         return rightRotate(root);
     }
     else if (dif < -1 && rightdif > 0) {
         root->right = rightRotate(root->right);
+        PushAnimation(m_root, 900.0, 200.0);
+        waitinganimation++;
         return leftRotate(root);
     }
     return root;
@@ -149,9 +186,84 @@ AVLNode* AVLtree::Search(int key) {
 }
 
 void AVLtree::Insert(int key) {
-    m_root = insert(m_root, key, 800 , 200);
+	AVLNode* cur = m_root;
+    m_root = insert(m_root, key, 900 , 200);
+    if (cur != m_root) {
+        PushAnimation(m_root, 900.0, 200.0);
+        waitinganimation++;
+    }
+    waitinganimation++;
+
+
 }
 
 void AVLtree::Delete(int key) {
+    AVLNode* cur = m_root;
     Delete(m_root, key);
+    if (cur != m_root) {
+        PushAnimation(m_root, 900.0, 200.0);
+        waitinganimation++;
+    }
+    waitinganimation++;
 }
+
+void AVLtree::PushAnimation(AVLNode* root, float target_x, float target_y) {
+    if (root == nullptr) return;
+    root->queuexy.push_back({ target_x, target_y });
+	root->QueueChildren.push_back({ root->left, root->right });
+	if (root == m_root) mroot.push_back(root);
+
+    int maxleaf = root->height > 1 ? root->height - 1 : 0;
+    maxleaf = 1 << maxleaf;
+    if (root->left) {
+        float newox = target_x - maxleaf * nodeSpacing / 2.0;
+        float newoy = target_y + nodeSpacing;
+        PushAnimation(root->left, newox, newoy);
+    }
+    if (root->right) {
+        float newox = target_x + maxleaf * nodeSpacing / 2.0;
+        float newoy = target_y + nodeSpacing;
+        PushAnimation(root->right, newox, newoy);
+    }
+}
+
+void AVLtree::UpdatePos(AVLNode* root) {
+    if (root == nullptr) return;
+    if (root->firstAnimationFinished) {
+        root->x = root->newx;
+        root->y = root->newy;
+    }
+    else root->firstAnimationFinished = true;
+    if (!root->queuexy.empty()) {
+        Vector2 nextXY = root->queuexy.front();
+        root->queuexy.pop_front();
+        auto x = root->QueueChildren.front();
+		root->QueueChildren.pop_front();
+		root->left = x.first;
+		root->right = x.second;
+        root->newx = nextXY.x;
+        root->newy = nextXY.y;
+    }
+    
+    if (root->left)UpdatePos(root->left);
+    if (root->right)UpdatePos(root->right);
+}
+
+//void AVLtree::PushAnimationDelete(AVLNode* root , AVLNode* DeleteN) {
+//	if (root == m_root)root->queuexy.push_back({ 900.0, 200.0 });
+//	else if (root != DeleteN) {
+//		root->queuexy.push_back({ root->newx, root->newy });
+//	}
+//	else {
+//		if (root->left) {
+//			root->left->queuexy.push_back({ root->newx, root->newy });
+//		}
+//		if (root->right) {
+//			root->right->queuexy.push_back({ root->newx, root->newy });
+//		}
+//	}
+//	if (root->left)PushAnimationDelete(root->left, DeleteN);
+//	if (root->right)PushAnimationDelete(root->right, DeleteN);
+//
+//
+//}

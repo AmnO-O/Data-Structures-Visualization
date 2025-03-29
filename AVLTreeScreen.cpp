@@ -34,7 +34,6 @@ void AVLTreeScreen::Init() {
 
 void AVLTreeScreen::Update(int& state) {
     Vector2 mouse = GetMousePosition();
-    UpdatePos(AVLtree.m_root);
 
     // Kiểm tra hover vào nút "Back"
     backHovered = CheckCollisionPointRec(mouse, backButton);
@@ -49,7 +48,7 @@ void AVLTreeScreen::Update(int& state) {
     searchHovered = CheckCollisionPointRec(mouse, searchButton);
 
     // Kiểm tra hover vào nút "Clean"
-    cleanHovered = CheckCollisionPointRec(mouse, cleanButton);
+    createHovered = CheckCollisionPointRec(mouse, createButton);
     // Kiểm tra hover vào nút "OK"
     okHovered = CheckCollisionPointRec(mouse, okButton);
 
@@ -80,8 +79,8 @@ void AVLTreeScreen::Update(int& state) {
     }
 
     // Kiểm tra nút Clean 
-    if (CheckCollisionPointRec(mouse, cleanButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        AVLtreeState = ClearState;
+    if (CheckCollisionPointRec(mouse, createButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        AVLtreeState = CreateState;
         currentButton = CLEANAVL;
     }
 
@@ -101,6 +100,14 @@ void AVLTreeScreen::Update(int& state) {
             isInsert = true;
             timer = 0.0f;
             entered = true;
+
+			//SearchAnimation
+            if (AVLtree.m_root != NULL ) {
+                currentSearchNode = AVLtree.m_root;
+                SearchAnimationFinished = false;
+				ValueSearchAnimation = valueInsert;
+            }
+			
         }
         if (Value.isClickedEnter) {
             Value.getMessage();
@@ -114,6 +121,13 @@ void AVLTreeScreen::Update(int& state) {
                 isInsert = true;
                 timer = 0.0f;
                 entered = true;
+
+                //SearchAnimation
+                if (AVLtree.m_root != NULL) {
+                    currentSearchNode = AVLtree.m_root;
+                    SearchAnimationFinished = false;
+                    ValueSearchAnimation = valueInsert;
+                }
             }
             Value.isClickedEnter = false;
         }
@@ -124,11 +138,20 @@ void AVLTreeScreen::Update(int& state) {
             valueDelete = stoi(Value.outputMessage);
             Value.isEnter = false; // Reset trạng thái ENTER 
             Value.outputMessage = "";
+            //SearchAnimation
+            if (AVLtree.m_root != NULL) {
+                currentSearchNode = AVLtree.m_root;
+                SearchAnimationFinished = false;
+                ValueSearchAnimation = valueDelete;
+            }
+
             if (AVLtree.Search(valueDelete)) {
                 // Kích hoạt animation sau mỗi lần thay đổi
                 isDeleting = true;
                 timer = 0.0f;
                 entered = true;
+
+				
                 infoMessage = "Deleting " + to_string(valueDelete) + " of AVL tree.";  // Cập nhật infoMessage
             }
             else {
@@ -141,6 +164,13 @@ void AVLTreeScreen::Update(int& state) {
                 valueDelete = stoi(Value.outputMessage);
                 Value.isEnter = false; // Reset trạng thái ENTER 
                 Value.outputMessage = "";
+
+				// SearchAnimation
+                if (AVLtree.m_root != NULL) {
+                    currentSearchNode = AVLtree.m_root;
+                    SearchAnimationFinished = false;
+                    ValueSearchAnimation = valueDelete;
+                }
                 if (AVLtree.Search(valueDelete)) {
                     // Kích hoạt animation sau mỗi lần thay đổi
                     isDeleting = true;
@@ -187,8 +217,8 @@ void AVLTreeScreen::Update(int& state) {
         }
         
     }
-    else if (AVLtreeState == ClearState) {
-        isClean = true;
+    else if (AVLtreeState == CreateState) {
+        isCreate = true;
         infoMessage = "Clearing the AVLtree...";
     }
 
@@ -197,50 +227,42 @@ void AVLTreeScreen::Update(int& state) {
      //Cập nhật tiến trình animation
     if (isInsert || isDeleting || isSearch) {
         timer += GetFrameTime();
-        if (entered) {
+        
+         if (entered && SearchAnimationFinished) {
             if (isInsert)  AVLtree.Insert(valueInsert);
-            else if (isDeleting) currentDeleteNode = AVLtree.m_root;
+            else if (isDeleting) AVLtree.Delete(valueDelete);
             else if (isSearch) {
                 SearchNode = AVLtree.Search(valueSearch);
                 currentSearchNode = AVLtree.m_root;
             }
+			timer = duration + 0.1f;  
+            currentSearchNode = NULL;
             entered = !entered;
-        }
-        if (timer >= duration) {
-            if (isDeleting)  AVLtree.Delete(valueDelete);
-            if ( ( isSearch || isDeleting) && ( currentSearchNode->val != valueSearch || currentSearchNode->val != valueDelete) ) {
-                timer = 0.0f;
-                currentSearchNode = valueSearch < currentSearchNode->val ? currentSearchNode->left : currentSearchNode->right;
+         }
+         if (timer >= duration) {
+            if (!SearchAnimationFinished) {
+                if (isInsert)  SearchAnimation(valueInsert);
+                else if (isDeleting) SearchAnimation(valueDelete);
+                else if (isSearch) SearchAnimation(valueSearch);
+				timer = 0.0f;
             }
-            else {
+            else if (AVLtree.waitinganimation == 0 ) {
                 isInsert = isDeleting = isSearch = false;
                 timer = 0.0f;  // Reset lại bộ đếm thời gian
+            }
+            else if (AVLtree.waitinganimation > 0 ) {
+                AVLtree.waitinganimation--;
+                if (!AVLtree.mroot.empty()) {
+                    Animationmroot = AVLtree.mroot.front();
+                    AVLtree.mroot.pop_front();
+                }
+                AVLtree.UpdatePos(Animationmroot);
+                timer = 0.0f;
             }
         }
     }
 
     if (fadeProgress == 0.0f)   fadeProgress = 1.0f;
-}
-
-void AVLTreeScreen::UpdatePos(AVLNode* root) {
-    if (root == nullptr) return;
-
-    if (AVLtree.m_root == root) {
-        root->newx = 800;
-        root->newy = 200;
-    }
-    int maxleaf = root->height > 1 ? root->height - 2 : 0;
-    maxleaf = 1 << maxleaf;
-    if (root->left) {
-        root->left->newx = root->newx - maxleaf * nodeSpacing/ 2.0;
-        root->left->newy = root->newy + nodeSpacing;
-        UpdatePos(root->left);
-    }
-    if (root->right) {
-        root->right->newx = root->newx + maxleaf * nodeSpacing / 2.0;
-        root->right->newy = root->newy + nodeSpacing;
-        UpdatePos(root->right);
-    }
 }
 
 
@@ -310,15 +332,15 @@ void AVLTreeScreen::DrawOperationsPanel() {
         20, 2, DARKBLUE);
 
     // Vẽ nút Clean
-    Color CleanColor = cleanHovered ? LIGHTGRAY : RAYWHITE;
-    if (currentButton == CLEANAVL) CleanColor = { 250, 228, 49, 255 };
-    DrawRectangleRounded(cleanButton, 0.2f, 4, CleanColor);
-    DrawRectangleRoundedLinesEx(cleanButton, 0.2f, 4, 2.0f, GRAY);
+    Color CreateColor = createHovered ? LIGHTGRAY : RAYWHITE;
+    if (currentButton == CLEANAVL) CreateColor = { 250, 228, 49, 255 };
+    DrawRectangleRounded(createButton, 0.2f, 4, CreateColor);
+    DrawRectangleRoundedLinesEx(createButton, 0.2f, 4, 2.0f, GRAY);
 
-    Vector2 cleanSize = MeasureTextEx(myFont, "Clean", 18, 2);
-    DrawTextEx(myFont, "Clean",
-        { cleanButton.x + (cleanButton.width - cleanSize.x) / 2,
-          cleanButton.y + (cleanButton.height - cleanSize.y) / 2 },
+    Vector2 cleanSize = MeasureTextEx(myFont, "Create", 18, 2);
+    DrawTextEx(myFont, "Create",
+        { createButton.x + (createButton.width - cleanSize.x) / 2,
+          createButton.y + (createButton.height - cleanSize.y) / 2 },
         18, 2, DARKBLUE);
 
     // Ghi INFO MESSAGE
@@ -343,7 +365,7 @@ void AVLTreeScreen::DrawOperationsPanel() {
               okButton.y + (okButton.height - okSize.y) / 2 },
             18, 2, DARKBLUE);
     }
-    else if (AVLtreeState == ClearState) {}
+    else if (AVLtreeState == CreateState) {}
 }
 
 void AVLTreeScreen::Draw() {
@@ -377,17 +399,14 @@ void AVLTreeScreen::Draw() {
 
     // Gọi vẽ danh sách với progress từ 0 -> 1
     float animationProgress = timer / duration;
-    drawAVLtree(animationProgress,AVLtree.m_root);
+    drawAVLtree(animationProgress,Animationmroot);
+    finnishAnimation = true;
 }
 
-void AVLTreeScreen::drawAVLtree(float animationProgress, AVLNode* root) {
+void AVLTreeScreen::drawAVLtree(float animationProgress, AVLNode* root ) {
     if (!root) return;
     // Interpolate positions using animation progress
 
-    if (!isDeleting && !isInsert) {
-        root->x = root->newx;
-        root->y = root->newy;
-    }
     root->displayX = root->x * (1.0f - animationProgress) + root->newx * animationProgress;
     root->displayY = root->y * (1.0f - animationProgress) + root->newy * animationProgress;
     // Draw edges
@@ -401,13 +420,37 @@ void AVLTreeScreen::drawAVLtree(float animationProgress, AVLNode* root) {
     }
 
     // Draw node
-    DrawCircleV({ root->displayX,root->displayY }, 20, WHITE);
+    if (root == currentSearchNode)DrawCircleV({ root->displayX,root->displayY }, 20, RED);
+    else DrawCircleV({ root->displayX,root->displayY }, 20, WHITE);
     string nodeText = TextFormat("%d", root->val);
     Vector2 textSize = MeasureTextEx(myFont, nodeText.c_str(), 25, 1.25);
 
     Vector2 textPos = { root->displayX - textSize.x / 2,  root->displayY - textSize.y / 2 }; // Căn giữa Node 
     DrawTextEx(myFont, nodeText.c_str(), textPos, 25, 1.25, Fade(BLACK, fadeProgress));
 }
+
+void AVLTreeScreen::SearchAnimation(int key) {
+    if (currentSearchNode->val == key ) {
+        SearchAnimationFinished = true;
+		//currentSearchNode = NULL ;
+    }
+    else {
+        if (ValueSearchAnimation < currentSearchNode->val) {
+			if (!currentSearchNode->left) {
+				SearchAnimationFinished = true;
+			}
+			else {
+				currentSearchNode = currentSearchNode->left;
+			}
+        }
+        else {
+			if (!currentSearchNode->right) {
+				SearchAnimationFinished = true;
+			}
+			else currentSearchNode = currentSearchNode->right;
+        }
+    }
+	}
 
 //void AVLTreeScreen::drawAVLtree(float animationProgress) {
 //    Vector2 Origin = { 500, 800 };
