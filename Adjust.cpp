@@ -1,37 +1,54 @@
 ﻿#include "Adjust.h"
 #include <iostream>
 
+// Constants for toolbar dimensions and positions
+const int TOOLBAR_WIDTH = 450;
+const int TOOLBAR_HEIGHT = 80;
+const int BUTTON_SIZE = 60;
+const int BUTTON_SPACING = 70;
+const int MENU_ICON_SIZE = 50;
+const int SLIDE_INCREMENT = 10;
+const float MIN_SPEED = 0.25f;
+const float MAX_SPEED = 2.0f;
+const float SPEED_INCREMENT = 0.25f;
+
+// Colors for hover and selected states
+const Color HOVER_COLOR = { 255, 255, 255, 128 }; // Light effect with transparency
+const Color SELECTED_COLOR = { 0, 0, 0, 128 };    // Dark effect with transparency
+
 Toolbar::Toolbar() {
     isOpen = false;
     isSpeedMenuOpen = false;
     slidePos = 0.0f;
     speed = 1.0f;
+    selectedButtonIndex = -1; // No button selected initially
 
-    // Bottom-left corner, offset từ cạnh (giả sử cửa sổ 800x600)
-    menuIconRect = { 20, 500, 50, 50 }; // Menu icon cố định ở góc dưới trái
-    toolbarRect = { -450, 490, 450, 80 }; // Toolbar rộng hơn, ẩn hoàn toàn khi chưa mở
-    buttons[0] = { -420, 495, 60, 60 }; // Back
-    buttons[1] = { -350, 495, 60, 60 }; // Pause
-    buttons[2] = { -280, 495, 60, 60 }; // Play
-    buttons[3] = { -210, 495, 60, 60 }; // Next
-    buttons[4] = { -140, 495, 60, 60 }; // Speed
+    menuIconRect = { 20, 500, MENU_ICON_SIZE, MENU_ICON_SIZE };
+    toolbarRect = { -TOOLBAR_WIDTH, 490, TOOLBAR_WIDTH, TOOLBAR_HEIGHT };
+    buttons[0] = { -420, 495, BUTTON_SIZE, BUTTON_SIZE }; // Back
+    buttons[1] = { -350, 495, BUTTON_SIZE, BUTTON_SIZE }; // Pause
+    buttons[2] = { -280, 495, BUTTON_SIZE, BUTTON_SIZE }; // Play
+    buttons[3] = { -210, 495, BUTTON_SIZE, BUTTON_SIZE }; // Next
+    buttons[4] = { -140, 495, BUTTON_SIZE, BUTTON_SIZE }; // Speed
     speedButtons[0] = { -140, 425, 40, 40 }; // Speed-
     speedButtons[1] = { -100, 425, 40, 40 }; // Speed+
 
-    // Load PNG icons into vector
-    textures.resize(6); // 6 textures: menu, back, pause, play, next, speed
-    textures[0] = LoadTexture("Assets/Toolbar/menu_light.png");
-    if (textures[0].id == 0) std::cout << "Failed to load Toolbar/menu.png" << std::endl;
-    textures[1] = LoadTexture("Assets/Toolbar/back_light.png");
-    if (textures[1].id == 0) std::cout << "Failed to load Toolbar/back.png" << std::endl;
-    textures[2] = LoadTexture("Assets/Toolbar/pause_light.png");
-    if (textures[2].id == 0) std::cout << "Failed to load Toolbar/pause.png" << std::endl;
-    textures[3] = LoadTexture("Assets/Toolbar/play_light.png");
-    if (textures[3].id == 0) std::cout << "Failed to load Toolbar/play.png" << std::endl;
-    textures[4] = LoadTexture("Assets/Toolbar/next_light.png");
-    if (textures[4].id == 0) std::cout << "Failed to load Toolbar/next.png" << std::endl;
-    textures[5] = LoadTexture("Assets/Toolbar/speed_light.png");
-    if (textures[5].id == 0) std::cout << "Failed to load Toolbar/speed.png" << std::endl;
+    textures.resize(6);
+    const char* textureFiles[6] = {
+        "Assets/Toolbar/menu_light.png",
+        "Toolbar/back_light.png",
+        "Toolbar/pause_light.png",
+        "Toolbar/play_light.png",
+        "Toolbar/next_light.png",
+        "Toolbar/speed_light.png"
+    };
+
+    for (int i = 0; i < 6; ++i) {
+        textures[i] = LoadTexture(textureFiles[i]);
+        if (textures[i].id == 0) {
+            std::cerr << "Failed to load " << textureFiles[i] << std::endl;
+        }
+    }
 }
 
 Toolbar::~Toolbar() {
@@ -41,66 +58,75 @@ Toolbar::~Toolbar() {
 }
 
 void Toolbar::Update() {
-    // Kiểm tra nhấn vào menu icon để mở/đóng toolbar
-    if (CheckCollisionPointRec(GetMousePosition(), menuIconRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    Vector2 mousePos = GetMousePosition();
+
+    if (CheckCollisionPointRec(mousePos, menuIconRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         isOpen = !isOpen;
-        if (!isOpen) isSpeedMenuOpen = false; // Đóng speed menu khi toolbar đóng
+        if (!isOpen) isSpeedMenuOpen = false;
     }
 
-    // Hiệu ứng trượt: Đảm bảo nút Back thẳng hàng với menuIconRect khi mở
-    if (isOpen && slidePos < 470) slidePos += 10; // Dịch đủ để nút Back nằm ngay sau menu icon
-    if (!isOpen && slidePos > 0) slidePos -= 10;
+    if (isOpen && slidePos < TOOLBAR_WIDTH + 20) slidePos += SLIDE_INCREMENT;
+    if (!isOpen && slidePos > 0) slidePos -= SLIDE_INCREMENT;
 
-    // Cập nhật vị trí toolbar và các nút
-    toolbarRect.x = -450 + slidePos; // Toolbar dịch chuyển
-    buttons[0].x = 70 + slidePos - 450; // Nút Back bắt đầu ngay sau menuIconRect (20 + 50 = 70)
+    toolbarRect.x = -TOOLBAR_WIDTH + slidePos;
+    buttons[0].x = 70 + slidePos - TOOLBAR_WIDTH;
     for (int i = 1; i < 5; i++) {
-        buttons[i].x = buttons[0].x + i * 70; // Các nút khác cách đều 70px
+        buttons[i].x = buttons[0].x + i * BUTTON_SPACING;
     }
-    speedButtons[0].x = buttons[4].x - 10; // Speed- căn sát nút Speed
-    speedButtons[1].x = buttons[4].x + 30; // Speed+ căn đối xứng
+    speedButtons[0].x = buttons[4].x - 10;
+    speedButtons[1].x = buttons[4].x + 30;
 
-    // Kiểm tra nhấn vào nút Speed để mở/đóng speed menu
-    if (isOpen && CheckCollisionPointRec(GetMousePosition(), buttons[4]) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        isSpeedMenuOpen = !isSpeedMenuOpen;
-    }
-
-    // Xử lý speed menu
-    if (isSpeedMenuOpen) {
-        if (CheckCollisionPointRec(GetMousePosition(), speedButtons[0]) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && speed > 0.25f) {
-            speed -= 0.25f;
+    // Check hover and click for toolbar buttons
+    if (isOpen) {
+        for (int i = 0; i < 5; i++) {
+            if (CheckCollisionPointRec(mousePos, buttons[i])) {
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                    if (selectedButtonIndex == i) {
+                        selectedButtonIndex = -1; // Deselect if already selected
+                    }
+                    else {
+                        selectedButtonIndex = i; // Select the button
+                    }
+                    if (i == 4) isSpeedMenuOpen = !isSpeedMenuOpen;
+                }
+            }
         }
-        if (CheckCollisionPointRec(GetMousePosition(), speedButtons[1]) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && speed < 2.0f) {
-            speed += 0.25f;
+    }
+
+    // Handle speed menu
+    if (isSpeedMenuOpen) {
+        if (CheckCollisionPointRec(mousePos, speedButtons[0]) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && speed > MIN_SPEED) {
+            speed -= SPEED_INCREMENT;
+        }
+        if (CheckCollisionPointRec(mousePos, speedButtons[1]) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && speed < MAX_SPEED) {
+            speed += SPEED_INCREMENT;
         }
     }
 }
 
 void Toolbar::Draw() {
-    // Vẽ bóng cho toolbar
+    Vector2 mousePos = GetMousePosition();
     DrawRectangleRounded({ toolbarRect.x + 5, toolbarRect.y + 5, toolbarRect.width, toolbarRect.height }, 0.2f, 10, { 0, 0, 0, 50 });
-
-    // Vẽ toolbar
     DrawRectangleRounded(toolbarRect, 0.2f, 10, GRAY);
 
-    // Vẽ bóng cho các nút
+    // Draw buttons with hover and selected effects
     for (int i = 0; i < 5; i++) {
-        DrawRectangleRec({ buttons[i].x + 3, buttons[i].y + 3, buttons[i].width, buttons[i].height }, { 0, 0, 0, 50 });
-    }
+        bool isHovered = CheckCollisionPointRec(mousePos, buttons[i]);
+        bool isSelected = (selectedButtonIndex == i);
 
-    // Vẽ các icon nút nếu đã tải
-    for (int i = 0; i < 5; i++) {
+        if (isSelected) {
+            DrawCircle(buttons[i].x + BUTTON_SIZE / 2, buttons[i].y + BUTTON_SIZE / 2, BUTTON_SIZE / 2, SELECTED_COLOR); // Darker overlay when selected
+        }
+        else if (isHovered) {
+            DrawCircle(buttons[i].x + BUTTON_SIZE / 2, buttons[i].y + BUTTON_SIZE / 2, BUTTON_SIZE / 2, HOVER_COLOR); // Lighter overlay when hovered
+        }
+
         if (textures[i + 1].id != 0) {
             DrawTexturePro(textures[i + 1], { 0, 0, (float)textures[i + 1].width, (float)textures[i + 1].height },
-                buttons[i], { 0, 0 }, 0, WHITE);
-        }
-        else {
-            Color colors[5] = { RED, YELLOW, GREEN, BLUE, PURPLE };
-            DrawRectangleRec(buttons[i], colors[i]);
+                { (float)buttons[i].x, (float)buttons[i].y, (float)BUTTON_SIZE, (float)BUTTON_SIZE }, { 0, 0 }, 0, WHITE);
         }
     }
 
-    // Vẽ bóng và icon cho menu
     DrawRectangleRec({ menuIconRect.x + 3, menuIconRect.y + 3, menuIconRect.width, menuIconRect.height }, { 0, 0, 0, 50 });
     if (textures[0].id != 0) {
         DrawTexturePro(textures[0], { 0, 0, (float)textures[0].width, (float)textures[0].height }, menuIconRect, { 0, 0 }, 0, WHITE);
@@ -109,7 +135,6 @@ void Toolbar::Draw() {
         DrawRectangleRec(menuIconRect, DARKGRAY);
     }
 
-    // Vẽ nhãn dưới các nút với kích thước chữ lớn hơn
     if (isOpen) {
         for (int i = 0; i < 5; i++) {
             if (i == 4) {
@@ -121,17 +146,16 @@ void Toolbar::Draw() {
         }
     }
 
-    // Vẽ speed sub-menu nếu đang mở - Cải thiện giao diện
     if (isSpeedMenuOpen) {
-        // Vẽ khung nền cho speed menu
         DrawRectangleRounded({ speedButtons[0].x - 5, speedButtons[0].y - 5, 90, 50 }, 0.2f, 5, { 200, 200, 200, 255 });
-
-        // Vẽ bóng và nút Speed- và Speed+
-        DrawRectangleRec({ speedButtons[0].x + 2, speedButtons[0].y + 2, speedButtons[0].width, speedButtons[0].height }, { 0, 0, 0, 50 });
-        DrawRectangleRec({ speedButtons[1].x + 2, speedButtons[1].y + 2, speedButtons[1].width, speedButtons[1].height }, { 0, 0, 0, 50 });
-        DrawRectangleRec(speedButtons[0], LIGHTGRAY);
-        DrawRectangleRec(speedButtons[1], LIGHTGRAY);
-        DrawText("-", speedButtons[0].x + 12, speedButtons[0].y + 5, 30, BLACK);
-        DrawText("+", speedButtons[1].x + 12, speedButtons[1].y + 5, 30, BLACK);
+        for (int i = 0; i < 2; i++) {
+            bool isHovered = CheckCollisionPointRec(mousePos, speedButtons[i]);
+            DrawRectangleRec({ speedButtons[i].x + 2, speedButtons[i].y + 2, speedButtons[i].width, speedButtons[i].height }, { 0, 0, 0, 50 });
+            DrawRectangleRec(speedButtons[i], LIGHTGRAY);
+            if (isHovered) {
+                DrawRectangleRec(speedButtons[i], HOVER_COLOR);
+            }
+            DrawText(i == 0 ? "-" : "+", speedButtons[i].x + 12, speedButtons[i].y + 5, 30, BLACK);
+        }
     }
 }
