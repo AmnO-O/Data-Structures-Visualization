@@ -10,6 +10,7 @@ private:
     bool isSpeedMenuOpen;
     float slidePos;
     float speed;
+    int selectedButtonIndex; // Track which button is selected
     Rectangle toolbarRect;
     Rectangle menuIconRect;
     Rectangle buttons[5]; // Back, Pause, Play, Next, Speed
