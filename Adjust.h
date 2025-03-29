@@ -7,16 +7,15 @@
 class Toolbar {
 private:
     bool isOpen;
-    bool isSpeedMenuOpen;
     float slidePos;
     float speed;
     int selectedButtonIndex; // Track which button is selected
     Rectangle toolbarRect;
     Rectangle menuIconRect;
-    Rectangle buttons[5]; // Back, Pause, Play, Next, Speed
+    Rectangle buttons[3]; // Back, Play/Pause, Next
     Rectangle speedButtons[2]; // Speed-, Speed+
     std::vector<Texture2D> textures; // Store all textures
-    const char* labels[5] = { "Back", "Pause", "Play", "Next", "Speed" };
+    const char* labels[3] = { "Back", "Play", "Next" };
 
 public:
     Toolbar();
