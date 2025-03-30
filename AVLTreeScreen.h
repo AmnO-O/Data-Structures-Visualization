@@ -10,7 +10,7 @@ enum SelectedButtonAVL {
 	INSERTAVL,
 	DELETEAVL,
 	SEARCHAVL,
-	CLEANAVL,
+	CLEARAVL,
 	OKAVL,
 };
 
@@ -23,20 +23,41 @@ private:
 	Font IN4Font;
 	bool finnishAnimation = false;
 
+	int MainCaseInfo;
+	int SubCaseInfo;
+
+	int InertionCaseInfo = 1;
+	int DeletionCaseInfo = 2;
+	int SearchCaseInfo = 3;
+
+	int FindingtoInsert = 1;
+	int InsertingCaseInfo = 7;
+	int RightRotationCaseInfo = 2;
+	int LeftRotationCaseInfo = 4;
+	int RightLeftRotationCaseInfo = 5;
+	int LeftRightRotationCaseInfo = 3;
+	int FinishInsertionCaseInfo = -1;
+
+	int FindingtoDelete = 1;
+	int FindingtoSmallestRightSubTree = 6;
+	int RomovevCaseInfo = 7;
+
+
+
 
 
 	bool insertHovered = false;
 	bool deleteHovered = false;
 	bool searchHovered = false;
-	bool createHovered = false;
+	bool clearHovered = false;
 	bool okHovered = false;
 
 
 	// Vị trí của Panel
-	Rectangle createButton = { PANEL_PADDING + 8, 330, 130, 40 };
-	Rectangle insertButton = { PANEL_PADDING + 8, 390, 130, 40 };
-	Rectangle deleteButton = { PANEL_PADDING + 8, 450, 130, 40 };
-	Rectangle searchButton = { PANEL_PADDING + 8, 510, 130, 40 };
+	Rectangle insertButton = { PANEL_PADDING + 8, 330, 130, 40 };
+	Rectangle deleteButton = { PANEL_PADDING + 8, 390, 130, 40 };
+	Rectangle searchButton = { PANEL_PADDING + 8, 450, 130, 40 };
+	Rectangle clearButton = { PANEL_PADDING + 8, 510, 130, 40 };
 
 	// Nút OK dưới textBox
 	Rectangle okButton = { PANEL_PADDING + 217, 470, 90, 30 };
@@ -46,7 +67,7 @@ private:
 	int InsertState = 3;
 	int DeleteState = 4;
 	int SearchState = 5;
-	int CreateState = 6;
+	int ClearState = 6;
 
 	SelectedButtonAVL currentButton; // Xác định operation đang sử dụng
 
@@ -59,12 +80,12 @@ private:
 	bool isInsert = false;
 	bool isDeleting = false;
 	bool isSearch = false;
-	bool isCreate = false;
+	bool isClear = false;
 
 	bool entered = false;
 	bool animating = false;   // Đang chạy animation hay không
 	float timer = 0.0f;       // Đếm thời gian animation
-	float duration = 1.0f;    // Thời gian chạy animation
+	float duration = 0.1f;    // Thời gian chạy animation
 
 	int valueInsert;
 	int valueDelete;
@@ -73,13 +94,12 @@ private:
 	AVLNode* SearchNode;
 	AVLNode* currentSearchNode;
 
-	AVLNode* currentDeleteNode;
+	bool findingSmallestRightSubTree = false;
 
 	bool SearchAnimationFinished = true;
 	int ValueSearchAnimation;
 
 	AVLNode* Animationmroot;
-
 
 
 	int posX, posY;   // Vị trí của IN4
@@ -107,4 +127,6 @@ public:
 
 	// Vẽ AVLtree lên màn hình
 	void drawAVLtree(float animationProgress , AVLNode* root);
+
+	void DrawInfo();
 };

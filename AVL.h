@@ -40,27 +40,27 @@ struct AVLNode {
 
 class AVLtree {
 public:
+    int subcase ;
     int waitinganimation;
     AVLNode* m_root = NULL;
     int height(AVLNode* node);
-    AVLNode* Search( int key);
+    AVLNode* Search(int key);
     void Clear();
     void Insert(int key);
     void Delete(int key);
     void UpdatePos(AVLNode* root);
-	deque< AVLNode* > mroot;
+    deque< pair < AVLNode* , int > > mroot;
 
 private:
     void Clear(AVLNode* root);
-    AVLNode* Delete(AVLNode*& root, int key);
+    AVLNode* DeleteNode(AVLNode*& root, int key);
     AVLNode* rightRotate(AVLNode* y);
     AVLNode* leftRotate(AVLNode* x);
-    AVLNode* insert(AVLNode*& root, int key , float Ox , float Oy);
+    AVLNode* insert(AVLNode*& root, int key , float Ox , float Oy );
     int difference(AVLNode* node);
     AVLNode* Search(AVLNode* root, int key);
-    void PushAnimation(AVLNode* root , float target_x, float target_y);
+    void PushAnimation(AVLNode* root , float target_x, float target_y , int subcase);
 
-    //void PushAnimationDelete(AVLNode* root, AVLNode* DeleteN);
 };
 
 

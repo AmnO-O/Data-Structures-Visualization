@@ -546,7 +546,6 @@ void LinkedListScreen::Draw() {
     Color titleColor = isDarkMode ? WHITE : DARKBLUE;
     DrawTextEx(linkedListFont, "Linked List",
         { titleX, titleY }, fontSize, spacing, titleColor);
-
     // Vẽ nút "Back"
     Color backColor = backHovered ? LIGHTGRAY : RAYWHITE;
     DrawRectangleRounded(backButton, 0.2f, 4, backColor);

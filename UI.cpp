@@ -53,6 +53,7 @@ void Visualizer::Process() {
 	helper->Init();
 	linkedlist->Init();
 	audioSys.Init();
+	avl->Init();
 
 	while (!WindowShouldClose()) {
 		audioSys.Update();
