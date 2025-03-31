@@ -1,30 +1,148 @@
-#include "Adjust.h"
+﻿#include "Adjust.h"
 #include <iostream>
 
-Adjust::Adjust() : darkMode(false) {}
+// Constants for toolbar dimensions and positions
+const int TOOLBAR_WIDTH = 450; // Adjusted for 3 buttons and speed controls
+const int TOOLBAR_HEIGHT = 80;
+const int BUTTON_SIZE = 60;
+const int BUTTON_SPACING = 70;
+const int MENU_ICON_SIZE = 50;
+const int SLIDE_INCREMENT = 10;
+const float MIN_SPEED = 0.25f;
+const float MAX_SPEED = 2.0f;
+const float SPEED_INCREMENT = 0.25f;
 
-Adjust::~Adjust() {}
+// Colors for hover and selected states
+const Color HOVER_COLOR = { 255, 255, 255, 128 }; // Light effect with transparency
+const Color SELECTED_COLOR = { 0, 0, 0, 128 };    // Dark effect with transparency
+const Color CREAM_COLOR = { 255, 253, 208, 255 }; // Cream color
 
-void Adjust::CreateToolbar() {
-    // Implementation to create a toolbar
-    std::cout << "Toolbar created." << std::endl;
+Toolbar::Toolbar() {
+    isOpen = false;
+    slidePos = 0.0f;
+    speed = 1.0f;
+    selectedButtonIndex = -1; // No button selected initially
+
+    menuIconRect = { 20, 500, MENU_ICON_SIZE, MENU_ICON_SIZE };
+    toolbarRect = { -TOOLBAR_WIDTH, 490, TOOLBAR_WIDTH, TOOLBAR_HEIGHT };
+    buttons[0] = { -420, 495, BUTTON_SIZE, BUTTON_SIZE }; // Back
+    buttons[1] = { -350, 495, BUTTON_SIZE, BUTTON_SIZE }; // Play/Pause
+    buttons[2] = { -280, 495, BUTTON_SIZE, BUTTON_SIZE }; // Next
+    speedButtons[0] = { -140, 505, 40, 40 }; // Speed-
+    speedButtons[1] = { -40, 505, 40, 40 }; // Speed+
+
+    textures.resize(6);
+    const char* textureFiles[6] = {
+        "Toolbar/menu_light.png",
+        "Toolbar/back_light.png",
+        "Toolbar/play_light.png",
+        "Toolbar/pause_light.png",
+        "Toolbar/next_light.png",
+        "Toolbar/speed_light.png"
+    };
+
+    for (int i = 0; i < 6; ++i) {
+        textures[i] = LoadTexture(textureFiles[i]);
+        if (textures[i].id == 0) {
+            std::cerr << "Failed to load " << textureFiles[i] << std::endl;
+        }
+    }
 }
 
-void Adjust::SetDarkMode(bool enable) {
-    darkMode = enable;
-    std::cout << "Dark mode " << (enable ? "enabled" : "disabled") << "." << std::endl;
+Toolbar::~Toolbar() {
+    for (auto& texture : textures) {
+        UnloadTexture(texture);
+    }
 }
 
-void Adjust::LoadIcons(const std::string& iconFolder) {
-    // Load icons from the specified folder
-    icons = { iconFolder + "/back.png", iconFolder + "/stop.png", iconFolder + "/continue.png", iconFolder + "/next.png" };
-    std::cout << "Icons loaded from " << iconFolder << "." << std::endl;
+void Toolbar::Update() {
+    Vector2 mousePos = GetMousePosition();
+
+    if (CheckCollisionPointRec(mousePos, menuIconRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        isOpen = !isOpen;
+    }
+
+    if (isOpen && slidePos < TOOLBAR_WIDTH + 20) slidePos += SLIDE_INCREMENT;
+    if (!isOpen && slidePos > 0) slidePos -= SLIDE_INCREMENT;
+
+    toolbarRect.x = -TOOLBAR_WIDTH + slidePos;
+    buttons[0].x = 70 + slidePos - TOOLBAR_WIDTH;
+    for (int i = 1; i < 3; i++) {
+        buttons[i].x = buttons[0].x + i * BUTTON_SPACING;
+    }
+    speedButtons[0].x = buttons[2].x + BUTTON_SPACING;
+    speedButtons[1].x = speedButtons[0].x + 120; // Increased distance for clear display
+
+    // Check hover and click for toolbar buttons
+    if (isOpen) {
+        for (int i = 0; i < 3; i++) {
+            if (CheckCollisionPointRec(mousePos, buttons[i])) {
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                    if (selectedButtonIndex == i) {
+                        selectedButtonIndex = -1; // Deselect if already selected
+                    }
+                    else {
+                        selectedButtonIndex = i; // Select the button
+                    }
+                    if (i == 1) {
+                        // Toggle Play/Pause
+                        std::swap(textures[2], textures[3]);
+                    }
+                }
+            }
+        }
+    }
+
+    // Handle speed buttons
+    if (CheckCollisionPointRec(mousePos, speedButtons[0]) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && speed > MIN_SPEED) {
+        speed -= SPEED_INCREMENT;
+    }
+    if (CheckCollisionPointRec(mousePos, speedButtons[1]) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && speed < MAX_SPEED) {
+        speed += SPEED_INCREMENT;
+    }
 }
 
-bool Adjust::IsDarkMode() const {
-    return darkMode;
+void Toolbar::Draw() {
+    Vector2 mousePos = GetMousePosition();
+    DrawRectangleRounded({ toolbarRect.x + 5, toolbarRect.y + 5, toolbarRect.width, toolbarRect.height }, 0.2f, 10, { 0, 0, 0, 50 });
+    DrawRectangleRounded(toolbarRect, 0.2f, 10, CREAM_COLOR);
+
+    // Draw buttons with hover and selected effects
+    for (int i = 0; i < 3; i++) {
+        bool isHovered = CheckCollisionPointRec(mousePos, buttons[i]);
+        bool isSelected = (selectedButtonIndex == i);
+
+        if (isSelected) {
+            DrawCircle(buttons[i].x + BUTTON_SIZE / 2, buttons[i].y + BUTTON_SIZE / 2, BUTTON_SIZE / 2, SELECTED_COLOR); // Darker overlay when selected
+        }
+        else if (isHovered) {
+            DrawCircle(buttons[i].x + BUTTON_SIZE / 2, buttons[i].y + BUTTON_SIZE / 2, BUTTON_SIZE / 2, HOVER_COLOR); // Lighter overlay when hovered
+        }
+
+        if (textures[i + 1].id != 0) {
+            DrawTexturePro(textures[i + 1], { 0, 0, (float)textures[i + 1].width, (float)textures[i + 1].height },
+                { (float)buttons[i].x, (float)buttons[i].y, (float)BUTTON_SIZE, (float)BUTTON_SIZE }, { 0, 0 }, 0, WHITE);
+        }
+    }
+
+    DrawRectangleRec({ menuIconRect.x + 3, menuIconRect.y + 3, menuIconRect.width, menuIconRect.height }, { 0, 0, 0, 50 });
+    if (textures[0].id != 0) {
+        DrawTexturePro(textures[0], { 0, 0, (float)textures[0].width, (float)textures[0].height }, menuIconRect, { 0, 0 }, 0, WHITE);
+    }
+    else {
+        DrawRectangleRec(menuIconRect, CREAM_COLOR);
+    }
+
+    // Draw speed buttons and speed indicator
+    for (int i = 0; i < 2; i++) {
+        bool isHovered = CheckCollisionPointRec(mousePos, speedButtons[i]);
+        DrawRectangleRec({ speedButtons[i].x + 2, speedButtons[i].y + 2, speedButtons[i].width, speedButtons[i].height }, { 0, 0, 0, 50 });
+        DrawRectangleRec(speedButtons[i], LIGHTGRAY);
+        if (isHovered) {
+            DrawRectangleRec(speedButtons[i], HOVER_COLOR);
+        }
+        DrawText(i == 0 ? "-" : "+", speedButtons[i].x + 12, speedButtons[i].y + 5, 30, BLACK);
+    }
+    DrawText(TextFormat("%.2fx", speed), (speedButtons[0].x + speedButtons[1].x) / 2, speedButtons[0].y + 10, 20, BLACK); // Centered speed indicator
 }
 
-std::vector<std::string> Adjust::GetIcons() const {
-    return icons;
-}

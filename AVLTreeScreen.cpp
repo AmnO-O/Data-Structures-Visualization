@@ -218,7 +218,6 @@ void AVLTreeScreen::Update(int& state) {
         infoMessage = "Clearing the AVLtree...";
     }
 
-    if (AVLtree.m_root) DrawCircle(AVLtree.m_root->displayX, AVLtree.m_root->displayY, 50, BLACK);
      //Cập nhật tiến trình animation
     if (isInsert || isDeleting || isSearch || isClear) {
         timer += GetFrameTime();

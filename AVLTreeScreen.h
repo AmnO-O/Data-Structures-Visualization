@@ -85,7 +85,7 @@ private:
 	bool entered = false;
 	bool animating = false;   // Đang chạy animation hay không
 	float timer = 0.0f;       // Đếm thời gian animation
-	float duration = 0.1f;    // Thời gian chạy animation
+	float duration = 1.0f;    // Thời gian chạy animation
 
 	int valueInsert;
 	int valueDelete;
