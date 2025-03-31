@@ -1,4 +1,5 @@
 ﻿#include "GraphVisual.h"
+#include "raylib.h"
 
 GraphVisual::GraphVisual() {
 
@@ -9,6 +10,11 @@ GraphVisual::GraphVisual() {
     SetTextureFilter(infoFont.texture, TEXTURE_FILTER_BILINEAR);
     smallFont = LoadFont("Assets/Fonts/LilitaOne-Regular.ttf");
     SetTextureFilter(smallFont.texture, TEXTURE_FILTER_BILINEAR);
+
+    Value = { {270, 350, 105, 30} };
+    valueButton = { { PANEL_PADDING + 100, 440, 80, 30 }, "" };
+    valueRect = { -500, -500, 225, 55 };
+    Value.fontSize = 21;
 
     Vertices = { {PANEL_WIDTH + 100, 250 + 60, PANEL_WIDTH / 2 - 10, 30}, "Random" };
     Edges = { {PANEL_WIDTH + 100, 250 + 100, PANEL_WIDTH / 2 - 10, 30}, "Random" };
@@ -23,6 +29,12 @@ GraphVisual::GraphVisual() {
 
     loadFileEdges.width = 600;
     loadFileEdges.height = 300;
+
+    switch_off = LoadTexture("Assets/Images/switch-off.png");
+    switch_on = LoadTexture("Assets/Images/switch-on.png");
+
+    iconDirected = { PANEL_PADDING + 100, 565, 50, 45 };
+    iconWeighted = { PANEL_PADDING + 100, 620, 50, 50 };
 
     loadFileEdges.show("File Format Requirement",
         " Every line in the file corresponds to one edge.\n"
@@ -40,12 +52,38 @@ GraphVisual::GraphVisual() {
 
 int GraphVisual::handleEvent() {
     float deltaTime = GetFrameTime();
-    Input.update();
+
+    if (Input.update()) {
+        valueAnimation = true;
+        valueTime = 0;
+        G.isFindMST = 0;
+
+        if (Input.isAddedge) {
+            Value.bounds.x = -500;
+            Value.bounds.y = Input.cButton[1].rect.y;
+        }
+        else if (Input.isRemove) {
+            Value.bounds.x = -500;
+            Value.bounds.y = Input.cButton[2].rect.y;
+        }
+        else if (Input.isMst) {
+            Value.bounds.x = -500;
+            Value.bounds.y = Input.cButton[3].rect.y;
+        }
+    }
 
     Vertices.update();
     Edges.update();
 
+    Vector2 mousePos = GetMousePosition();
+
+    if (CheckCollisionPointRec(mousePos, iconDirected) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) G.isDirected ^= 1;
+    if (CheckCollisionPointRec(mousePos, iconWeighted) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) G.isWeighted ^= 1, Value.weighted = G.isWeighted, Value.setDefault();
+
+
     if (Input.isCreate) {
+        Go = { { PANEL_PADDING + 200, 420, 130, 40 }, "Go!" };
+
         if (Go.update()) {
             G.genRandom((Vertices.text == "Random" ? -1 : Vertices.getDigit()), (Edges.text == "Random" ? -1 : Edges.getDigit()));
             if (G.numNodes >= 0) Vertices.text = to_string(G.numNodes);
@@ -94,9 +132,77 @@ int GraphVisual::handleEvent() {
 
                 if (G.numNodes >= 0) Vertices.text = to_string(G.numNodes);
                 if (G.numEdges >= 0) Edges.text = to_string(G.numEdges);
-
-                cout << Vertices.text << ' ' << Edges.text << '\n';
             }
+        }
+    }
+    else if (Input.isAddedge) {
+        Go = { { valueRect.x + valueRect.width / 2 - 35, valueRect.height + valueRect.y + 5, 70, 30 }, "Go!" };
+
+        Value.update();
+
+        if (Value.isEnter || Go.update()) {
+            vector<int> parameters = Value.getValues();
+
+            if (parameters.size() >= 3)
+                G.addEdge(parameters[0], parameters[1], parameters[2], G.isWeighted);
+            else if (parameters.size() == 2)
+                G.addEdge(parameters[0], parameters[1], -1, G.isWeighted);
+        }
+
+        if (valueAnimation) {
+            valueTime += deltaTime;
+
+            float t = valueTime / valueDuration;
+            if (t > 1.0f) t = 1.0f;
+            float smoothT = t * t * (3 - 2 * t);
+
+            Vector2 move = Lerp({ Value.bounds.x, Value.bounds.y }, { 295.5, Input.cButton[1].rect.y + 5 }, smoothT);
+
+            Value.bounds.x = move.x;
+            Value.bounds.y = move.y;
+
+            valueButton.rect.x = move.x - 95;
+            valueButton.rect.y = move.y + 1;
+
+            if (valueTime >= valueDuration) {
+                valueTime = 0;
+                valueAnimation = 0;
+                valueAnimation = 0;
+            }
+        }
+
+    }
+    else if (Input.isRemove) {
+
+    }
+    else if (Input.isMst) {
+
+        if (valueAnimation) {
+            valueTime += deltaTime;
+
+            float t = valueTime / valueDuration;
+            if (t > 1.0f) t = 1.0f;
+            float smoothT = t * t * (3 - 2 * t);
+
+            Vector2 move = Lerp({ Value.bounds.x, Value.bounds.y }, { 180, Input.cButton[3].rect.y + 5 }, smoothT);
+
+            Value.bounds.x = move.x;
+            Value.bounds.y = move.y;
+
+            valueButton.rect.x = move.x - 95;
+            valueButton.rect.y = move.y + 1;
+
+            Go = { {move.x + 28, move.y, 65, 30 }, "Go!" };
+
+            if (valueTime >= valueDuration) {
+                valueTime = 0;
+                valueAnimation = 0;
+                valueAnimation = 0;
+            }
+        }
+
+        if (Go.update() && G.isFindMST == false && G.isDirected == 0) {
+            G.processMST();
         }
     }
 
@@ -106,55 +212,36 @@ int GraphVisual::handleEvent() {
 
 
 void GraphVisual::draw() {
-    /// draw info
-    int panelMargin = 250; // Khoảng cách lề trên với box
-    Color panelColor = isDarkMode ? Color{ 229, 229, 229, 255 } : Color{ 189, 224, 254, 255 }; // Chọn màu theo chế độ
+    int panelMargin = 250;
+    Color panelColor = isDarkMode ? Color{ 229, 229, 229, 255 } : Color{ 189, 224, 254, 255 };
+    Color panelColorx = isDarkMode ? Color{ 94, 172, 240, 180 } : Color{ 94, 172, 240, 180 };
+    Color panelColory = isDarkMode ? Color{ 164, 235, 185, 200 } : Color{ 77, 168, 180, 200 };
 
-    DrawRectangle(0, panelMargin, PANEL_WIDTH, Screen_h - 2 * panelMargin, panelColor);
-
-    // Vẽ nền bảng khu vực panel 2 
-    Color panelColorx = isDarkMode ? Color{ 94, 172, 240, 180 } : Color{ 94, 172, 240, 180 }; // Chọn màu theo chế độ
-
-    DrawRectangle(PANEL_WIDTH, panelMargin, PANEL_WIDTH + 4, Screen_h - 2 * panelMargin, panelColorx);
-
-    Color panelColory = isDarkMode ? Color{ 164, 235, 185, 200 } : Color{ 77, 168, 180, 200 }; // Chọn màu theo chế độ
-
-    int rectWidth = 400;
-    int rectHeight = 240;
-    int posX = Screen_w - rectWidth;
-    int posY = Screen_h - rectHeight;
-
-    DrawRectangle(posX, posY, rectWidth, rectHeight, panelColory);
-
-    // "Operation"
-    Color operationColor = isDarkMode ? DARKBLUE : DARKBLUE;
-    DrawTextEx(smallFont, "Operations", { PANEL_PADDING + 10, 280 }, 26, 2, operationColor);
-
-    DrawRectangleRec(info, panelColory);
-
-    Color IN4Color = isDarkMode ? Color{ 199, 8, 40, 255 } : Color{ 199, 8, 40, 255 };
-    DrawTextEx(infoFont, "[INFO]:", { (float)posX + 10, (float)posY + 10 }, 26, 2, IN4Color);
-
-    Input.draw(smallFont);
-
-    if (Vertices.text == "") Vertices.text = "Random";
-    if (Edges.text == "") Edges.text = "Random";
-
-    Vertices.draw();
-    Edges.draw();
-    int fontSize = 22;
-    float spacing = 1.0f;
-
-    string text = "Vertices";
-    int textwidth = MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
-    DrawTextEx(font, text.c_str(), { PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 60 }, fontSize, spacing, BLACK);
-
-    text = "Edges";
-    textwidth = MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
-    DrawTextEx(font, text.c_str(), { PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 100 }, fontSize, spacing, BLACK);
-
+    valueButton.text = G.isWeighted ? "(u,v,w):" : "(u,v):";
 
     if (Input.isCreate) {
+
+        /// draw edge and nodes
+        DrawRectangleRounded(Rectangle{ PANEL_WIDTH, panelMargin * 1.f, PANEL_WIDTH + 4, Screen_h * 1.f - 2 * panelMargin + 20 }, 0.2, 9, panelColorx);
+
+        if (Vertices.text == "") Vertices.text = "Random";
+        if (Edges.text == "") Edges.text = "Random";
+
+        Vertices.draw();
+        Edges.draw();
+        int fontSize = 22;
+        float spacing = 1.0f;
+
+        string text = "Vertices";
+        int textwidth = MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
+        DrawTextEx(font, text.c_str(), { PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 60 }, fontSize, spacing, BLACK);
+
+        text = "Edges";
+        textwidth = MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
+        DrawTextEx(font, text.c_str(), { PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 100 }, fontSize, spacing, BLACK);
+
+        // other stuff
+
         fileEdges.isChose = fileMatrix.isChose = Go.isChose = 0;
         fileMatrix.draw(smallFont);
         fileEdges.draw(smallFont);
@@ -162,13 +249,57 @@ void GraphVisual::draw() {
 
         DrawLineEx(Vector2{ PANEL_WIDTH, 485 }, Vector2{ PANEL_WIDTH * 2 + 4, 485 }, 2, BLACK);
     }
+    else if (Input.isAddedge) {
+        valueRect.x = Value.bounds.x - 108;
+        valueRect.y = Value.bounds.y - 7 - 5;
+        DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
+        Go.isChose = 0;
+
+        if (abs(valueTime - valueDuration) < 1 || valueAnimation == 0) {
+            Go.draw(smallFont);
+        }
+
+        valueButton.draw(smallFont);
+        Value.draw();
+    }
+    else if (Input.isRemove) {
+
+    }
+    else if (Input.isMst) {
+
+        valueRect.x = Value.bounds.x - 108;
+        valueRect.y = Value.bounds.y - 7 - 5;
+        DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
+        Go.isChose = 0;
+        Go.draw(smallFont);
+    }
+
+    DrawRectangleRounded(Rectangle{ 0, panelMargin * 1.f, PANEL_WIDTH, Screen_h * 1.f - 2 * panelMargin + 20 }, 0.2, 9, panelColor);
+
+    Color operationColor = isDarkMode ? DARKBLUE : DARKBLUE;
+    DrawTextEx(smallFont, "Operations", { PANEL_PADDING + 10, 280 }, 26, 2, operationColor);
+    Input.draw(smallFont);
+
+    DrawTextEx(font, "Directed: ", { PANEL_PADDING + 5, 583 }, 20, 1, BLACK);
+    DrawTextEx(font, "Weighted: ", { PANEL_PADDING + 3, 623 }, 20, 1, BLACK);
+
+    Vector2 mousePos = GetMousePosition();
+    bool isHovering = CheckCollisionPointRec(mousePos, iconDirected);
+    DrawTextureEx(G.isDirected ? switch_on : switch_off, { PANEL_PADDING + 100, 570 }, 0.0f, 1.f, isHovering ? Color{ 255, 255, 255, 200 } : WHITE);
+
+    isHovering = CheckCollisionPointRec(mousePos, iconWeighted);
+    DrawTextureEx(G.isWeighted ? switch_on : switch_off, { PANEL_PADDING + 100, 610 }, 0.0f, 1.f, isHovering ? Color{ 255, 255, 255, 200 } : WHITE);
 
     /// Draw graph
+
     G.draw(font);
+
+
     loadFileEdges.draw(font);
 }
 
 GraphVisual::~GraphVisual() {
+    UnloadTexture(switch_off);
     UnloadFont(font);
     UnloadFont(infoFont);
     UnloadFont(smallFont);

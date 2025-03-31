@@ -6,14 +6,21 @@ public:
     HashTableVisual();
     int handleEvent();
     void draw();
+    void drawCode();
 
     Font font, infoFont, smallFont;
 
     ~HashTableVisual();
 
 private:
+    void drawCode(int posX, int posY, int width, int height, const vector<string>& codeLines);
+    void highlightCode(int posX, int posY, int width, int height, int currentLine);
+    void drawBackgroundInfo(int posX, int posY, int width, int height);
+
 #define PANEL_WIDTH 188  // Độ rộng bảng
 #define PANEL_PADDING 20 // Khoảng cách lề
+
+    vector <string> insertCode, deleteCode, searchCode;
 
     AnimationData animation;
     CommonButton Input;
@@ -29,6 +36,9 @@ private:
     float valueTime = 0;
     float valueDuration = 2.f;
     bool valueAnimation = 0;
+
+    int frameCnt = 0;
+    int currentLine = 0;
 
     bool popActive;
     float popElapsedTime;

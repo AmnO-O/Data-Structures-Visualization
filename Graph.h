@@ -1,6 +1,26 @@
 #pragma once
 #include "Constants.h"
 
+struct DSU {
+	vector <int> par;
+
+	void init(int _ = 0) {
+		par = vector <int>(_ + 2, -1);
+	}
+
+	int root(int u) {
+		return par[u] < 0 ? u : par[u] = root(par[u]);
+	}
+
+	bool join(int u, int v) {
+		if ((u = root(u)) == (v = root(v))) return 0;
+		if (-par[u] < -par[v]) swap(u, v);
+		par[u] += par[v];
+		par[v] = u;
+		return 1;
+	}
+};
+
 struct GraphNode {
 	Vector2 position, velocity, acceleration;
 	float radius;
@@ -131,6 +151,7 @@ struct Edge {
 	Color color = BLACK;
 	bool directed = false;
 	bool highlighted = false;
+	float thickness = 2.5f;
 
 	Edge(int f, int t, float w, Color c, bool dir = false) {
 		from = f;
@@ -141,6 +162,9 @@ struct Edge {
 		highlighted = false;
 	}
 
+	bool operator<(const Edge& other) const {
+		return weight < other.weight;
+	}
 };
 
 class Graph {
@@ -150,7 +174,9 @@ public:
 	void addEdge(int from, int to, int weight = 1, bool dir = false);
 
 	void genRandom(int nodes = -1, int edges = -1);
-	void findMST();
+
+	void processMST();
+
 	void updEades();
 	void updFruchterman();
 	void updGPT();
@@ -158,16 +184,24 @@ public:
 	void draw(Font& font);
 	void reset();
 	int numNodes, numEdges;
+	bool isDirected = false, isWeighted = false;
+	bool isFindMST = false;
 
 private:
-
 	void drawEdge(const Edge& edge, Font& font);
+
 	vector <GraphNode> nodes;
+
 	vector <Edge> edges;
+	vector <Edge> edgesMST;
+	vector <Edge> curMST;
+
+	DSU dsu;
 
 	int matrix[1000][1000];
 	Vector2 forces[1000];
 
+	int frameCnt = 0;
 	int selectedNode = -1;
 
 	float c_rep = 1000.0f;

@@ -109,7 +109,20 @@ int HashTable::search(int val, vector <int>& path) {
 }
 
 void HashTable::draw(Font font) {
+    float availableWidth = 970;
+    float availableHeight = 370;
+
+    nodesPerRow = round(sqrt(1.f * sz * availableWidth / availableHeight));
+
+    int numRows = (sz + nodesPerRow - 1) / nodesPerRow;
+
+    slotWidth = (availableWidth - (nodesPerRow - 1) * margin) / nodesPerRow;
+    slotHeight = (availableHeight - (numRows - 1) * margin) / numRows;
+
+    slotWidth = slotHeight = max(15, min({ slotWidth, slotHeight, 70 }));
+
     float speed = 1.f;
+
     if (isInitial) {
         speed = AnimationTime / AnimationDuration;
         if (speed > 1) speed = 1;
@@ -118,6 +131,7 @@ void HashTable::draw(Font font) {
     for (int i = 0; i < sz; i++) {
         int col = i % nodesPerRow;
         int row = i / nodesPerRow;
+
         Vector2 finalCenter = getCenter(i);
         Vector2 currentCenter = finalCenter;
 

@@ -16,6 +16,7 @@ struct Button {
     bool isPressed = false;
     bool isChose = false;
     bool debugMode = false;
+    bool isClick = false;
 
 
     // Hàm Update() kiểm tra di chuột, bấm chuột...
@@ -23,6 +24,7 @@ struct Button {
     bool update() {
         Vector2 mousePos = GetMousePosition();
         isHovered = CheckCollisionPointRec(mousePos, rect);
+        isClick = false;
 
         if (isHovered) {
             if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
@@ -33,7 +35,9 @@ struct Button {
             }
             // Nếu thả chuột ra (sau khi hover), tính là "click"
             if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON)) {
-                isChose = !isChose;
+                if (isChose == 0) isChose = !isChose;
+                isClick = true;
+
                 return true;
             }
         }
@@ -89,6 +93,9 @@ struct Button {
         if (isChose)
             DrawRectangleRoundedLinesEx(rect, 0.3f, 6, 4.0f, YELLOW);
 
+        if (isClick)
+            DrawRectangleRoundedLinesEx(rect, 0.3f, 6, 4.0f, GRAY);
+
         int fontSize = 20;
         float spacing = 2.0f;
         Vector2 textSize = MeasureTextEx(font, text.c_str(), fontSize, spacing);
@@ -123,7 +130,7 @@ private:
 class GraphButton {
 public:
     GraphButton();
-    void update();
+    bool update();
     void draw(Font font);
 
     bool isCreate = true;
@@ -203,7 +210,7 @@ struct Instruction {
         float titleX = modalX + (width - titleSize.x) / 2.0f;
         float titleY = modalY + 20.0f;
         DrawTextEx(font, title.c_str(), Vector2{ titleX, titleY },
-            22, textSpacing, !isDarkMode ? DARKPURPLE : Color{ 0, 0, 128, 255 });
+            22, textSpacing, !isDarkMode ? DARKPURPLE : Color{ 255, 0, 0, 255 });
 
         // Split the message into lines
         std::vector<std::string> lines;
@@ -219,14 +226,11 @@ struct Instruction {
         float currentY = titleY + titleSize.y + 10.0f;
         for (const auto& line : lines) {
             if (line.find("Example:") != std::string::npos) {
-                // Add extra space before the example section
-                // Render "**Example:**" in a distinct color
                 currentY += 10.0f;
-                DrawTextEx(font, line.c_str(), Vector2{ modalX + 10.0f, currentY }, 20, textSpacing, DARKPURPLE);
+                DrawTextEx(font, line.c_str(), Vector2{ modalX + 10.0f, currentY }, 20, textSpacing, isDarkMode ? Color{ 255, 0, 0, 255 } : DARKPURPLE);
                 inExample = true;
             }
             else if (inExample) {
-                // Render example lines with indentation and a different color
                 string indentedLine = "    " + line;
                 DrawTextEx(font, indentedLine.c_str(), Vector2{ modalX + 10.0f, currentY }, 20, textSpacing, textColor);
             }
@@ -237,7 +241,6 @@ struct Instruction {
             currentY += lineSize.y + 3.0f;
         }
 
-        // Draw the OK button
         okRect.draw(font);
 
         return false;

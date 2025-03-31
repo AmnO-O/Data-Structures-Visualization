@@ -4,13 +4,13 @@ Graph::Graph() {
     numNodes = 0;
     for (int i = 0; i < 14; i++) addNode(i);
     genRandom();
+    isDirected = isWeighted = 0;
     selectedNode = -1;
 }
 
 void Graph::reset() {
     nodes.clear();
     edges.clear();
-
     numNodes = numEdges = 0;
 }
 
@@ -20,9 +20,7 @@ void Graph::addNode(int id) {
     {255, 61, 127, 255},   // Pink
     {255, 145, 0, 255},    // Orange
     {98, 205, 255, 255},   // Light blue
-    {186, 104, 200, 255},  // Purple
     {79, 195, 247, 255},   // Sky blue
-    {255, 213, 79, 255},   // Yellow
     {77, 182, 172, 255},   // Teal
     LIME,
 
@@ -31,7 +29,7 @@ void Graph::addNode(int id) {
     numNodes++;
     std::uniform_real_distribution<float> posDist(100.0f, Screen_w - 100.0f);
     std::uniform_real_distribution<float> posDist2(100.0f, Screen_h - 100.0f);
-    nodes.push_back(GraphNode(posDist(rd), posDist2(rd), 20.f, palette[random(0, 8)], to_string(id)));
+    nodes.push_back(GraphNode(posDist(rd), posDist2(rd), 20.f, palette[random(0, 6)], to_string(id)));
 }
 
 void Graph::addEdge(int from, int to, int weight, bool dir) {
@@ -43,7 +41,7 @@ void Graph::addEdge(int from, int to, int weight, bool dir) {
 
     if (from < 0 || from >= numNodes || to < 0 || to >= numNodes) return;
     numEdges = edges.size() + 1;
-    edges.push_back(Edge(from, to, weight, isDarkMode ? WHITE : BLACK, dir));
+    edges.push_back(Edge(from, to, isWeighted ? weight : -1e9 - 7 - 2 - 2006, isDarkMode ? WHITE : BLACK, isDirected));
 }
 
 void Graph::genRandom(int numnodes, int numedges) {
@@ -56,9 +54,7 @@ void Graph::genRandom(int numnodes, int numedges) {
         {255, 61, 127, 255},   // Pink
         {255, 145, 0, 255},    // Orange
         {98, 205, 255, 255},   // Light blue
-        {186, 104, 200, 255},  // Purple
         {79, 195, 247, 255},   // Sky blue
-        {255, 213, 79, 255},   // Yellow
         {77, 182, 172, 255},   // Teal
         LIME,
 
@@ -81,8 +77,8 @@ void Graph::genRandom(int numnodes, int numedges) {
         numEdges = min(numedges, numNodes * (numNodes - 1) / 2);
 
     for (int i = 0; i < numNodes; i++) {
-        Color nodeColor = palette[i % 9];
-        nodes.push_back(GraphNode(posDist(rd), posDist2(rd), 22.0f, nodeColor, to_string(i + 1)));
+        Color nodeColor = palette[i % 7];
+        nodes.push_back(GraphNode(posDist(rd), posDist2(rd), 22.0f, nodeColor, to_string(i)));
         forces[i] = { 0, 0 };
     }
 
@@ -111,11 +107,13 @@ void Graph::genRandom(int numnodes, int numedges) {
                     180  // Semi-transparent
                 };
 
-                edges.push_back(Edge(from, to, random(1, 20), BLACK));
+                edges.push_back(Edge(from, to, isWeighted ? random(1, 20) : -1e9 - 7 - 2 - 2006, BLACK, isDirected));
             }
         }
         else i--;
     }
+
+    for (int i = 0; i < 100; i++) updGPT();
 }
 
 
@@ -141,20 +139,16 @@ void Graph::drawEdge(const Edge& edge, Font& font) {
         end.y - dir.y * nodes[edge.to].radius
     };
 
-    Color displayColor = edge.highlighted ?
-        Color{
-        255, 255, 40, 255
-    } :
-        edge.color;
+    Color displayColor = edge.highlighted ? (isDarkMode ? YELLOW : PURPLE) : edge.color;
 
-    float thickness = edge.highlighted ? 4.0f : 2.0f;
+    float thickness = edge.highlighted ? 4.0f : edge.thickness;
 
     if (edge.directed)
         DrawThickArrow(adjustedStart, adjustedEnd, thickness, displayColor, edge.highlighted);
     else
-        DrawLineEx(adjustedStart, adjustedEnd, thickness, isDarkMode ? WHITE : BLACK);
+        DrawLineEx(adjustedStart, adjustedEnd, thickness, displayColor);
 
-    if (edge.weight != -1e9 - 7 - 2 - 2006 && (edge.highlighted || edge.weight > 1.0f)) {
+    if (edge.weight != -1e9 - 7 - 2 - 2006 && (edge.highlighted || edge.weight >= 1.0f)) {
         Vector2 midpoint = {
             (adjustedStart.x + adjustedEnd.x) / 2,
             (adjustedStart.y + adjustedEnd.y) / 2
@@ -436,6 +430,14 @@ void Graph::updFruchterman() {
     }
 }
 
+void Graph::processMST() {
+    edgesMST.clear(); curMST.clear();
+    for (Edge e : edges) edgesMST.push_back(e);
+    reverse(edgesMST.begin(), edgesMST.end());
+    dsu.init(numNodes);
+    isFindMST = true;
+}
+
 void Graph::update() {
     updEades();
 
@@ -464,11 +466,93 @@ void Graph::update() {
 }
 
 void Graph::draw(Font& font) {
+    float deltaTime = GetFrameTime();
 
-    for (const Edge& edge : edges) {
+    if (isFindMST) {
+        if (frameCnt == 60 && !edgesMST.empty()) {
+            Edge e = edgesMST.back();
+            edgesMST.pop_back();
+
+            for (Edge& edge : edgesMST) {
+                edge.color = isDarkMode ? WHITE : BLACK;
+                drawEdge(edge, font);
+            }
+
+            for (Edge& edge : curMST) {
+                if (edge.color.r == RED.r && edge.color.g == RED.g && edge.color.b == RED.b) {
+
+                }
+                else edge.color = isDarkMode ? WHITE : BLACK;
+
+                drawEdge(edge, font);
+            }
+
+            e.highlighted = false;
+            e.color = RED;
+            curMST.push_back(e);
+            drawEdge(e, font);
+
+            for (int i = 0; i < nodes.size(); i++) {
+                nodes[i].highlighted = (i == e.from || i == e.to);
+                nodes[i].draw(deltaTime, font);
+            }
+        }
+        else if (frameCnt >= 60) {
+            if (frameCnt == 120) {
+                Edge& e = curMST.back();
+
+                if (dsu.join(e.from, e.to) == 0) e.thickness = 0.5f, e.highlighted = 0, e.color = isDarkMode ? WHITE : BLACK;
+                else e.highlighted = true;
+
+                frameCnt = 0;
+            }
+
+            for (Edge& edge : curMST) {
+                if (edge.color.r == RED.r && edge.color.g == RED.g && edge.color.b == RED.b) {
+
+                }
+                else edge.color = isDarkMode ? WHITE : BLACK;
+                drawEdge(edge, font);
+            }
+
+            for (Edge& edge : edgesMST) {
+                edge.color = isDarkMode ? WHITE : BLACK;
+                drawEdge(edge, font);
+            }
+
+            for (int i = 0; i < nodes.size(); i++)
+                nodes[i].draw(deltaTime, font);
+        }
+        else {
+
+            for (Edge& edge : edgesMST) {
+                edge.color = isDarkMode ? WHITE : BLACK;
+                drawEdge(edge, font);
+            }
+
+            for (Edge edge : curMST) {
+                if (edge.color.r == RED.r && edge.color.g == RED.g && edge.color.b == RED.b) {
+
+                }
+                else edge.color = isDarkMode ? WHITE : BLACK;
+
+                drawEdge(edge, font);
+            }
+
+            for (int i = 0; i < nodes.size(); i++) {
+                nodes[i].highlighted = false;
+                nodes[i].draw(deltaTime, font);
+            }
+        }
+
+        frameCnt++;
+        return;
+    }
+
+    for (Edge& edge : edges) {
+        edge.color = isDarkMode ? WHITE : BLACK;
         drawEdge(edge, font);
     }
-    float deltaTime = GetFrameTime();
 
     for (GraphNode& node : nodes) node.draw(deltaTime, font);
 }

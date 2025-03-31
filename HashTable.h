@@ -103,7 +103,7 @@ public:
     void upd(float delta);
     Vector2 getCenter(int index);
     void drawSlot(int index, Font font, bool highlight = false, bool Value = true);
-    void clear(); 
+    void clear();
 
 private:
     void drawSlot(Rectangle rect, int index, const std::string& text, Font font, bool highlight = false, bool Value = true);

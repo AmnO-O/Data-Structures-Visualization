@@ -78,6 +78,7 @@ void Visualizer::Process() {
 
 		else if (Program_state == HowToUse_state)
 			helper->Update(Program_state);
+
 		else if (Program_state == Trie_state)
 			avl->Update(Program_state);
 
@@ -129,7 +130,7 @@ void Visualizer::Process() {
 		else if (Program_state == HowToUse_state) helper->Draw();
 
 
-		if (Program_state == Trie_state) DataName = "Trie";
+		if (Program_state == Trie_state) DataName = "AVL";
 		else if (Program_state == HashTable_state) DataName = "Hash table: Linear Probing";
 		else if (Program_state == LinkedList_state) DataName = "Linked List";
 		else if (Program_state == Graph_state) DataName = "Graph";

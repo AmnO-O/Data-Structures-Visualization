@@ -18,7 +18,7 @@ CommonButton::CommonButton() {
 }
 
 bool CommonButton::update() {
-	bool ok = false; 
+	bool ok = false;
 	for (int i = 0; i < 4; i++) {
 		if (cButton[i].update()) {
 			for (int j = 0; j < 4; j++) cButton[j].isChose = 0;
@@ -30,11 +30,11 @@ bool CommonButton::update() {
 			else if (i == 2) isInsert = 1;
 			else isRemove = 1;
 
-			ok = true; 
+			ok = true;
 		}
 	}
 
-	return ok; 
+	return ok;
 }
 
 
@@ -63,7 +63,9 @@ GraphButton::GraphButton() {
 	cButton[0].isChose = 1;
 }
 
-void GraphButton::update() {
+bool GraphButton::update() {
+	bool ok = false;
+
 	for (int i = 0; i < 4; i++) {
 		if (cButton[i].update()) {
 			for (int j = 0; j < 4; j++) cButton[j].isChose = 0;
@@ -74,8 +76,12 @@ void GraphButton::update() {
 			else if (i == 1) isAddedge = 1;
 			else if (i == 2) isRemove = 1;
 			else isMst = 1;
+
+			ok = true;
 		}
 	}
+
+	return ok;
 }
 
 
