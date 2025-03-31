@@ -80,6 +80,7 @@ void AVLTreeScreen::Update(int& state) {
     // Kiểm tra nút Reverse
     if (CheckCollisionPointRec(mouse, searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         AVLtreeState = SearchState;
+        MainCaseInfo = SearchCaseInfo;
         currentButton = SEARCHAVL;
         SearchNode = nullptr;
     }
@@ -87,6 +88,7 @@ void AVLTreeScreen::Update(int& state) {
     // Kiểm tra nút Clear
     if (CheckCollisionPointRec(mouse, clearButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         AVLtreeState = ClearState;
+        MainCaseInfo = ClearCaseInfo;
         currentButton = CLEARAVL;
         isClear = true;
         fadeProgress = 1.0f;
@@ -191,11 +193,13 @@ void AVLTreeScreen::Update(int& state) {
             Value.outputMessage = "";
 
             // Kích hoạt animation sau mỗi lần thay đổi
+            SearchNode = nullptr;
             currentSearchNode = AVLtree.m_root;
             SearchAnimationFinished = false;
             isSearch = true;
             timer = 0.0f;
             entered = true;
+            ValueSearchAnimation = valueSearch;
         }
         else if (Value.isClickedEnter) {
             Value.getMessage();
@@ -205,18 +209,18 @@ void AVLTreeScreen::Update(int& state) {
                 Value.outputMessage = "";
 
                 // Kích hoạt animation sau mỗi lần thay đổi
+                SearchNode = nullptr;
                 currentSearchNode = AVLtree.m_root;
                 SearchAnimationFinished = false;
                 isSearch = true;
                 timer = 0.0f;
                 entered = true;
+                ValueSearchAnimation = valueSearch;
             }
             Value.isClickedEnter = false;
         }    
     }
-    else if (AVLtreeState == ClearState) {
-        infoMessage = "Clearing the AVLtree...";
-    }
+    else if (AVLtreeState == ClearState) {    }
 
      //Cập nhật tiến trình animation
     if (isInsert || isDeleting || isSearch || isClear) {
@@ -225,7 +229,6 @@ void AVLTreeScreen::Update(int& state) {
             if (isInsert)  AVLtree.Insert(valueInsert);
             else if (isDeleting) {
                 AVLtree.Delete(valueDelete);
-                SearchNode = nullptr;
             }
             else if (isSearch) {
                 SearchNode = AVLtree.Search(valueSearch);
@@ -243,9 +246,9 @@ void AVLTreeScreen::Update(int& state) {
 				timer = 0.0f;
             }
             else if (AVLtree.waitinganimation == 0 ) {
+                if (isInsert || isDeleting) SubCaseInfo = -1;
                 isInsert = isDeleting = isSearch = false;
                 timer = 0.0f;  // Reset lại bộ đếm thời gian
-                SubCaseInfo = -1;
             }
             else if (AVLtree.waitinganimation > 0 ) {
                 AVLtree.waitinganimation--;
@@ -443,24 +446,33 @@ void AVLTreeScreen::SearchAnimation(int key) {
                 findingSmallestRightSubTree = false;
             }
         }
-        else SearchAnimationFinished = true;
+        else {
+            SearchAnimationFinished = true;
+            if (isSearch) SubCaseInfo = 3;
+        }
     }
     else {
         if (ValueSearchAnimation < currentSearchNode->val) {
             SubCaseInfo = 1;
 			if (!currentSearchNode->left) {
+                if ( isSearch) SubCaseInfo = NULLCase;
 				SearchAnimationFinished = true;
 			}
 			else {
+                if (isSearch) SubCaseInfo = SmallerCase;
 				currentSearchNode = currentSearchNode->left;
 			}
         }
         else {
             SubCaseInfo = 1;
 			if (!currentSearchNode->right) {
+                if (isSearch) SubCaseInfo = NULLCase;
 				SearchAnimationFinished = true;
 			}
-			else currentSearchNode = currentSearchNode->right;
+            else {
+                if (isSearch) SubCaseInfo = LargerCase;
+                currentSearchNode = currentSearchNode->right;
+            }
         }
     }
 }
@@ -491,32 +503,32 @@ void AVLTreeScreen::DrawInfo() {
         textY += lineSpacing;
         posY += lineSpacing;
 
-        DrawTextEx(IN4Font, "check balance factor of this and its children", { (float)textX, (float)textY }, 18, 2, WHITE);
+        DrawTextEx(IN4Font, "check balance factor of this and its children", { (float)textX, (float)textY }, 20, 2, WHITE);
         textY += lineSpacing;
         posY += lineSpacing;
 
         if (SubCaseInfo == RightRotationCaseInfo) DrawRectangle(posX, posY, rectWidth, 35, RED);
-        DrawTextEx(IN4Font, "       case1: this.rotateRight", { (float)textX, (float)textY }, 18, 2, WHITE);
+        DrawTextEx(IN4Font, "       case1: this.rotateRight", { (float)textX, (float)textY }, 20, 2, WHITE);
         textY += lineSpacing;
         posY += lineSpacing;
 
         if (SubCaseInfo == LeftRightRotationCaseInfo) DrawRectangle(posX, posY, rectWidth, 35, RED);
-        DrawTextEx(IN4Font, "       case2: this.left.rotateLeft, this.rotateRight", { (float)textX, (float)textY }, 18, 2, WHITE);
+        DrawTextEx(IN4Font, "       case2: this.left.rotateLeft, this.rotateRight", { (float)textX, (float)textY }, 20, 2, WHITE);
         textY += lineSpacing;
         posY += lineSpacing;
 
         if (SubCaseInfo == LeftRotationCaseInfo) DrawRectangle(posX, posY, rectWidth, 35, RED);
-        DrawTextEx(IN4Font, "       case3: this.rotateLeft", { (float)textX, (float)textY }, 18, 2, WHITE);
+        DrawTextEx(IN4Font, "       case3: this.rotateLeft", { (float)textX, (float)textY }, 20, 2, WHITE);
         textY += lineSpacing;
         posY += lineSpacing;
 
-        if (SubCaseInfo == RightLeftRotationCaseInfo) DrawRectangle(posX, posY, rectWidth, 35, RED);
-        DrawTextEx(IN4Font, "       case4: this.right.rotateRight, this.rotateLeft", { (float)textX, (float)textY }, 18, 2, WHITE);
+        if (SubCaseInfo == RightLeftRotationCaseInfo) DrawRectangle(posX, posY, rectWidth, 20, RED);
+        DrawTextEx(IN4Font, "       case4: this.right.rotateRight, this.rotateLeft", { (float)textX, (float)textY }, 20, 2, WHITE);
         textY += lineSpacing;
         posY += lineSpacing;
 
         if (SubCaseInfo == -1) DrawRectangle(posX, posY, rectWidth, 35, RED);
-        DrawTextEx(IN4Font, "this is balanced", { (float)textX, (float)textY }, 18, 2, WHITE);
+        DrawTextEx(IN4Font, "this is balanced", { (float)textX, (float)textY }, 20, 2, WHITE);
 
     }
     else if (MainCaseInfo == DeletionCaseInfo){
@@ -541,33 +553,84 @@ void AVLTreeScreen::DrawInfo() {
         textY += lineSpacing;
         posY += lineSpacing;
 
-        DrawTextEx(IN4Font, "check balance factor of this and its children", { (float)textX, (float)textY }, 18, 2, WHITE);
+        DrawTextEx(IN4Font, "check balance factor of this and its children", { (float)textX, (float)textY }, 20, 2, WHITE);
         textY += lineSpacing;
         posY += lineSpacing;
 
         if (SubCaseInfo == RightRotationCaseInfo) DrawRectangle(posX, posY, rectWidth, 35, RED);
-        DrawTextEx(IN4Font, "       case1: this.rotateRight", { (float)textX, (float)textY }, 18, 2, WHITE);
+        DrawTextEx(IN4Font, "       case1: this.rotateRight", { (float)textX, (float)textY }, 20, 2, WHITE);
         textY += lineSpacing;
         posY += lineSpacing;
 
         if (SubCaseInfo == LeftRightRotationCaseInfo) DrawRectangle(posX, posY, rectWidth, 35, RED);
-        DrawTextEx(IN4Font, "       case2: this.left.rotateLeft, this.rotateRight", { (float)textX, (float)textY }, 18, 2, WHITE);
+        DrawTextEx(IN4Font, "       case2: this.left.rotateLeft, this.rotateRight", { (float)textX, (float)textY }, 20, 2, WHITE);
         textY += lineSpacing;
         posY += lineSpacing;
 
         if (SubCaseInfo == LeftRotationCaseInfo) DrawRectangle(posX, posY, rectWidth, 35, RED);
-        DrawTextEx(IN4Font, "       case3: this.rotateLeft", { (float)textX, (float)textY }, 18, 2, WHITE);
+        DrawTextEx(IN4Font, "       case3: this.rotateLeft", { (float)textX, (float)textY }, 20, 2, WHITE);
         textY += lineSpacing;
         posY += lineSpacing;
 
         if (SubCaseInfo == RightLeftRotationCaseInfo) DrawRectangle(posX, posY, rectWidth, 35, RED);
-        DrawTextEx(IN4Font, "       case4: this.right.rotateRight, this.rotateLeft", { (float)textX, (float)textY }, 18, 2, WHITE);
+        DrawTextEx(IN4Font, "       case4: this.right.rotateRight, this.rotateLeft", { (float)textX, (float)textY }, 20, 2, WHITE);
         textY += lineSpacing;
         posY += lineSpacing;
 
         if (SubCaseInfo == -1) DrawRectangle(posX, posY, rectWidth, 35, RED);
-        DrawTextEx(IN4Font, "this is balanced", { (float)textX, (float)textY }, 18, 2, WHITE);
+        DrawTextEx(IN4Font, "this is balanced", { (float)textX, (float)textY }, 20, 2, WHITE);
 
+    }
+    else if (MainCaseInfo == SearchCaseInfo) {
+        // Hiển thị nội dung
+        int textX = posX + 10;
+        int textY = posY + 10;
+        int lineSpacing = 37; // Tăng khoảng cách dòng để vừa với chiều cao mới
+
+        if (SubCaseInfo == NULLCase)DrawRectangle(posX, posY, rectWidth, 35, RED);
+        DrawTextEx(IN4Font, "If this == NULL", { (float)textX, (float)textY }, 20, 2, WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == NULLCase) DrawRectangle(posX, posY, rectWidth, 35, RED);
+        DrawTextEx(IN4Font, "       return null", { (float)textX, (float)textY }, 20, 2, WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == ThisValueCase) DrawRectangle(posX, posY, rectWidth, 35, RED);
+        DrawTextEx(IN4Font, "else if this key == search value", { (float)textX, (float)textY }, 20, 2, WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == ThisValueCase) DrawRectangle(posX, posY, rectWidth, 35, RED);
+        DrawTextEx(IN4Font, "       return this ", { (float)textX, (float)textY }, 20, 2, WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == SmallerCase) DrawRectangle(posX, posY, rectWidth, 35, RED);
+        DrawTextEx(IN4Font, "else if this key < search value", { (float)textX, (float)textY }, 20, 2, WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == SmallerCase) DrawRectangle(posX, posY, rectWidth, 35, RED);
+        DrawTextEx(IN4Font, "       search right", { (float)textX, (float)textY }, 20, 2, WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == LargerCase) DrawRectangle(posX, posY, rectWidth, 35, RED);
+        DrawTextEx(IN4Font, "else if this key > search value", { (float)textX, (float)textY }, 20, 2, WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == LargerCase) DrawRectangle(posX, posY, rectWidth, 35, RED);
+        DrawTextEx(IN4Font, "       search left", { (float)textX, (float)textY }, 20, 2, WHITE);
+
+    }
+    else if (MainCaseInfo == ClearCaseInfo) {
+        // Hiển thị nội dung
+        int textX = posX + 10;
+        int textY = posY + 10;
+        DrawTextEx(IN4Font, "Clearing the AVLtree...", { (float)textX, (float)textY }, 20, 2, WHITE);
     }
 }
 

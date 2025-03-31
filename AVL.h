@@ -1,7 +1,7 @@
 #pragma once
 #include"Constants.h"
 #include"deque"
-const float nodeSpacing = 50.0f;
+const float nodeSpacing = 40.0f;
 
 
 

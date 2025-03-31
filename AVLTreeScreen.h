@@ -29,6 +29,7 @@ private:
 	int InertionCaseInfo = 1;
 	int DeletionCaseInfo = 2;
 	int SearchCaseInfo = 3;
+	int ClearCaseInfo = 4;
 
 	int FindingtoInsert = 1;
 	int InsertingCaseInfo = 7;
@@ -42,6 +43,10 @@ private:
 	int FindingtoSmallestRightSubTree = 6;
 	int RomovevCaseInfo = 7;
 
+	int NULLCase = 2;
+	int ThisValueCase = 3;
+	int SmallerCase = 4;
+	int LargerCase = 5;
 
 
 
@@ -85,7 +90,7 @@ private:
 	bool entered = false;
 	bool animating = false;   // Đang chạy animation hay không
 	float timer = 0.0f;       // Đếm thời gian animation
-	float duration = 1.0f;    // Thời gian chạy animation
+	float duration = 0.1f;    // Thời gian chạy animation
 
 	int valueInsert;
 	int valueDelete;
