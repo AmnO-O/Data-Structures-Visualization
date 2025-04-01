@@ -14,6 +14,8 @@ private:
 
 #define PANEL_WIDTH 188  // Độ rộng bảng
 #define PANEL_PADDING 20 // Khoảng cách lề
+	string warning = "";
+	Toolbar toolbar;
 	Rectangle iconWeighted, iconDirected;
 	GraphButton Input;
 	TextBoxCenter Vertices, Edges;

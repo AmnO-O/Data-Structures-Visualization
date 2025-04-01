@@ -82,7 +82,6 @@ void Visualizer::Process() {
 		else if (Program_state == Trie_state)
 			avl->Update(Program_state);
 
-
 		/// switch theme
 		Vector2 mousePos = GetMousePosition();
 		bool isHovering = CheckCollisionPointRec(mousePos, iconRec);

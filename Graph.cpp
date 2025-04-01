@@ -41,8 +41,36 @@ void Graph::addEdge(int from, int to, int weight, bool dir) {
 
     if (from < 0 || from >= numNodes || to < 0 || to >= numNodes) return;
     numEdges = edges.size() + 1;
-    edges.push_back(Edge(from, to, isWeighted ? weight : -1e9 - 7 - 2 - 2006, isDarkMode ? WHITE : BLACK, isDirected));
+    edges.push_back(Edge(from, to, isWeighted ? weight : -1e7 - 7 - 2 - 2006, isDarkMode ? WHITE : BLACK, isDirected));
 }
+
+void Graph::remEdge(int from, int to, int weight) {
+    for (auto it = edges.begin(); it != edges.end(); ++it) {
+
+        if (it->from == from && it->to == to) {
+            if (isWeighted) {
+                if (it->weight == weight) edges.erase(it);
+                return;
+            }
+            else {
+                edges.erase(it);
+                return;
+            }
+        }
+        else if (it->from == to && it->to == from && isDirected == 0) {
+            if (isWeighted) {
+                if (it->weight == weight) edges.erase(it);
+                return;
+            }
+            else {
+                edges.erase(it);
+                return;
+            }
+        }
+    }
+}
+
+
 
 void Graph::genRandom(int numnodes, int numedges) {
     nodes.clear();
@@ -107,7 +135,7 @@ void Graph::genRandom(int numnodes, int numedges) {
                     180  // Semi-transparent
                 };
 
-                edges.push_back(Edge(from, to, isWeighted ? random(1, 20) : -1e9 - 7 - 2 - 2006, BLACK, isDirected));
+                edges.push_back(Edge(from, to, isWeighted ? random(1, 20) : -1e7 - 7 - 2 - 2006, BLACK, isDirected));
             }
         }
         else i--;
@@ -143,18 +171,18 @@ void Graph::drawEdge(const Edge& edge, Font& font) {
 
     float thickness = edge.highlighted ? 4.0f : edge.thickness;
 
-    if (edge.directed)
+    if (isDirected)
         DrawThickArrow(adjustedStart, adjustedEnd, thickness, displayColor, edge.highlighted);
     else
         DrawLineEx(adjustedStart, adjustedEnd, thickness, displayColor);
 
-    if (edge.weight != -1e9 - 7 - 2 - 2006 && (edge.highlighted || edge.weight >= 1.0f)) {
+    if (isWeighted) {
         Vector2 midpoint = {
             (adjustedStart.x + adjustedEnd.x) / 2,
             (adjustedStart.y + adjustedEnd.y) / 2
         };
 
-        char weightText[10];
+        char weightText[22];
         sprintf_s(weightText, "%.1f", edge.weight);
         int textWidth = MeasureTextEx(font, weightText, 16, 1).x;
 
@@ -253,6 +281,27 @@ void Graph::updEades() {
     }
 }
 
+static Vector2 closestPointOnSegment(Vector2 A, Vector2 B, Vector2 C) {
+    Vector2 dirAB = { B.x - A.x, B.y - A.y };
+    float lenAB = std::sqrt(dirAB.x * dirAB.x + dirAB.y * dirAB.y);
+    if (lenAB < 1e-6f) return A;  // Handle degenerate case where A and B are the same
+    Vector2 unitAB = { dirAB.x / lenAB, dirAB.y / lenAB };
+    float t = (C.x - A.x) * unitAB.x + (C.y - A.y) * unitAB.y;
+    if (t < 0) return A;              // Closest point is A
+    else if (t > lenAB) return B;     // Closest point is B
+    else return { A.x + t * unitAB.x, A.y + t * unitAB.y };  // Closest point is within segment
+}
+
+bool Graph::isConencted() {
+    dsu.init(numNodes);
+
+    for (Edge e : edges) {
+        dsu.join(e.from, e.to);
+    }
+
+    return dsu.nc == 1;
+}
+
 void Graph::updGPT() {
     float c_rep = 3000.0f;
     float c_spring = 0.01f;
@@ -314,6 +363,7 @@ void Graph::updGPT() {
         forces[edge.to].x -= force.x;
         forces[edge.to].y -= force.y;
     }
+
 
     for (int i = 0; i < nodes.size(); i++) {
         nodes[i].velocity.x += forces[i].x * timeStep;
@@ -436,6 +486,7 @@ void Graph::processMST() {
     reverse(edgesMST.begin(), edgesMST.end());
     dsu.init(numNodes);
     isFindMST = true;
+    frameCnt = 0;
 }
 
 void Graph::update() {
@@ -489,6 +540,7 @@ void Graph::draw(Font& font) {
 
             e.highlighted = false;
             e.color = RED;
+            e.thickness = 4.f;
             curMST.push_back(e);
             drawEdge(e, font);
 
@@ -498,10 +550,10 @@ void Graph::draw(Font& font) {
             }
         }
         else if (frameCnt >= 60) {
-            if (frameCnt == 120) {
+            if (frameCnt == 120 && curMST.size()) {
                 Edge& e = curMST.back();
 
-                if (dsu.join(e.from, e.to) == 0) e.thickness = 0.5f, e.highlighted = 0, e.color = isDarkMode ? WHITE : BLACK;
+                if (dsu.join(e.from, e.to) == 0) e.thickness = 0.3f, e.highlighted = 0, e.color = isDarkMode ? WHITE : BLACK;
                 else e.highlighted = true;
 
                 frameCnt = 0;

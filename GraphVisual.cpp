@@ -57,6 +57,7 @@ int GraphVisual::handleEvent() {
         valueAnimation = true;
         valueTime = 0;
         G.isFindMST = 0;
+        warning = "";
 
         if (Input.isAddedge) {
             Value.bounds.x = -500;
@@ -173,7 +174,40 @@ int GraphVisual::handleEvent() {
 
     }
     else if (Input.isRemove) {
+        Go = { { valueRect.x + valueRect.width / 2 - 35, valueRect.height + valueRect.y + 5, 70, 30 }, "Go!" };
 
+        Value.update();
+
+        if (Value.isEnter || Go.update()) {
+            vector<int> parameters = Value.getValues();
+
+            if (parameters.size() >= 3)
+                G.remEdge(parameters[0], parameters[1], parameters[2]);
+            else if (parameters.size() == 2)
+                G.remEdge(parameters[0], parameters[1], -1);
+        }
+
+        if (valueAnimation) {
+            valueTime += deltaTime;
+
+            float t = valueTime / valueDuration;
+            if (t > 1.0f) t = 1.0f;
+            float smoothT = t * t * (3 - 2 * t);
+
+            Vector2 move = Lerp({ Value.bounds.x, Value.bounds.y }, { 295.5, Input.cButton[2].rect.y + 5 }, smoothT);
+
+            Value.bounds.x = move.x;
+            Value.bounds.y = move.y;
+
+            valueButton.rect.x = move.x - 95;
+            valueButton.rect.y = move.y + 1;
+
+            if (valueTime >= valueDuration) {
+                valueTime = 0;
+                valueAnimation = 0;
+                valueAnimation = 0;
+            }
+        }
     }
     else if (Input.isMst) {
 
@@ -201,15 +235,20 @@ int GraphVisual::handleEvent() {
             }
         }
 
-        if (Go.update() && G.isFindMST == false && G.isDirected == 0) {
-            G.processMST();
+        if (Go.update() && G.isFindMST == false) {
+            if (G.isDirected) {
+                warning = "Graph must be undirected!";
+            }
+            else if (G.isConencted() == 0) {
+                warning = "Graph must be connected!";
+            }
+            else warning = "", G.processMST();
         }
     }
 
     G.update();
     return Graph_state;
 }
-
 
 void GraphVisual::draw() {
     int panelMargin = 250;
@@ -263,7 +302,17 @@ void GraphVisual::draw() {
         Value.draw();
     }
     else if (Input.isRemove) {
+        valueRect.x = Value.bounds.x - 108;
+        valueRect.y = Value.bounds.y - 7 - 5;
+        DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
+        Go.isChose = 0;
 
+        if (abs(valueTime - valueDuration) < 1 || valueAnimation == 0) {
+            Go.draw(smallFont);
+        }
+
+        valueButton.draw(smallFont);
+        Value.draw();
     }
     else if (Input.isMst) {
 
@@ -272,6 +321,10 @@ void GraphVisual::draw() {
         DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
         Go.isChose = 0;
         Go.draw(smallFont);
+
+        if (warning.size() > 0) {
+            DrawTextEx(font, warning.c_str(), { Go.rect.x - 9, valueRect.y + 65 }, 18, 1, RED);
+        }
     }
 
     DrawRectangleRounded(Rectangle{ 0, panelMargin * 1.f, PANEL_WIDTH, Screen_h * 1.f - 2 * panelMargin + 20 }, 0.2, 9, panelColor);
@@ -297,6 +350,7 @@ void GraphVisual::draw() {
 
     loadFileEdges.draw(font);
 }
+
 
 GraphVisual::~GraphVisual() {
     UnloadTexture(switch_off);

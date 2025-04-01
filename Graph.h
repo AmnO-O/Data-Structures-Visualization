@@ -3,9 +3,11 @@
 
 struct DSU {
 	vector <int> par;
+	int nc;
 
 	void init(int _ = 0) {
-		par = vector <int>(_ + 2, -1);
+		nc = _;
+		par = vector <int>(_ + 3, -1);
 	}
 
 	int root(int u) {
@@ -17,6 +19,7 @@ struct DSU {
 		if (-par[u] < -par[v]) swap(u, v);
 		par[u] += par[v];
 		par[v] = u;
+		nc--;
 		return 1;
 	}
 };
@@ -83,62 +86,42 @@ struct GraphNode {
 	}
 
 	void draw2(Font& font) {
-		//DrawCircleV(position, radius, color); 
-		//DrawCircleLines(position.x, position.y, radius, WHITE);
-		//DrawText(label .c_str(),position.x - MeasureText(label.c_str(), 18) / 2,position.y - 9,18,WHITE);
-
-		// Get color variant based on state
 		Color displayColor = getColorVariant(color, selected, hovered, highlighted);
 
-		// Drop shadow
 		DrawCircleV(Vector2{ position.x + 3, position.y + 3 }, radius, ColorAlpha(DARKGRAY, 0.3f));
 
-		// Outer glow based on state
 		if (hovered || selected || highlighted) {
 			float glowRadius = radius + (selected ? 8 : (highlighted ? 6 : 4));
 			DrawCircleV(position, glowRadius, ColorAlpha(displayColor, 0.3f));
 		}
 
-		// Main node body
 		DrawCircleV(position, radius, displayColor);
 
-		// Inner highlight for 3D effect
 		DrawCircleV(Vector2{ position.x - radius * 0.3f, position.y - radius * 0.3f },
 			radius * 0.4f, ColorAlpha(WHITE, 0.3f));
 
-		// Draw node label
 		int textWidth = MeasureTextEx(font, label.c_str(), 20, 1).x;
 		DrawTextEx(font, label.c_str(), { position.x - textWidth / 2, position.y - 10 }, 20, 1, WHITE);
 	}
 
 	void draw(float currentTime, Font& font) {
-		//DrawCircleV(position, radius, color); 
-		//DrawCircleLines(position.x, position.y, radius, WHITE);
-		//DrawText(label .c_str(),position.x - MeasureText(label.c_str(), 18) / 2,position.y - 9,18,WHITE);
 
-		// Calculate display radius with pulsing effect
 		float displayRadius = getPulsingRadius(radius, currentTime, selected, hovered, highlighted);
 
-		// Get color variant based on state
 		Color displayColor = getColorVariant(color, selected, hovered, highlighted);
 
-		// Drop shadow
 		DrawCircleV(Vector2{ position.x + 3, position.y + 3 }, displayRadius, ColorAlpha(DARKGRAY, 0.3f));
 
-		// Outer glow based on state
 		if (hovered || selected || highlighted) {
 			float glowRadius = displayRadius + (selected ? 8 : (highlighted ? 6 : 4));
 			DrawCircleV(position, glowRadius, ColorAlpha(displayColor, 0.3f));
 		}
 
-		// Main node body
 		DrawCircleV(position, displayRadius, displayColor);
 
-		// Inner highlight for 3D effect
 		DrawCircleV(Vector2{ position.x - displayRadius * 0.3f, position.y - displayRadius * 0.3f },
 			displayRadius * 0.4f, ColorAlpha(WHITE, 0.3f));
 
-		// Draw node label
 		int textWidth = MeasureTextEx(font, label.c_str(), 20, 1).x;
 		DrawTextEx(font, label.c_str(), { position.x - textWidth / 2, position.y - 10 }, 20, 1, WHITE);
 	}
@@ -147,11 +130,11 @@ struct GraphNode {
 struct Edge {
 	int from;
 	int to;
-	float weight;
+	float weight = -1e7 - 7 - 2 - 2006;
 	Color color = BLACK;
 	bool directed = false;
 	bool highlighted = false;
-	float thickness = 2.5f;
+	float thickness = 2.12f;
 
 	Edge(int f, int t, float w, Color c, bool dir = false) {
 		from = f;
@@ -172,6 +155,7 @@ public:
 	Graph();
 	void addNode(int id);
 	void addEdge(int from, int to, int weight = 1, bool dir = false);
+	void remEdge(int from, int to, int weight = 1);
 
 	void genRandom(int nodes = -1, int edges = -1);
 
@@ -183,6 +167,8 @@ public:
 	void update();
 	void draw(Font& font);
 	void reset();
+	bool isConencted();
+
 	int numNodes, numEdges;
 	bool isDirected = false, isWeighted = false;
 	bool isFindMST = false;

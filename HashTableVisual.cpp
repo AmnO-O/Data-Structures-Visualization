@@ -625,9 +625,6 @@ void HashTableVisual::draw() {
         int fontSize = 24;
         float spacing = 1.0f;
 
-        //string message = "\nConstruct a hash table with Size = " + to_string(H.getSize()) + ".";
-        //DrawTextEx(smallFont, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
-
         DrawTextEx(font, "Size: ", { 207, 352 }, fontSize, spacing, BLACK);
         Size.draw();
         File.draw(smallFont);
@@ -639,9 +636,6 @@ void HashTableVisual::draw() {
         }
     }
     else if (Input.isInsert) {
-
-        //string message = "\nInsert a new value to a hash table (Size =  " + to_string(H.getSize()) + ").";
-        //DrawTextEx(smallFont, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
 
         if (animation.active)
             for (int i = 0; i < H.getSize(); i++) H.drawSlot(i, font, (animation.pathIndices[min(animation.currentPathIndex, (int)animation.pathIndices.size() - 1)] == i));
@@ -720,9 +714,6 @@ void HashTableVisual::draw() {
     else if (Input.isRemove) {
         Value.bounds.y = Input.cButton[3].rect.y + 5;
         drawBackgroundInfo(info.x, info.y, info.width, info.height);
-
-        //string message = "\nRemove a value in a hash table (Size =  " + to_string(H.getSize()) + ").";
-        //DrawTextEx(smallFont, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
 
         if (animation.active)
             for (int i = 0; i < H.getSize(); i++) H.drawSlot(i, font, (animation.pathIndices[min(animation.currentPathIndex, (int)animation.pathIndices.size() - 1)] == i), !(animation.pathIndices.back() == i && shrinkActive));
@@ -803,9 +794,6 @@ void HashTableVisual::draw() {
         Value.bounds.y = Input.cButton[1].rect.y + 5;
         drawBackgroundInfo(info.x, info.y, info.width, info.height);
 
-        //string message = "\nSearch for a value in a hash table (Size =  " + to_string(H.getSize()) + ").";
-        //DrawTextEx(smallFont, message.c_str(), { info.x + 10, info.y + 10 }, 21, 1, DARKGRAY);
-
         if (animation.active && animation.pathIndices.size())
             for (int i = 0; i < H.getSize(); i++) H.drawSlot(i, font, (animation.pathIndices[min(animation.currentPathIndex, (int)animation.pathIndices.size() - 1)] == i));
         else if (animation.active)
@@ -869,7 +857,6 @@ void HashTableVisual::draw() {
             // Độ dày vòng tròn (điều chỉnh giá trị này)
             float thickness = 5.0f; // độ dày 5 pixel
 
-            // Vẽ vòng tròn rỗng bằng DrawRing
             DrawRing(center, ringRadius, ringRadius + thickness, 0, 360, 100, ringColor); // 100 là số lượng phân đoạn
         }
     }
