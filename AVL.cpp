@@ -1,4 +1,5 @@
-#include "AVL.h"
+﻿#include "AVL.h"
+#include <unordered_set>
 
 int AVLtree::height(AVLNode* node) {
     if (node == NULL) return 0;
@@ -40,10 +41,10 @@ AVLNode* AVLtree::rightRotate(AVLNode* x) {
     return y;
 }
 
-AVLNode* AVLtree::insert(AVLNode*& root, int key, float Ox , float Oy) {
+AVLNode* AVLtree::insert(AVLNode*& root, int key, float Ox, float Oy) {
     //if node is null insert new node 
     if (!root) {
-        root = new AVLNode(key , Ox , Oy);
+        root = new AVLNode(key, Ox, Oy);
         subcase = 7;
         return root;
     }
@@ -51,17 +52,17 @@ AVLNode* AVLtree::insert(AVLNode*& root, int key, float Ox , float Oy) {
     // choose subtree to insert
     if (key < root->val) {
         AVLNode* cur = root->left;
-        root->left = insert(root->left, key, root->x - nodeSpacing/2.0, root->y+ nodeSpacing);
+        root->left = insert(root->left, key, root->x - nodeSpacing / 2.0, root->y + nodeSpacing);
         if (cur != root->left) {
-            PushAnimation(m_root,900.0, 200.0 , subcase );
+            PushAnimation(m_root, 900.0, 200.0, subcase);
             waitinganimation++;
-        }   
+        }
     }
     else if (key > root->val) {
-        AVLNode* cur = root->right; 
-        root->right = insert(root->right, key, root->x + nodeSpacing/2.0, root->y + nodeSpacing);
+        AVLNode* cur = root->right;
+        root->right = insert(root->right, key, root->x + nodeSpacing / 2.0, root->y + nodeSpacing);
         if (cur != root->right) {
-            PushAnimation(m_root, 900.0, 200.0 , subcase);
+            PushAnimation(m_root, 900.0, 200.0, subcase);
             waitinganimation++;
         }
     }
@@ -89,7 +90,7 @@ AVLNode* AVLtree::insert(AVLNode*& root, int key, float Ox , float Oy) {
     else if (dif > 1 && leftdif < 0) {
         root->left = leftRotate(root->left);
         subcase = 3;
-        PushAnimation(m_root,  900.0, 200.0 ,subcase );
+        PushAnimation(m_root, 900.0, 200.0, subcase);
         waitinganimation++;
         return rightRotate(root);
     }
@@ -237,27 +238,25 @@ AVLNode* AVLtree::Search(int key) {
 
 void AVLtree::Insert(int key) {
     AVLNode* cur = m_root;
-    m_root = insert(m_root, key, 900 , 200);
+    m_root = insert(m_root, key, 900, 200);
     if (cur != m_root) {
-        PushAnimation(m_root, 900.0, 200.0 , subcase);
+        PushAnimation(m_root, 900.0, 200.0, subcase);
         waitinganimation++;
     }
     waitinganimation++;
-
-
 }
 
 void AVLtree::Delete(int key) {
     AVLNode* cur = m_root;
     m_root = DeleteNode(m_root, key);
     if (cur != m_root) {
-        PushAnimation(m_root, 900.0, 200.0 , subcase);
+        PushAnimation(m_root, 900.0, 200.0, subcase);
         waitinganimation++;
     }
     waitinganimation++;
 }
 
-void AVLtree::PushAnimation(AVLNode* root, float target_x, float target_y , int subcase) {
+void AVLtree::PushAnimation(AVLNode* root, float target_x, float target_y, int subcase) {
     if (root == nullptr) return;
     root->queuexy.push_back({ target_x, target_y });
     root->QueueChildren.push_back({ root->left, root->right });
@@ -268,12 +267,12 @@ void AVLtree::PushAnimation(AVLNode* root, float target_x, float target_y , int 
     if (root->left) {
         float newox = target_x - maxleaf * nodeSpacing / 2.0;
         float newoy = target_y + nodeSpacing;
-        PushAnimation(root->left, newox, newoy , subcase);
+        PushAnimation(root->left, newox, newoy, subcase);
     }
     if (root->right) {
         float newox = target_x + maxleaf * nodeSpacing / 2.0;
         float newoy = target_y + nodeSpacing;
-        PushAnimation(root->right, newox, newoy , subcase);
+        PushAnimation(root->right, newox, newoy, subcase);
     }
 }
 
@@ -294,7 +293,42 @@ void AVLtree::UpdatePos(AVLNode* root) {
         root->newx = nextXY.x;
         root->newy = nextXY.y;
     }
-    
-    if (root->left)UpdatePos(root->left);
-    if (root->right)UpdatePos(root->right);
+
+    if (root->left) UpdatePos(root->left);
+    if (root->right) UpdatePos(root->right);
+}
+
+
+void AVLtree::CreateRandomAVL(int nodeCount, int minValue, int maxValue) {
+    Clear(); // Xóa cây hiện tại trước khi tạo mới
+    std::unordered_set<int> usedValues;
+
+    while (usedValues.size() < nodeCount) {
+        int value = GetRandomValue(minValue, maxValue);
+        if (usedValues.insert(value).second) { // Chỉ insert nếu chưa tồn tại
+            Insert(value);
+        }
+    }
+}
+
+void AVLtree::readNumbersFromFile(const std::string& filename) {
+    Clear(); // Xóa cây hiện tại trước khi tạo mới
+
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Unable to open file!" << std::endl;
+        return;
+    }
+
+    std::unordered_set<int> usedValues;  // Dùng set để kiểm tra trùng lặp
+    int value;
+
+    while (file >> value) {
+        // Kiểm tra xem giá trị đã được thêm vào chưa
+        if (usedValues.insert(value).second) { // Chỉ thêm vào cây nếu giá trị chưa có trong set
+            Insert(value);  // Thực hiện chèn giá trị vào cây
+        }
+    }
+
+    file.close();
 }

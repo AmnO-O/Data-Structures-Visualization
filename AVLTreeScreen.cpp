@@ -10,6 +10,13 @@ void AVLTreeScreen::handleButtonClick(SelectedButtonAVL newButton, TextBox& text
     }
 }
 
+void AVLTreeScreen::handleButtonClick2(SelectedButtonAVL newButton, TextBoxCenter& textBox) {
+    if (currentButton != newButton) {
+        textBox.text = ""; // Reset lại nội dung trong textBox 
+        textBox.pos = 0;
+    }
+}
+
 void AVLTreeScreen::Init() {
     // Khởi tạo nút Back
     backButton = { 20, Screen_h - 60, 150, 40 };
@@ -26,10 +33,12 @@ void AVLTreeScreen::Init() {
     IN4Font = LoadFont("Assets/Fonts/Acme-Regular.ttf");
     SetTextureFilter(IN4Font.texture, TEXTURE_FILTER_BILINEAR);
 
+    font = LoadFont("Assets/Fonts/PublicSans-bold.ttf");
+    SetTextureFilter(font.texture, TEXTURE_FILTER_BILINEAR);
+
     currentButton = NONEAVL;
-
     Value = { {270, 350, 90, 30} };
-
+    Nodes = { {270, 350, 90, 30}, "Random" };
 }
 
 void AVLTreeScreen::Update(int& state) {
@@ -49,6 +58,13 @@ void AVLTreeScreen::Update(int& state) {
 
     // Kiểm tra hover vào nút "Clear"
     clearHovered = CheckCollisionPointRec(mouse, clearButton);
+
+    // Kiểm tra hover vào nút "Create"
+    createHovered = CheckCollisionPointRec(mouse, createButton);
+
+    // Kiểm tra hover vào nút "File"
+    fileHovered = CheckCollisionPointRec(mouse, fileButton);
+
     // Kiểm tra hover vào nút "OK"
     okHovered = CheckCollisionPointRec(mouse, okButton);
 
@@ -57,19 +73,105 @@ void AVLTreeScreen::Update(int& state) {
         state = Menu_state; // Quay lại màn hình Menu
     }
 
+    // Kiểm tra nút Create
+    if (createHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        AVLtreeState = CreateState;
+        handleButtonClick2(CREATEAVL, Nodes);
+        currentButton = CREATEAVL;
+        SearchNode = nullptr;
+    }
+
+    //  Kiểm tra nút File
+    if (fileHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        showFileInfoPopup = true; // Hiển thị bảng thông báo
+        AVLtreeState = FileState;
+        currentButton = FILEAVL;
+        SearchNode = nullptr;
+
+    }
+
+    if (showFileInfoPopup) {
+        // Kích thước và vị trí popup
+        float popupWidth = 600;
+        float popupHeight = 300;
+        float popupX = (GetScreenWidth() - popupWidth) / 2;  // Căn giữa màn hình
+        float popupY = (GetScreenHeight() - popupHeight) / 2;
+        Rectangle popupRect = { popupX, popupY, popupWidth, popupHeight };
+
+        // Vẽ nền bảng thông báo với góc bo tròn
+        DrawRectangleRounded(popupRect, 0.2, 10, WHITE);
+        DrawRectangleRoundedLines(popupRect, 0.2, 10, DARKGRAY);
+
+        // Tiêu đề
+        const char* titleText = "File Format Requirement";
+        float titleWidth = MeasureTextEx(font, titleText, 27, 2).x;
+        Vector2 titlePos = { popupX + (popupWidth - titleWidth) / 2, popupY + 20 };
+        DrawTextEx(font, titleText, titlePos, 27, 2, PURPLE);
+
+        // Nội dung
+        const char* text =
+            "* The file must have a .txt extension.\n"
+            "* The numbers on each line must be separated by space.\n"
+            "* The numbers represent the nodes to be inserted into \nthe AVL tree in the order they appear in the file.\n\n"
+            "Example:\n"
+            "   29 4 99 23 100 32 55 34 66 82 42\n"
+            "   84 12 11\n";
+
+        Vector2 textPos = { popupRect.x + 20, popupRect.y + 60 };
+        DrawTextEx(font, text, textPos, 21, 2, BLACK);
+
+        // Vẽ nút OK 
+        // Kích thước và vị trí nút OK
+        float buttonWidth = 100;
+        float buttonHeight = 40;
+        float buttonX = popupRect.x + popupRect.width / 2 - buttonWidth / 2;  // Căn giữa
+        float buttonY = popupRect.y + popupRect.height - 60;
+        Rectangle fileokButton = { buttonX, buttonY, buttonWidth, buttonHeight };
+        float radius = 10.0f;  // Độ bo góc
+
+        // Vẽ nút OK
+        fileokHovered = CheckCollisionPointRec(mouse, fileokButton);
+        Color fileokColor = fileokHovered ? Color{ 250, 228, 49, 255 } : LIGHTGRAY;
+        DrawRectangleRounded(fileokButton, radius, 16, fileokColor);
+
+        // Căn giữa chữ "OK"
+        Vector2 fileokTextSize = MeasureTextEx(font, "OK", 22, 2);
+        Vector2 fileokTextPos = { fileokButton.x + (fileokButton.width - fileokTextSize.x) / 2, fileokButton.y + (fileokButton.height - fileokTextSize.y) / 2 };
+        DrawTextEx(font, "OK", fileokTextPos, 22, 2, BLUE);
+
+        // Xử lý sự kiện khi nhấn OK
+        if (fileokHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            showFileInfoPopup = false; // Đóng popup
+
+            // **Mở hộp thoại chọn file**
+            const char* filterPatterns[1] = { "*.txt" };
+            filePath = tinyfd_openFileDialog("Choose file .txt ", "", 1, filterPatterns, NULL, 0);
+
+            if (filePath) {
+                printf("File which was choose: %s\n", filePath);
+                isCreateFile = true;
+                cont = true;
+            }
+        }
+    }
+
+
     // Kiểm tra nút Insert
     if (insertHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        isCreateFile = false;
+        isCreateRandom = false;
         AVLtreeState = InsertState;
         handleButtonClick(INSERTAVL, Value);
         currentButton = INSERTAVL;
-        MainCaseInfo =InertionCaseInfo ;
+        MainCaseInfo = InertionCaseInfo;
         SubCaseInfo = 0;
         SearchNode = nullptr;
     }
 
-
     // Kiểm tra nút Delete
-    if (CheckCollisionPointRec(mouse, deleteButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    if (deleteHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        isCreateFile = false;
+        isCreateRandom = false;
         AVLtreeState = DeleteState;
         handleButtonClick(DELETEAVL, Value);
         MainCaseInfo = DeletionCaseInfo;
@@ -77,8 +179,10 @@ void AVLTreeScreen::Update(int& state) {
         SearchNode = nullptr;
     }
 
-    // Kiểm tra nút Reverse
-    if (CheckCollisionPointRec(mouse, searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    // Kiểm tra nút Search
+    if (searchHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        isCreateFile = false;
+        isCreateRandom = false;
         AVLtreeState = SearchState;
         MainCaseInfo = SearchCaseInfo;
         currentButton = SEARCHAVL;
@@ -86,7 +190,9 @@ void AVLTreeScreen::Update(int& state) {
     }
 
     // Kiểm tra nút Clear
-    if (CheckCollisionPointRec(mouse, clearButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    if (clearHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        isCreateFile = false;
+        isCreateRandom = false;
         AVLtreeState = ClearState;
         MainCaseInfo = ClearCaseInfo;
         currentButton = CLEARAVL;
@@ -95,10 +201,14 @@ void AVLTreeScreen::Update(int& state) {
         SearchNode = nullptr;
     }
 
-    if (okHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    if (okHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && AVLtreeState != CreateState) {
         Value.isClickedEnter = true;
     }
-    
+
+    if (okHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && AVLtreeState == CreateState) {
+        Nodes.isClickedEnter = true;
+    }
+
     if (AVLtreeState == InsertState) {
         Value.update();
         if (Value.isEnter && Value.outputMessage != "") {
@@ -111,13 +221,12 @@ void AVLTreeScreen::Update(int& state) {
             timer = 0.0f;
             entered = true;
 
-			//SearchAnimation
-            if (AVLtree.m_root != NULL ) {
+            //SearchAnimation
+            if (AVLtree.m_root != NULL) {
                 currentSearchNode = AVLtree.m_root;
                 SearchAnimationFinished = false;
-				ValueSearchAnimation = valueInsert;
+                ValueSearchAnimation = valueInsert;
             }
-			
         }
         if (Value.isClickedEnter) {
             Value.getMessage();
@@ -158,9 +267,9 @@ void AVLTreeScreen::Update(int& state) {
                 // Kích hoạt animation sau mỗi lần thay đổi
                 isDeleting = true;
                 timer = 0.0f;
-                entered = true;	
+                entered = true;
             }
-		}
+        }
         else if (Value.isClickedEnter) {
             Value.getMessage();
             if (Value.outputMessage != "") {
@@ -168,7 +277,7 @@ void AVLTreeScreen::Update(int& state) {
                 Value.isEnter = false; // Reset trạng thái ENTER 
                 Value.outputMessage = "";
 
-				// SearchAnimation
+                // SearchAnimation
                 if (AVLtree.m_root != NULL) {
                     currentSearchNode = AVLtree.m_root;
                     SearchAnimationFinished = false;
@@ -218,39 +327,112 @@ void AVLTreeScreen::Update(int& state) {
                 ValueSearchAnimation = valueSearch;
             }
             Value.isClickedEnter = false;
-        }    
+        }
     }
-    else if (AVLtreeState == ClearState) {    }
+    else if (AVLtreeState == CreateState && !isCreateFile) {
+        Nodes.update();
+        if (Nodes.isEnter && Nodes.outputMessage != "") {
+            valueNodes = stoi(Nodes.outputMessage);
+            Nodes.isEnter = false; // Reset trạng thái ENTER 
+            Nodes.outputMessage = "";
 
-     //Cập nhật tiến trình animation
-    if (isInsert || isDeleting || isSearch || isClear) {
+            if (valueNodes > 0) {
+                isCreateRandom = true;
+            }
+
+            // Kích hoạt animation sau mỗi lần thay đổi
+            isInsert = true;
+            timer = 0.0f;
+            entered = true;
+
+            //SearchAnimation
+            if (AVLtree.m_root != NULL) {
+                currentSearchNode = AVLtree.m_root;
+                SearchAnimationFinished = false;
+                ValueSearchAnimation = valueNodes;
+            }
+        }
+        else if (Nodes.isClickedEnter) {
+            Nodes.getMessage();
+            if (Nodes.outputMessage != "") {
+                valueNodes = stoi(Nodes.outputMessage);
+                Nodes.isEnter = false; // Reset trạng thái ENTER 
+                Nodes.outputMessage = "";
+
+                if (valueNodes > 0) {
+                    isCreateRandom = true;
+                }
+
+                // Kích hoạt animation sau mỗi lần thay đổi
+                isInsert = true;
+                timer = 0.0f;
+                entered = true;
+
+                //SearchAnimation
+                if (AVLtree.m_root != NULL) {
+                    currentSearchNode = AVLtree.m_root;
+                    SearchAnimationFinished = false;
+                    ValueSearchAnimation = valueNodes;
+                }
+            }
+            Nodes.isClickedEnter = false;
+        }
+    }
+    else if (AVLtreeState == FileState && isCreateFile) {
+        if (cont == true) {
+            // Kích hoạt animation sau mỗi lần thay đổi
+            cont = false;
+            isInsert = true;
+            timer = 0.0f;
+            entered = true;
+
+            //SearchAnimation
+            if (AVLtree.m_root != NULL) {
+                currentSearchNode = AVLtree.m_root;
+                SearchAnimationFinished = false;
+            }
+        }
+    }
+    else if (AVLtreeState == ClearState) {}
+
+    //Cập nhật tiến trình animation
+    if (isInsert || isDeleting || isSearch || isClear || isCreateRandom || isCreateFile) {
         timer += GetFrameTime();
-         if (entered && SearchAnimationFinished) {
-            if (isInsert)  AVLtree.Insert(valueInsert);
+        if (entered && SearchAnimationFinished) {
+            if (isInsert && AVLtreeState == InsertState) {
+                AVLtree.Insert(valueInsert);
+            }
             else if (isDeleting) {
                 AVLtree.Delete(valueDelete);
             }
             else if (isSearch) {
                 SearchNode = AVLtree.Search(valueSearch);
             }
-			timer = duration + 0.1f;  
+            else if (isCreateRandom) {
+                AVLtree.CreateRandomAVL(valueNodes, 1, 100);
+            }
+            else if (isCreateFile) {
+                AVLtree.readNumbersFromFile(filePath);
+            }
+
+            timer = duration + 0.1f;
             currentSearchNode = NULL;
             entered = !entered;
-         }
-         if (timer >= duration) {
+        }
+        if (timer >= duration) {
             if (!SearchAnimationFinished) {
                 SubCaseInfo = 1;
                 if (isInsert)  SearchAnimation(valueInsert);
                 else if (isDeleting) SearchAnimation(valueDelete);
                 else if (isSearch) SearchAnimation(valueSearch);
-				timer = 0.0f;
+                timer = 0.0f;
             }
-            else if (AVLtree.waitinganimation == 0 ) {
-                if (isInsert || isDeleting) SubCaseInfo = -1;
+            else if (AVLtree.waitinganimation == 0) {
+                if (isInsert || isDeleting || isCreateRandom || isCreateFile) SubCaseInfo = -1;
                 isInsert = isDeleting = isSearch = false;
-                timer = 0.0f;  // Reset lại bộ đếm thời gian
+                timer = 0.0f;
             }
-            else if (AVLtree.waitinganimation > 0 ) {
+            else if (AVLtree.waitinganimation > 0) {
                 AVLtree.waitinganimation--;
                 if (!AVLtree.mroot.empty()) {
                     auto step = AVLtree.mroot.front();
@@ -282,6 +464,18 @@ void AVLTreeScreen::DrawOperationsPanel() {
     Color operationColor = isDarkMode ? DARKBLUE : DARKBLUE;
     DrawTextEx(myFont, "Operations", { PANEL_PADDING + 10, 280 }, 26, 2, operationColor);
 
+    // Vẽ nút Create 
+    Color CreateColor = createHovered ? LIGHTGRAY : RAYWHITE;
+    if (currentButton == CREATEAVL) CreateColor = { 250, 228, 49, 255 };
+    DrawRectangleRounded(createButton, 0.2f, 4, CreateColor);
+    DrawRectangleRoundedLinesEx(createButton, 0.2f, 4, 2.0f, GRAY);
+
+    Vector2 createSize = MeasureTextEx(myFont, "Create", 20, 2);
+    DrawTextEx(myFont, "Create",
+        { createButton.x + (createButton.width - createSize.x) / 2,
+        createButton.y + (createButton.height - createSize.y) / 2 },
+        20, 2, DARKBLUE);
+
     // Vẽ nút Insert
     Color InsertColor = insertHovered ? LIGHTGRAY : RAYWHITE;
     if (currentButton == INSERTAVL) InsertColor = { 250, 228, 49, 255 };
@@ -293,8 +487,6 @@ void AVLTreeScreen::DrawOperationsPanel() {
         { insertButton.x + (insertButton.width - insertSize.x) / 2,
         insertButton.y + (insertButton.height - insertSize.y) / 2 },
         20, 2, DARKBLUE);
-
-    
 
     // Vẽ nút Delete
     Color DeleteColor = deleteHovered ? LIGHTGRAY : RAYWHITE;
@@ -332,7 +524,7 @@ void AVLTreeScreen::DrawOperationsPanel() {
 
     DrawInfo();
 
-    if ( AVLtreeState == InsertState || AVLtreeState == DeleteState || AVLtreeState == SearchState) {
+    if (AVLtreeState == InsertState || AVLtreeState == DeleteState || AVLtreeState == SearchState) {
         int fontSize = 24;
         float spacing = 1.0f;
 
@@ -345,8 +537,43 @@ void AVLTreeScreen::DrawOperationsPanel() {
         DrawRectangleRounded(okButton, 0.2f, 4, okColor);
         DrawRectangleRoundedLinesEx(okButton, 0.2f, 4, 2.0f, GRAY);
 
-        Vector2 okSize = MeasureTextEx(myFont, "OK", 18, 2);
-        DrawTextEx(myFont, "OK",
+        Vector2 okSize = MeasureTextEx(myFont, "GO!", 18, 2);
+        DrawTextEx(myFont, "GO!",
+            { okButton.x + (okButton.width - okSize.x) / 2,
+              okButton.y + (okButton.height - okSize.y) / 2 },
+            18, 2, DARKBLUE);
+    }
+    else if (AVLtreeState == CreateState) {
+        int fontSize = 24;
+        float spacing = 1.0f;
+
+        int textWidth = MeasureTextEx(myFont, "Nodes", fontSize, 1.f).x;
+        DrawTextEx(myFont, "Nodes", { 200, 350 }, fontSize, spacing, BLACK);
+        if (Nodes.text == "") Nodes.text = "Random";
+        Nodes.draw();
+
+        // Vẽ nút "File"
+        int textWidth2 = MeasureTextEx(myFont, "File", fontSize, 1.f).x;
+        DrawTextEx(myFont, "File", { 200, 420 }, fontSize, spacing, BLACK);
+
+        Color fileColor = fileHovered ? YELLOW : WHITE;
+        DrawRectangleRounded(fileButton, 0.2f, 4, fileColor);
+        DrawRectangleRoundedLinesEx(fileButton, 0.2f, 4, 2.0f, DARKGRAY);
+
+        Vector2 fileSize = MeasureTextEx(font, "Browse...", 18, 2);
+        DrawTextEx(font, "Browse...",
+            { fileButton.x + (fileButton.width - fileSize.x) / 2,
+              fileButton.y + (fileButton.height - fileSize.y) / 2 },
+            18, 2, BLACK);
+
+        // Vẽ nút "OK"
+        Color okColor = okHovered ? LIGHTGRAY : RAYWHITE;
+        if (currentButton == OKAVL) okColor = { 250, 228, 49, 255 };
+        DrawRectangleRounded(okButton, 0.2f, 4, okColor);
+        DrawRectangleRoundedLinesEx(okButton, 0.2f, 4, 2.0f, GRAY);
+
+        Vector2 okSize = MeasureTextEx(myFont, "GO!", 18, 2);
+        DrawTextEx(myFont, "GO!",
             { okButton.x + (okButton.width - okSize.x) / 2,
               okButton.y + (okButton.height - okSize.y) / 2 },
             18, 2, DARKBLUE);
@@ -360,13 +587,13 @@ void AVLTreeScreen::Draw() {
     // Hiển thị tiêu đề AVLtree
     int fontSize = 50;
     float spacing = 3.0f;
-    Vector2 titleSize = MeasureTextEx(AVLtreeFont, "AVLtree", fontSize, spacing);
+    Vector2 titleSize = MeasureTextEx(AVLtreeFont, "AVL Tree", fontSize, spacing);
 
     float titleX = (Screen_w - titleSize.x) / 2;
     float titleY = 80; // Đưa tiêu đề lên cao hơn
 
     Color titleColor = isDarkMode ? WHITE : DARKBLUE;
-    DrawTextEx(AVLtreeFont, "AVLtree",
+    DrawTextEx(AVLtreeFont, "AVL Tree",
         { titleX, titleY }, fontSize, spacing, titleColor);
 
     // Vẽ nút "Back"
@@ -385,11 +612,11 @@ void AVLTreeScreen::Draw() {
 
     // Gọi vẽ danh sách với progress từ 0 -> 1
     float animationProgress = timer / duration;
-    drawAVLtree(animationProgress,Animationmroot);
+    drawAVLtree(animationProgress, Animationmroot);
     finnishAnimation = true;
 }
 
-void AVLTreeScreen::drawAVLtree(float animationProgress, AVLNode* root ) {
+void AVLTreeScreen::drawAVLtree(float animationProgress, AVLNode* root) {
     if (!root) return;
     // Interpolate positions using animation progress
 
@@ -397,11 +624,11 @@ void AVLTreeScreen::drawAVLtree(float animationProgress, AVLNode* root ) {
     root->displayY = root->y * (1.0f - animationProgress) + root->newy * animationProgress;
     // Draw edges
     if (root->left) {
-        DrawLine(root->displayX, root->displayY, root->left->displayX, root->left->displayY,BLACK);
+        DrawLine(root->displayX, root->displayY, root->left->displayX, root->left->displayY, BLACK);
         drawAVLtree(animationProgress, root->left);
     }
     if (root->right) {
-        DrawLine(root->displayX, root->displayY, root->right->displayX, root->right->displayY,BLACK);
+        DrawLine(root->displayX, root->displayY, root->right->displayX, root->right->displayY, BLACK);
         drawAVLtree(animationProgress, root->right);
     }
 
@@ -421,7 +648,7 @@ void AVLTreeScreen::drawAVLtree(float animationProgress, AVLNode* root ) {
             fadeProgress = 1.0f;
             AVLtree.Clear(); // Xóa danh sách khi hiệu ứng kết thúc
             isClear = false;
-			Animationmroot = NULL;
+            Animationmroot = NULL;
         }
     }
 }
@@ -430,7 +657,7 @@ void AVLTreeScreen::SearchAnimation(int key) {
     if (currentSearchNode->val == key || findingSmallestRightSubTree) {
         if (isDeleting && currentSearchNode->val == key &&
             !findingSmallestRightSubTree &&
-            currentSearchNode -> left && currentSearchNode -> right) {
+            currentSearchNode->left && currentSearchNode->right) {
             SubCaseInfo = 6;
             SearchNode = currentSearchNode;
             currentSearchNode = currentSearchNode->right;
@@ -454,21 +681,21 @@ void AVLTreeScreen::SearchAnimation(int key) {
     else {
         if (ValueSearchAnimation < currentSearchNode->val) {
             SubCaseInfo = 1;
-			if (!currentSearchNode->left) {
-                if ( isSearch) SubCaseInfo = NULLCase;
-				SearchAnimationFinished = true;
-			}
-			else {
+            if (!currentSearchNode->left) {
+                if (isSearch) SubCaseInfo = NULLCase;
+                SearchAnimationFinished = true;
+            }
+            else {
                 if (isSearch) SubCaseInfo = SmallerCase;
-				currentSearchNode = currentSearchNode->left;
-			}
+                currentSearchNode = currentSearchNode->left;
+            }
         }
         else {
             SubCaseInfo = 1;
-			if (!currentSearchNode->right) {
+            if (!currentSearchNode->right) {
                 if (isSearch) SubCaseInfo = NULLCase;
-				SearchAnimationFinished = true;
-			}
+                SearchAnimationFinished = true;
+            }
             else {
                 if (isSearch) SubCaseInfo = LargerCase;
                 currentSearchNode = currentSearchNode->right;
@@ -493,7 +720,7 @@ void AVLTreeScreen::DrawInfo() {
         int textY = posY + 10;
         int lineSpacing = 37; // Tăng khoảng cách dòng để vừa với chiều cao mới
 
-        if (SubCaseInfo == FindingtoInsert)DrawRectangle(posX, posY, rectWidth, 35, RED);
+        if (SubCaseInfo == FindingtoInsert) DrawRectangle(posX, posY, rectWidth, 35, RED);
         DrawTextEx(IN4Font, "finding v", { (float)textX, (float)textY }, 20, 2, WHITE);
         textY += lineSpacing;
         posY += lineSpacing;
@@ -531,7 +758,7 @@ void AVLTreeScreen::DrawInfo() {
         DrawTextEx(IN4Font, "this is balanced", { (float)textX, (float)textY }, 20, 2, WHITE);
 
     }
-    else if (MainCaseInfo == DeletionCaseInfo){
+    else if (MainCaseInfo == DeletionCaseInfo) {
         // Hiển thị nội dung
         int textX = posX + 10;
         int textY = posY + 10;

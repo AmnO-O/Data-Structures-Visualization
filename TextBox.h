@@ -141,7 +141,7 @@ struct TextBox {
 
         DrawTextEx(font, displayText.c_str(), { bounds.x + 5, textY / 1.0f }, fontSize, 1, BLACK);
 
-        if (focused && ((framesCounter / 20) % 2 == 0)) {
+        if (focused && ((framesCounter / 490) % 2 == 0)) {
             int cursorX = bounds.x + 5 + MeasureTextEx(font, displayText.substr(0, pos).c_str(), fontSize, 1).x;
             DrawLine(cursorX, textY, cursorX, textY + fontSize, BLACK);
         }
@@ -158,6 +158,8 @@ struct TextBoxCenter { /// put the cursor in the center
 
     int framesCounter;     // Blink blink 
     bool isEnter = false;
+    bool tt = false;
+    bool isClickedEnter = false;
     Font font = LoadFont("Assets/Fonts/PublicSans-bold.ttf");
     int fontSize = 20;
     Color textColor = BLACK;
@@ -239,6 +241,22 @@ struct TextBoxCenter { /// put the cursor in the center
         }
 
         return c;
+    }
+
+    void sss() {
+        if (tt = 1) {
+            outputMessage = text;
+            tt = 0;
+        }
+    }
+    void getMessage() {
+        if (isClickedEnter) {
+            outputMessage = text;
+            text = "";
+            focused = 0;
+            framesCounter = 0;
+        }
+        return;
     }
 
     void draw() {
@@ -458,7 +476,7 @@ struct TextBoxEdge {
         DrawTextEx(font, displayText.c_str(), { textX, textY }, fontSize, 1, textColor);
 
         // If focused, draw the blinking caret.
-        if (focused && ((framesCounter / 20) % 2 == 0)) {
+        if (focused && ((framesCounter / 490) % 2 == 0)) {
             // Build a string containing the non-editable "(" plus the text before the caret.
             std::string caretSubstr = "(" + text.substr(0, pos);
             // Measure its width.

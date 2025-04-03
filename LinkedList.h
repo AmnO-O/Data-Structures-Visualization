@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <vector>
+
 struct LLNode {
     int value;
     LLNode* next;
@@ -19,4 +21,8 @@ public:
     int getSize();
     void ClearList();
     LLNode* SearchNode(int value);
+    int GetPosition(int value);
+    void DeleteAtHead();
+    void DeleteAtPosition(int position);
+    void DeleteAtTail();
 };

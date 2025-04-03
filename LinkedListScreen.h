@@ -17,6 +17,13 @@ enum SelectedButton {
 	OK,
 };
 
+struct Command {
+	SelectedButton type;
+	int value;
+	int position; // Dùng cho InsertAtPosition
+	Command(SelectedButton t, int v, int pos = -1) : type(t), value(v), position(pos) {}
+};
+
 class LinkedListScreen {
 private:
 #define PANEL_WIDTH 188  // Độ rộng bảng
@@ -37,6 +44,8 @@ private:
 	bool insertAtTailHovered = false;
 	bool insertPosHovered = false;
 	bool okHovered = false;
+	bool undoHovered = false;
+	bool redoHovered = false;
 
 	float insertHeadAlpha = 1.0f;  // Alpha của nút Head
 	float insertTailAlpha = 1.0f;  // Alpha của nút Tail
@@ -56,10 +65,14 @@ private:
 	// Nút OK dưới textBox
 	Rectangle okButton = { PANEL_PADDING + 217, 470, 90, 30 };
 
+	// Nút undo, redo 
+	Vector2 Undoposition = { 700, 840 };
+	Vector2 Redoposition = { 800, 840 };
+	Rectangle undoRect = { Undoposition.x, Undoposition.y, 50, 50 };
+	Rectangle redoRect = { Redoposition.x, Redoposition.y, 50, 50 };
+
 	float Clamp(float value, float minValue, float maxValue);
 	float SmoothStep(float a, float b, float t);
-	Vector2 TargetPos(int index);
-
 
 	// Kiểm tra trang hiện tại người dùng đang sử dụng
 	int linkedlistState;
@@ -69,6 +82,8 @@ private:
 	int DeleteState = 4;
 	int SearchState = 5;
 	int ClearState = 6;
+	int UndoState = 7;
+	int RedoState = 8;
 
 	SelectedButton currentButton; // Xác định operation đang sử dụng
 
@@ -89,14 +104,14 @@ private:
 	bool entered = false;
 	bool animating = false;   // Đang chạy animation hay không
 	float timer = 0.0f;       // Đếm thời gian animation
-	float duration = 0.5f;    // Thời gian chạy animation
+	float duration = 0.6f;    // Thời gian chạy animation
 
 	int valueInsert;
 	int valueDelete;
 	int indexInsert;
 	int valueSearch;
 
-	int indexDelete;   //  index của Node bị xóa 
+	int indexDelete;   //  index của Node bị xóa
 	LLNode* SearchNode;
 	LLNode* currentSearchNode;
 
@@ -106,10 +121,29 @@ private:
 
 	Vector2 startPos = { 500, 300 };
 	Vector2 startPos2ndrow = { 1500, 400 };
+	Vector2 startPos3ndrow = { 500, 500 };
 	float nodeSpacing = 100.0f;
 
 	// Hàm reset lại nội dung trong textBox 
 	void handleButtonClick(SelectedButton newButton, TextBox& textBox);
+
+	// Undo, Redo
+	bool isUndo = false;
+	bool isRedo = false;
+
+	std::vector<Command> undoStack; // Lưu trữ các thao tác
+	std::vector<Command> redoStack;
+
+	// Ảnh icon Redo, Undo 
+	Image imageRedo;
+	Image imageUndo;
+	Image imageRedoHovered;
+	Image imageUndoHovered;
+	// Chuyển sang Texture 
+	Texture2D textureRedo;
+	Texture2D textureUndo;
+	Texture2D textureUndoHovered;
+	Texture2D textureRedoHovered;
 public:
 	// Hàm khởi tạo màn hình Linked List
 	void Init();
@@ -128,4 +162,11 @@ public:
 
 	// Vẽ Linked List lên màn hình
 	void drawLinkedList(float animationProgress);
+
+	Vector2 TargetPos(int index);
+
+	void SaveStateForUndo(SelectedButton type, int value, int position);
+
+	void Undo();
+	void Redo();
 };

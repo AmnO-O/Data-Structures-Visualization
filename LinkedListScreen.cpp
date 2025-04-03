@@ -10,6 +10,89 @@ void LinkedListScreen::handleButtonClick(SelectedButton newButton, TextBox& text
     }
 }
 
+// Hỗ trợ linked list xuống dòng khi gặp lề màn hình 
+Vector2 LinkedListScreen::TargetPos(int index) {
+    Vector2 targetPos;
+    if (index < 11) {
+        // Hàng đầu tiên (từ trái qua phải)
+        targetPos = { startPos.x + index * nodeSpacing, startPos.y };
+    }
+    else if (index >= 11 && index < 22) {
+        // Hàng thứ hai (từ phải qua trái)
+        int reversedIndex = index - 11; // Đếm số phần tử sau 11
+        targetPos = { startPos2ndrow.x - reversedIndex * nodeSpacing, startPos2ndrow.y };
+    }
+    else if (index >= 22) {
+        int reversedIndex = index - 22;
+        targetPos = { startPos3ndrow.x + reversedIndex * nodeSpacing, startPos3ndrow.y };
+    }
+    return targetPos;
+}
+
+void LinkedListScreen::SaveStateForUndo(SelectedButton type, int value, int position = -1) {
+    undoStack.push_back(Command(type, value, position));
+}
+
+void LinkedListScreen::Undo() {
+    if (!undoStack.empty()) {
+        auto cmd = undoStack.back();
+        redoStack.push_back(cmd);
+        undoStack.pop_back();
+
+        // Thực hiện thao tác ngược lại
+        if (cmd.type == SelectedButton::INSERTHEAD) {
+            linkedList.DeleteAtHead(); // Xóa nút đầu
+        }
+        else if (cmd.type == SelectedButton::INSERTTAIL) {
+            linkedList.DeleteAtTail(); // Xóa nút cuối
+        }
+        else if (cmd.type == SelectedButton::INSERTPOS) {
+            linkedList.DeleteAtPosition(cmd.position); // Xóa tại vị trí
+        }
+        else if (cmd.type == SelectedButton::DELETE) {
+            linkedList.InsertAtPosition(cmd.value, cmd.position); // Thêm lại giá trị đã xóa
+        }
+
+        infoMessage = "Undo performed.";
+        isUndo = true;
+        isHeadInserting = isTailInserting = isPosInserting = isDeleting = isSearch = false;
+        timer = 0.0f;
+    }
+    else {
+        infoMessage = "Nothing to undo.";
+    }
+}
+
+void LinkedListScreen::Redo() {
+    if (!redoStack.empty()) {
+        auto cmd = redoStack.back();
+        undoStack.push_back(cmd);
+        redoStack.pop_back();
+
+        // Thực hiện lại thao tác
+        if (cmd.type == SelectedButton::INSERTHEAD) {
+            linkedList.InsertAtHead(cmd.value);
+        }
+        else if (cmd.type == SelectedButton::INSERTTAIL) {
+            linkedList.InsertAtTail(cmd.value);
+        }
+        else if (cmd.type == SelectedButton::INSERTPOS) {
+            linkedList.InsertAtPosition(cmd.value, cmd.position);
+        }
+        else if (cmd.type == SelectedButton::DELETE) {
+            linkedList.DeleteValue(cmd.value);
+        }
+
+        infoMessage = "Redo performed.";
+        isRedo = true;
+        isHeadInserting = isTailInserting = isPosInserting = isDeleting = isSearch = false;
+        timer = 0.0f;
+    }
+    else {
+        infoMessage = "Nothing to redo.";
+    }
+}
+
 void LinkedListScreen::Init() {
     // Khởi tạo nút Back
     backButton = { 20, Screen_h - 60, 150, 40 };
@@ -25,6 +108,20 @@ void LinkedListScreen::Init() {
     // Load font cho INFO;
     IN4Font = LoadFont("Assets/Fonts/Acme-Regular.ttf");
     SetTextureFilter(IN4Font.texture, TEXTURE_FILTER_BILINEAR);
+
+    // Tải ảnh undo, redo 
+    imageRedo = LoadImage("Assets/Images/Redo.png");
+    imageUndo = LoadImage("Assets/Images/Undo.png");
+    imageRedoHovered = LoadImage("Assets/Images/RedoHovered.png");
+    imageUndoHovered = LoadImage("Assets/Images/UndoHovered.png");
+    ImageResize(&imageRedo, 50, 50);
+    ImageResize(&imageUndo, 50, 50);
+    ImageResize(&imageRedoHovered, 50, 50);
+    ImageResize(&imageUndoHovered, 50, 50);
+    textureRedo = LoadTextureFromImage(imageRedo);
+    textureUndo = LoadTextureFromImage(imageUndo);
+    textureUndoHovered = LoadTextureFromImage(imageUndoHovered);
+    textureRedoHovered = LoadTextureFromImage(imageRedoHovered);
 
     currentButton = NONE;
 
@@ -73,6 +170,14 @@ void LinkedListScreen::Update(int& state) {
     // Kiểm tra hover vào nút "OK"
     okHovered = CheckCollisionPointRec(mouse, okButton);
 
+    // Kiểm tra hover vào nút "Undo"
+    undoHovered = CheckCollisionPointRec(mouse, undoRect);
+
+    // Kiểm tra hover vào nút "Redo"
+    redoHovered = CheckCollisionPointRec(mouse, redoRect);
+
+    // 
+
     // Xử lý sự kiện khi nhấn vào nút "Back"
     if (backHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         state = Menu_state; // Quay lại màn hình Menu
@@ -88,13 +193,21 @@ void LinkedListScreen::Update(int& state) {
         Value.isClickedEnter = true;
     }
 
+    if (undoHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        Undo();
+    }
+
+    if (redoHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        Redo();
+    }
+
     // Animation:  Điều chỉnh offset khi mở menu Insert
     if (showInsertOptions) {
         // Mở menu, nút Head, Tail, Pos sẽ mất ngay lập tức
-        insertHeadAlpha = SmoothStep(insertHeadAlpha, 0.0f, 0.006f);  // Giảm alpha của Head từ từ
-        insertTailAlpha = SmoothStep(insertTailAlpha, 0.0f, 0.006f);  // Giảm alpha của Tail từ từ
-        insertPosAlpha = SmoothStep(insertPosAlpha, 0.0f, 0.006f);    // Giảm alpha của Pos từ từ
-        insertOptionsOffset = SmoothStep(insertOptionsOffset, 100.0f, 0.04f);
+        insertHeadAlpha = SmoothStep(insertHeadAlpha, 0.0f, 0.06f);  // Giảm alpha của Head từ từ
+        insertTailAlpha = SmoothStep(insertTailAlpha, 0.0f, 0.06f);  // Giảm alpha của Tail từ từ
+        insertPosAlpha = SmoothStep(insertPosAlpha, 0.0f, 0.06f);    // Giảm alpha của Pos từ từ
+        insertOptionsOffset = SmoothStep(insertOptionsOffset, 100.0f, 0.03f);
 
         // Cập nhật vị trí của các nút Delete, Reverse, Clean
         insertHeadButton.y = insertButton.y + 45;
@@ -129,7 +242,7 @@ void LinkedListScreen::Update(int& state) {
         insertPosAlpha = 0.0f;   // Giảm alpha của Pos ngay lập tức
 
         // Cập nhật vị trí của các nút khi menu đóng
-        insertOptionsOffset = SmoothStep(insertOptionsOffset, 0.0f, 0.04f); // Menu sẽ thu lại khi đóng
+        insertOptionsOffset = SmoothStep(insertOptionsOffset, 0.0f, 0.002f); // Menu sẽ thu lại khi đóng
 
         // Nếu menu đã đóng xong, reset lại các nút khác
         deleteButton.y = 380 + insertOptionsOffset;
@@ -234,6 +347,8 @@ void LinkedListScreen::Update(int& state) {
             }
             Value.isEnter = false; // Reset trạng thái ENTER 
             Index.isEnter = false; // Reset trạng thái ENTER 
+            Value.outputMessage = "";
+            Index.outputMessage = "";
 
             // Kích hoạt animation sau mỗi lần thay đổi
             isPosInserting = true;
@@ -344,9 +459,18 @@ void LinkedListScreen::Update(int& state) {
     if (isHeadInserting || isTailInserting || isPosInserting || isDeleting || isSearch) {
         timer += GetFrameTime();
         if (entered) {
-            if (isHeadInserting)  linkedList.InsertAtHead(valueInsert);
-            else if (isTailInserting)  linkedList.InsertAtTail(valueInsert);
-            else if (isPosInserting)  linkedList.InsertAtPosition(valueInsert, indexInsert);
+            if (isHeadInserting) {
+                SaveStateForUndo(SelectedButton::INSERTHEAD, valueInsert);
+                linkedList.InsertAtHead(valueInsert);
+            }
+            else if (isTailInserting) {
+                SaveStateForUndo(SelectedButton::INSERTTAIL, valueInsert);
+                linkedList.InsertAtTail(valueInsert);
+            }
+            else if (isPosInserting) {
+                SaveStateForUndo(SelectedButton::INSERTPOS, valueInsert, indexInsert);
+                linkedList.InsertAtPosition(valueInsert, indexInsert);
+            }
             else if (isSearch) {
                 SearchNode = linkedList.SearchNode(valueSearch);
                 currentSearchNode = linkedList.head;
@@ -354,8 +478,10 @@ void LinkedListScreen::Update(int& state) {
             entered = !entered;
         }
         if (timer >= duration) {
-            if (isDeleting)  linkedList.DeleteValue(valueDelete);
-
+            if (isDeleting) {
+                SaveStateForUndo(SelectedButton::DELETE, valueDelete, linkedList.GetPosition(valueDelete));
+                linkedList.DeleteValue(valueDelete);
+            }
             if (isSearch && currentSearchNode != SearchNode) {
                 timer = 0.0f;
                 currentSearchNode = currentSearchNode->next;
@@ -500,8 +626,8 @@ void LinkedListScreen::DrawOperationsPanel() {
         DrawRectangleRounded(okButton, 0.2f, 4, okColor);
         DrawRectangleRoundedLinesEx(okButton, 0.2f, 4, 2.0f, GRAY);
 
-        Vector2 okSize = MeasureTextEx(myFont, "OK", 18, 2);
-        DrawTextEx(myFont, "OK",
+        Vector2 okSize = MeasureTextEx(myFont, "GO!", 18, 2);
+        DrawTextEx(myFont, "GO!",
             { okButton.x + (okButton.width - okSize.x) / 2,
               okButton.y + (okButton.height - okSize.y) / 2 },
             18, 2, DARKBLUE);
@@ -523,13 +649,17 @@ void LinkedListScreen::DrawOperationsPanel() {
         DrawRectangleRounded(okButton, 0.2f, 4, okColor);
         DrawRectangleRoundedLinesEx(okButton, 0.2f, 4, 2.0f, GRAY);
 
-        Vector2 okSize = MeasureTextEx(myFont, "OK", 18, 2);
-        DrawTextEx(myFont, "OK",
+        Vector2 okSize = MeasureTextEx(myFont, "GO!", 18, 2);
+        DrawTextEx(myFont, "GO!",
             { okButton.x + (okButton.width - okSize.x) / 2,
               okButton.y + (okButton.height - okSize.y) / 2 },
             18, 2, DARKBLUE);
     }
     else if (linkedlistState == ClearState) {}
+
+    // Vẽ nút Undo, Redo
+    DrawTexture(textureUndo, Undoposition.x, Undoposition.y, WHITE);
+    DrawTexture(textureRedo, Redoposition.x, Redoposition.y, WHITE);
 }
 
 void LinkedListScreen::Draw() {
@@ -546,6 +676,7 @@ void LinkedListScreen::Draw() {
     Color titleColor = isDarkMode ? WHITE : DARKBLUE;
     DrawTextEx(linkedListFont, "Linked List",
         { titleX, titleY }, fontSize, spacing, titleColor);
+
     // Vẽ nút "Back"
     Color backColor = backHovered ? LIGHTGRAY : RAYWHITE;
     DrawRectangleRounded(backButton, 0.2f, 4, backColor);
@@ -565,38 +696,26 @@ void LinkedListScreen::Draw() {
     drawLinkedList(animationProgress);
 }
 
-Vector2 LinkedListScreen::TargetPos(int index) {
-    Vector2 targetPos;
-    if (index < 11) {
-        // Hàng đầu tiên (từ trái qua phải)
-        targetPos = { startPos.x + index * nodeSpacing, startPos.y };
-    }
-    else {
-        // Hàng thứ hai (từ phải qua trái)
-        int reversedIndex = index - 11; // Đếm số phần tử sau 11
-        targetPos = { startPos2ndrow.x - reversedIndex * nodeSpacing, startPos2ndrow.y };
-    }
-    return targetPos;
-}
-
 void LinkedListScreen::drawLinkedList(float animationProgress) {
+    Vector2 startPos = { 500, 300 };
+    float nodeSpacing = 100.0f;
     LLNode* current = linkedList.head;
 
     int index = 0;
     int numsDelete = 0;
 
-
     Vector2 prevPos = { -1, -1 };  // Lưu vị trí của node trước đó
 
     while (current != nullptr) {
-       Vector2 targetPos = TargetPos(index);
-
+        Vector2 targetPos = TargetPos(index);
 
         if (isHeadInserting) {
             // Node mới chèn vào đầu linked list
-            if (index < 11)targetPos.x -= (1.0f - animationProgress) * nodeSpacing;
+            if (index < 11) targetPos.x -= (1.0f - animationProgress) * nodeSpacing;
             else if (index == 11) targetPos.y -= (1.0f - animationProgress) * nodeSpacing;
-            else targetPos.x += (1.0f - animationProgress) * nodeSpacing;
+            else if (index > 11 && index < 22) targetPos.x += (1.0f - animationProgress) * nodeSpacing;
+            else if (index == 22) targetPos.y -= (1.0f - animationProgress) * nodeSpacing;
+            else targetPos.x -= (1.0f - animationProgress) * nodeSpacing;
 
             if (index == 0) {
                 targetPos.y = startPos.y - nodeSpacing * 2.0f; // Cao hơn bình thường
@@ -606,27 +725,33 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
         }
         else if (isTailInserting && current->next == nullptr) {
             if (index < 11) {
-            // Node mới sẽ đi xuống
-            targetPos.x += nodeSpacing * (1.0f - animationProgress); // Dịch từ phải sang trái
-            targetPos.y -= nodeSpacing * (1.0f - animationProgress); // Đi từ trên xuống
+                // Node mới sẽ đi xuống
+                targetPos.x += nodeSpacing * (1.0f - animationProgress); // Dịch từ phải sang trái
+                targetPos.y -= nodeSpacing * (1.0f - animationProgress); // Đi từ trên xuống
             }
-            else if (index >= 11) {
+            else if (index >= 11 && index < 22) {
                 targetPos.x -= nodeSpacing * (1.0f - animationProgress); // Dịch từ phải sang trái
                 targetPos.y += nodeSpacing * (1.0f - animationProgress); // Đi từ trên xuống
             }
+            else if (index >= 22) {
+                targetPos.x += nodeSpacing * (1.0f - animationProgress); // Dịch từ phải sang trái
+                targetPos.y += nodeSpacing * (1.0f - animationProgress); // Đi từ trên xuống
+            }
         }
-        else if (isPosInserting ) {
+        else if (isPosInserting) {
             if (index == indexInsert) {
                 // Node mới chèn vào đúng vị trí indexInsert
                 if (index < 11) targetPos.y -= (1.0f - animationProgress) * nodeSpacing;
-                else if (index > 11)targetPos.y += (1.0f - animationProgress) * nodeSpacing;
+                else if (index > 11 && index < 22) targetPos.y += (1.0f - animationProgress) * nodeSpacing;
+                else if (index > 22) targetPos.y += (1.0f - animationProgress) * nodeSpacing;
             }
             else if (index > indexInsert) {
-                if (index < 11)targetPos.x -= (1.0f - animationProgress) * nodeSpacing;
+                if (index < 11) targetPos.x -= (1.0f - animationProgress) * nodeSpacing;
                 else if (index == 11) targetPos.y -= (1.0f - animationProgress) * nodeSpacing;
-                else targetPos.x += (1.0f - animationProgress) * nodeSpacing;
+                else if (index > 11 && index < 22) targetPos.x += (1.0f - animationProgress) * nodeSpacing;
+                else if (index == 22) targetPos.y -= (1.0f - animationProgress) * nodeSpacing;
+                else if (index > 22) targetPos.x -= (1.0f - animationProgress) * nodeSpacing;
             }
-
         }
         else if (isDeleting && current->value == valueDelete) {
             numsDelete++;
@@ -640,11 +765,12 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
             // Vị trí ban đầu của node bên phải node bị xóa
             Vector2 initialPos = TargetPos(index);
             // Vị trí của node bị xóa
-            Vector2 newPos = TargetPos(index-numsDelete);
+            Vector2 newPos = TargetPos(index - numsDelete);
             // Đưa node bên phải node bị xóa sang bên trái đến vị trí của node bị xóa để thay thế
             targetPos.x = initialPos.x * (1.0f - animationProgress) + newPos.x * animationProgress;
             targetPos.y = initialPos.y * (1.0f - animationProgress) + newPos.y * animationProgress;
         }
+
 
         Color nodeColor = (fadeProgress == 1.0f) ? WHITE : Fade(Color{ 246, 50, 130, 255 }, fadeProgress); // Màu mặc định của Node 
         Color borderColor = Fade(BLACK, fadeProgress); // Viền mặc định của Node
@@ -701,7 +827,7 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
             }
             else if (index == 11) {
                 Vector2 startLine = { prevPos.x, prevPos.y + 30 }; // Cạnh phải của node trước
-                Vector2 endLine = { targetPos.x , targetPos.y -30}; // Cạnh trái của node sau
+                Vector2 endLine = { targetPos.x , targetPos.y - 30 }; // Cạnh trái của node sau
 
                 DrawLineEx(startLine, endLine, 1.5f, Fade(BLACK, fadeProgress));
 
@@ -728,7 +854,7 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
                 DrawLineEx(endLine, arrowPoint1, 1.5f, Fade(BLACK, fadeProgress));
                 DrawLineEx(endLine, arrowPoint2, 1.5f, Fade(BLACK, fadeProgress));
             }
-            else {
+            else if (index > 11 && index < 22) {
                 Vector2 startLine = { prevPos.x - 30, prevPos.y }; // Cạnh phải của node trước
                 Vector2 endLine = { targetPos.x + 30, targetPos.y }; // Cạnh trái của node sau
 
@@ -757,8 +883,65 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
                 DrawLineEx(endLine, arrowPoint1, 1.5f, Fade(BLACK, fadeProgress));
                 DrawLineEx(endLine, arrowPoint2, 1.5f, Fade(BLACK, fadeProgress));
             }
-        }
+            else if (index == 22) {
+                Vector2 startLine = { prevPos.x, prevPos.y + 30 }; // Cạnh phải của node trước
+                Vector2 endLine = { targetPos.x , targetPos.y - 30 }; // Cạnh trái của node sau
 
+                DrawLineEx(startLine, endLine, 1.5f, Fade(BLACK, fadeProgress));
+
+                // Tính toán góc của đường thẳng
+                float dx = endLine.x - startLine.x;
+                float dy = endLine.y - startLine.y;
+                float angle = atan2(dy, dx);
+
+                // Độ dài đầu mũi tên (có thể điều chỉnh)
+                float arrowLength = 10.0f;
+                float arrowAngle = 25 * DEG2RAD; // Góc nghiêng của mũi tên (25 độ)
+
+                // Tính toán hai điểm cho đầu mũi tên
+                Vector2 arrowPoint1 = {
+                    endLine.x - arrowLength * cos(angle + arrowAngle),
+                    endLine.y - arrowLength * sin(angle + arrowAngle)
+                };
+                Vector2 arrowPoint2 = {
+                    endLine.x - arrowLength * cos(angle - arrowAngle),
+                    endLine.y - arrowLength * sin(angle - arrowAngle)
+                };
+
+                // Vẽ hai đoạn thẳng tạo thành đầu mũi tên
+                DrawLineEx(endLine, arrowPoint1, 1.5f, Fade(BLACK, fadeProgress));
+                DrawLineEx(endLine, arrowPoint2, 1.5f, Fade(BLACK, fadeProgress));
+            }
+            else if (index > 22) {
+                Vector2 startLine = { prevPos.x + 30, prevPos.y }; // Cạnh phải của node trước
+                Vector2 endLine = { targetPos.x - 30, targetPos.y }; // Cạnh trái của node sau
+
+                DrawLineEx(startLine, endLine, 1.5f, Fade(BLACK, fadeProgress));
+
+                // Tính toán góc của đường thẳng
+                float dx = endLine.x - startLine.x;
+                float dy = endLine.y - startLine.y;
+                float angle = atan2(dy, dx);
+
+                // Độ dài đầu mũi tên (có thể điều chỉnh)
+                float arrowLength = 10.0f;
+                float arrowAngle = 25 * DEG2RAD; // Góc nghiêng của mũi tên (25 độ)
+
+                // Tính toán hai điểm cho đầu mũi tên
+                Vector2 arrowPoint1 = {
+                    endLine.x - arrowLength * cos(angle + arrowAngle),
+                    endLine.y - arrowLength * sin(angle + arrowAngle)
+                };
+                Vector2 arrowPoint2 = {
+                    endLine.x - arrowLength * cos(angle - arrowAngle),
+                    endLine.y - arrowLength * sin(angle - arrowAngle)
+                };
+
+                // Vẽ hai đoạn thẳng tạo thành đầu mũi tên
+                DrawLineEx(endLine, arrowPoint1, 1.5f, Fade(BLACK, fadeProgress));
+                DrawLineEx(endLine, arrowPoint2, 1.5f, Fade(BLACK, fadeProgress));
+            }
+        }
 
         prevPos = targetPos; // Lưu vị trí của node hiện tại để nối với node tiếp theo
 
@@ -779,4 +962,8 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
 }
 void LinkedListScreen::Unload() {
     UnloadFont(linkedListFont);
+    UnloadFont(myFont);
+    UnloadFont(IN4Font);
+    UnloadImage(imageUndo);
+    UnloadImage(imageRedo);
 }

@@ -104,3 +104,59 @@ void LinkedList::ClearList() {
         delete temp;
     }
 }
+
+int LinkedList::GetPosition(int value) {
+    LLNode* current = head;
+    int position = 0;
+    while (current) {
+        if (current->value == value) {
+            return position;
+        }
+        current = current->next;
+        position++;
+    }
+    return -1; // Không tìm thấy
+}
+
+void LinkedList::DeleteAtHead() {
+    if (head) {
+        LLNode* temp = head;
+        head = head->next;
+        delete temp;
+    }
+}
+
+void LinkedList::DeleteAtTail() {
+    if (!head) return;
+    if (!head->next) {
+        delete head;
+        head = nullptr;
+        return;
+    }
+    LLNode* current = head;
+    while (current->next->next) {
+        current = current->next;
+    }
+    delete current->next;
+    current->next = nullptr;
+}
+
+void LinkedList::DeleteAtPosition(int position) {
+    if (position < 0 || !head) return;
+
+    if (position == 0) {
+        DeleteAtHead();
+        return;
+    }
+
+    LLNode* current = head;
+    for (int i = 0; i < position - 1 && current; i++) {
+        current = current->next;
+    }
+
+    if (current && current->next) {
+        LLNode* temp = current->next;
+        current->next = temp->next;
+        delete temp;
+    }
+}
