@@ -50,13 +50,24 @@ GraphVisual::GraphVisual() {
     readFileEdges = FileLoader();
 }
 
+float calculateTargetScrollOffset(int highlightIndex, float rowHeight, float tableVisibleHeight, int totalRows) {
+    float totalContentHeight = totalRows * rowHeight;
+    float highlightTop = highlightIndex * rowHeight;
+    float target = highlightTop + rowHeight / 2 - tableVisibleHeight / 2;
+    if (target < 0) target = 0;
+    if (target > totalContentHeight - tableVisibleHeight) target = totalContentHeight - tableVisibleHeight;
+    return target;
+}
+
 int GraphVisual::handleEvent() {
     float deltaTime = GetFrameTime();
 
     if (Input.update()) {
+        sortingAnimation = false; 
         valueAnimation = true;
         valueTime = 0;
         G.isFindMST = 0;
+        highlightIndex = 0; 
         warning = "";
 
         if (Input.isAddedge) {
@@ -234,6 +245,25 @@ int GraphVisual::handleEvent() {
                 valueAnimation = 0;
             }
         }
+        
+        if (sortingAnimation) {
+            sortTime += deltaTime / sortDuration;
+
+            if (sortTime >= 1.0f) {
+                sortTime = 1.0f;
+                sortingAnimation = false;
+                highlightIndex = 0;
+                G.highlightIndex = 0; 
+                warning = "", G.processMST();
+            }
+
+            for (int i = 0; i < G.edges.size(); i++) {
+                float smoothT = sortTime * sortTime * (3 - 2 * sortTime);
+
+                Vector2 transition = Lerp({4, displayYs[i]}, {4, endYs[i]}, smoothT);
+                displayYs[i] = transition.y;
+            }
+        }
 
         if (Go.update() && G.isFindMST == false) {
             if (G.isDirected) {
@@ -242,13 +272,179 @@ int GraphVisual::handleEvent() {
             else if (G.isConencted() == 0) {
                 warning = "Graph must be connected!";
             }
-            else warning = "", G.processMST();
+            else {
+                tmpEdges.clear();
+                sortedEdges.clear(); 
+
+                tmpEdges = G.edges; 
+                sortedEdges = G.edges; 
+
+                sort(sortedEdges.begin(), sortedEdges.end());
+
+                startYs = vector<float> (tmpEdges.size());
+                endYs = vector<float> (tmpEdges.size());
+                displayYs = vector<float> (tmpEdges.size());
+                
+                for (int i = 0; i < tmpEdges.size(); i++) {
+                    startYs[i] = i * rowHeight;
+                    displayYs[i] = startYs[i];
+                }
+
+                warning = ""; 
+                sortTime = 0; 
+                sortingAnimation = true;
+
+                for (int i = 0; i < tmpEdges.size(); i++) {
+                    for (int j = 0; j < sortedEdges.size(); j++) {
+                        if (sortedEdges[j].from == tmpEdges[i].from && sortedEdges[j].to == tmpEdges[i].to && sortedEdges[j].weight == tmpEdges[i].weight) {
+                            endYs[i] = j * rowHeight;
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 
     G.update();
+
+    if (sortingAnimation == true) return Graph_state; 
+    float wheel = GetMouseWheelMove();
+    
+    if (wheel != 0) 
+        currentScrollOffset -= wheel * 20.0f;
+
+    float totalContentHeight = G.edges.size() * rowHeight;
+    float maxScroll = totalContentHeight - tableVisibleHeight;
+    if (maxScroll < 0) maxScroll = 0;
+    if (currentScrollOffset < 0) currentScrollOffset = 0;
+    if (currentScrollOffset > maxScroll) currentScrollOffset = maxScroll;
+
     return Graph_state;
 }
+
+
+void GraphVisual::DrawTextCentered(const string& text, float x, float y, float w, float h, int fontSize, Color color) {
+    int textWidth = MeasureTextEx(font, text.c_str(), fontSize, 1).x;
+    int textHeight = fontSize;  // Approximate height
+    float posX = x + (w - textWidth) * 0.5f;
+    float posY = y + (h - textHeight) * 0.5f;
+    DrawTextEx(font, text.c_str(), { posX, posY }, fontSize,1, color);
+}
+    
+void GraphVisual::DrawEdgeTableDuringAnimation(const vector<Edge>& originalEdges, const std::vector<float>& displayYs, Vector2 position, float width, float rowHeight, float scrollOffset, float tableVisibleHeight) {
+    Color tableBg = isDarkMode ? Color{ 127, 205, 255, 255 } : Color{ 253, 196, 182, 255 };
+    //Color{ 255,239, 213, 255 };
+    Color headerBg = isDarkMode ? Color{ 29, 162, 216, 255 } : Color{ 234, 112, 112, 255 };
+    Color highlightBg = { 230, 180, 0, 100 };
+    Color textColor = BLACK;
+    Color borderColor = DARKGRAY;
+    int fontSize = 20;
+
+    float colFromWidth = width * 0.3f;
+    float colToWidth = width * 0.3f;
+    float colWeightWidth = width * 0.4f;
+
+    DrawRectangle((int)position.x, (int)(position.y + rowHeight), (int)width, (int)tableVisibleHeight, tableBg);
+
+    BeginScissorMode((int)position.x, (int)(position.y + rowHeight), (int)width, (int)tableVisibleHeight);
+    for (int i = 0; i < originalEdges.size(); i++) {
+        float y = position.y + rowHeight + displayYs[i] - scrollOffset;
+        if (y + rowHeight > position.y + rowHeight && y < position.y + rowHeight + tableVisibleHeight) {
+            float colX = position.x;
+            DrawTextCentered(std::to_string(originalEdges[i].from), colX, y, colFromWidth, rowHeight, fontSize, textColor);
+            colX += colFromWidth;
+            DrawTextCentered(std::to_string(originalEdges[i].to), colX, y, colToWidth, rowHeight, fontSize, textColor);
+            colX += colToWidth;
+            DrawTextCentered(G.isWeighted ? to_string((int)originalEdges[i].weight) : "NONE", colX, y, colWeightWidth, rowHeight, fontSize, textColor);
+        }
+    }
+    EndScissorMode();
+
+    DrawRectangle((int)position.x, (int)position.y, (int)width, (int)rowHeight, headerBg);
+    float headerX = position.x;
+    DrawTextCentered(G.isDirected ? "From" : "U", headerX, position.y, colFromWidth, rowHeight, fontSize + 2, WHITE);
+    headerX += colFromWidth;
+    DrawTextCentered(G.isDirected ? "To" : "V", headerX, position.y, colToWidth, rowHeight, fontSize + 2, WHITE);
+    headerX += colToWidth;
+    DrawTextCentered("Weight", headerX, position.y, colWeightWidth, rowHeight, fontSize + 2, WHITE);
+
+    DrawRectangleLinesEx({ position.x, position.y, width, rowHeight + tableVisibleHeight }, 2.0f, borderColor);
+    float totalContentHeight = originalEdges.size() * rowHeight;
+
+    if (totalContentHeight > tableVisibleHeight) {
+        float thumbHeight = (tableVisibleHeight / totalContentHeight) * tableVisibleHeight;
+        float trackHeight = tableVisibleHeight;
+        float maxScroll = totalContentHeight - tableVisibleHeight;
+        float thumbY = position.y + rowHeight + (scrollOffset / maxScroll) * (trackHeight - thumbHeight);
+        DrawRectangle((int)(position.x + width - 10), (int)thumbY, 8, (int)thumbHeight, LIGHTGRAY);
+    }
+
+}
+
+void GraphVisual::drawEdgesTable(const vector<Edge>& edges, Vector2 position, int highlightLine, float width, float rowHeight, float scrollOffset, float tableVisibleHeight) {
+    Color tableBg = isDarkMode ? Color{ 127, 205, 255, 255 } : Color{ 253, 196, 182, 255}; 
+    //Color{ 255,239, 213, 255 };
+    Color headerBg = isDarkMode ? Color{ 29, 162, 216, 255 } : Color{ 234, 112, 112, 255 };
+    Color highlightBg = { 230, 180, 0, 100 };
+    Color textColor = BLACK;
+    Color borderColor = DARKGRAY;
+
+    int fontSize = 20;
+
+    float totalContentHeight = edges.size() * rowHeight;
+
+    float colFromWidth = width * 0.3f;
+    float colToWidth = width * 0.3f;
+    float colWeightWidth = width * 0.4f;
+
+    DrawRectangle((int)position.x, (int)(position.y + rowHeight), (int)width, (int)tableVisibleHeight, tableBg);
+    BeginScissorMode((int)position.x, (int)(position.y + rowHeight), (int)width, (int)tableVisibleHeight);
+
+
+    for (int i = 0; i < edges.size(); i++) {
+        float rowY = position.y + rowHeight + i * rowHeight - scrollOffset;
+        if (rowY + rowHeight > position.y + rowHeight && rowY < position.y + rowHeight + tableVisibleHeight) {
+            if (i == highlightLine) {
+                DrawRectangleRounded({ position.x, rowY, width, rowHeight }, 0.8, 6, highlightBg);
+            }
+            Color textCol = textColor; 
+            if (G.isFindMST) {
+                if (G.inMST[i] == 1) textCol = RED; 
+                if (G.inMST[i] == 2) textCol = DARKGREEN;
+            }
+
+            float colX = position.x;
+            DrawTextCentered(to_string(edges[i].from), colX, rowY, colFromWidth, rowHeight, fontSize, textCol);
+            colX += colFromWidth;
+            DrawTextCentered(to_string(edges[i].to), colX, rowY, colToWidth, rowHeight, fontSize, textCol);
+            colX += colToWidth;
+            DrawTextCentered(G.isWeighted ? to_string((int)edges[i].weight) : "NONE", colX, rowY, colWeightWidth, rowHeight, fontSize, textCol);
+        }
+    }
+
+    EndScissorMode();
+
+    DrawRectangle((int)position.x, (int)position.y, (int)width, (int)rowHeight, headerBg);
+    float headerX = position.x;
+    DrawTextCentered(G.isDirected ? "From" : "U", headerX, position.y, colFromWidth, rowHeight, fontSize + 2, WHITE);
+    headerX += colFromWidth;
+    DrawTextCentered(G.isDirected ? "To" : "V", headerX, position.y, colToWidth, rowHeight, fontSize + 2, WHITE);
+    headerX += colToWidth;
+    DrawTextCentered("Weight", headerX, position.y, colWeightWidth, rowHeight, fontSize + 2, WHITE);
+
+    DrawRectangleLinesEx({ position.x, position.y, width, rowHeight + tableVisibleHeight }, 2.0f, borderColor);
+
+
+    if (totalContentHeight > tableVisibleHeight) {
+        float thumbHeight = (tableVisibleHeight / totalContentHeight) * tableVisibleHeight;
+        float trackHeight = tableVisibleHeight;
+        float maxScroll = totalContentHeight - tableVisibleHeight;
+        float thumbY = position.y + rowHeight + (scrollOffset / maxScroll) * (trackHeight - thumbHeight);
+        DrawRectangle((int)(position.x + width - 10), (int)thumbY, 8, (int)thumbHeight, LIGHTGRAY);
+    }
+}
+
 
 void GraphVisual::draw() {
     int panelMargin = 250;
@@ -325,6 +521,21 @@ void GraphVisual::draw() {
         if (warning.size() > 0) {
             DrawTextEx(font, warning.c_str(), { Go.rect.x - 9, valueRect.y + 65 }, 18, 1, RED);
         }
+    }
+
+    if (sortingAnimation) {
+        DrawEdgeTableDuringAnimation(tmpEdges, displayYs, { 1250, 260 }, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
+    }
+    else if (G.isFindMST) {
+        float targetScrollOffset = calculateTargetScrollOffset(G.highlightIndex, rowHeight, tableVisibleHeight, G.edges.size());
+        float delta = (targetScrollOffset - currentScrollOffset) * 0.1f;  // Adjust speed here
+        currentScrollOffset += delta;
+        timer += GetFrameTime(); 
+
+        drawEdgesTable(sortedEdges, { 1250, 260 }, G.highlightIndex, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
+    }
+    else {
+        drawEdgesTable(G.edges, { 1250, 260 }, highlightIndex, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
     }
 
     DrawRectangleRounded(Rectangle{ 0, panelMargin * 1.f, PANEL_WIDTH, Screen_h * 1.f - 2 * panelMargin + 20 }, 0.2, 9, panelColor);

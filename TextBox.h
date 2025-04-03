@@ -242,7 +242,7 @@ struct TextBoxCenter { /// put the cursor in the center
     }
 
     void draw() {
-        Color boxColor = focused ? YELLOW : Color{ 244, 162, 83, 210 };
+        Color boxColor = focused ? YELLOW : (isDarkMode ? Color{ 244, 162, 83, 210 } : RAYWHITE);
 
         if (focused && text == "Random") text = "", pos = 0;
 

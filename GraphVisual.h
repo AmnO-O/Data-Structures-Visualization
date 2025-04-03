@@ -11,9 +11,28 @@ public:
 	int handleEvent();
 	void draw();
 private:
+	void drawEdgesTable(const std::vector<Edge>& edges, Vector2 position, int highlightLine, float width, float rowHeight, float scrollOffset, float tableVisibleHeight);
+	void DrawTextCentered(const string& text, float x, float y, float w, float h, int fontSize, Color color);
+	void DrawEdgeTableDuringAnimation(const std::vector<Edge>& originalEdges, const std::vector<float>& displayYs, Vector2 position, float width, float rowHeight, float scrollOffset, float tableVisibleHeight);
 
 #define PANEL_WIDTH 188  // Độ rộng bảng
 #define PANEL_PADDING 20 // Khoảng cách lề
+	
+	float timer = 0.0f;
+	int highlightIndex = 0;
+	float rowHeight = 40.0f;
+	float tableVisibleHeight = 400.0f;
+	float currentScrollOffset = 0.0f;
+
+	bool sortingAnimation = false;
+	float sortTime = 0.0f;
+	float sortDuration = 1.0f;
+
+	vector <Edge> tmpEdges, sortedEdges; 
+	vector<float> startYs;
+	vector<float> endYs;
+	vector<float> displayYs;
+
 	string warning = "";
 	Toolbar toolbar;
 	Rectangle iconWeighted, iconDirected;

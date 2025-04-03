@@ -376,20 +376,20 @@ void Graph::updGPT() {
         nodes[i].position.y += nodes[i].velocity.y * timeStep;
 
         float padding = 100.0f;
-        if (nodes[i].position.x < padding + nodes[i].radius) {
-            nodes[i].position.x = padding + nodes[i].radius;
+        if (nodes[i].position.x < 200 + nodes[i].radius) {
+            nodes[i].position.x = 200 + nodes[i].radius;
             nodes[i].velocity.x *= -0.5f;
         }
-        if (nodes[i].position.x > Screen_w - padding - nodes[i].radius) {
-            nodes[i].position.x = Screen_w - padding - nodes[i].radius;
+        if (nodes[i].position.x > Screen_w - 200 - nodes[i].radius) {
+            nodes[i].position.x = Screen_w - 200 - nodes[i].radius;
             nodes[i].velocity.x *= -0.5f;
         }
-        if (nodes[i].position.y < padding + nodes[i].radius) {
-            nodes[i].position.y = padding + nodes[i].radius;
+        if (nodes[i].position.y < 50 + nodes[i].radius) {
+            nodes[i].position.y = 50 + nodes[i].radius;
             nodes[i].velocity.y *= -0.5f;
         }
-        if (nodes[i].position.y > Screen_h - padding - nodes[i].radius) {
-            nodes[i].position.y = Screen_h - padding - nodes[i].radius;
+        if (nodes[i].position.y > Screen_h - 100 - nodes[i].radius) {
+            nodes[i].position.y = Screen_h - 100 - nodes[i].radius;
             nodes[i].velocity.y *= -0.5f;
         }
     }
@@ -482,8 +482,15 @@ void Graph::updFruchterman() {
 
 void Graph::processMST() {
     edgesMST.clear(); curMST.clear();
+    inMST.clear(); 
+
+    inMST = vector<short>(edges.size() + 3, 0); 
+
     for (Edge e : edges) edgesMST.push_back(e);
+    sort(edgesMST.begin(), edgesMST.end());
     reverse(edgesMST.begin(), edgesMST.end());
+    highlightIndex = 0; 
+
     dsu.init(numNodes);
     isFindMST = true;
     frameCnt = 0;
@@ -514,6 +521,10 @@ void Graph::update() {
             selectedNode = -1;
         }
     }
+}
+
+bool Graph::isProcessedMST() {
+    return !edgesMST.empty(); 
 }
 
 void Graph::draw(Font& font) {
@@ -553,9 +564,14 @@ void Graph::draw(Font& font) {
             if (frameCnt == 120 && curMST.size()) {
                 Edge& e = curMST.back();
 
-                if (dsu.join(e.from, e.to) == 0) e.thickness = 0.3f, e.highlighted = 0, e.color = isDarkMode ? WHITE : BLACK;
-                else e.highlighted = true;
+                if (e.color.r == RED.r && e.color.g == RED.g && e.color.b == RED.b) {
+                    
+                    if (dsu.join(e.from, e.to) == 0) e.thickness = 0.3f, e.highlighted = 0, e.color = isDarkMode ? WHITE : BLACK, inMST[highlightIndex] = 1;
+                    else e.highlighted = true, inMST[highlightIndex] = 2;
 
+                    highlightIndex++; 
+                    if (highlightIndex >= edges.size()) highlightIndex = 0; 
+                }
                 frameCnt = 0;
             }
 
@@ -576,7 +592,6 @@ void Graph::draw(Font& font) {
                 nodes[i].draw(deltaTime, font);
         }
         else {
-
             for (Edge& edge : edgesMST) {
                 edge.color = isDarkMode ? WHITE : BLACK;
                 drawEdge(edge, font);

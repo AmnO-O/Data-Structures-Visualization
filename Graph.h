@@ -169,17 +169,19 @@ public:
 	void reset();
 	bool isConencted();
 
+	bool isProcessedMST(); 
+
 	int numNodes, numEdges;
+	int highlightIndex = 0; 
 	bool isDirected = false, isWeighted = false;
 	bool isFindMST = false;
-
+	vector <short> inMST; 
+	vector <Edge> edges;
+	vector <Edge> edgesMST;
 private:
 	void drawEdge(const Edge& edge, Font& font);
 
 	vector <GraphNode> nodes;
-
-	vector <Edge> edges;
-	vector <Edge> edgesMST;
 	vector <Edge> curMST;
 
 	DSU dsu;
