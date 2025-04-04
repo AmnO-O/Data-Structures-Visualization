@@ -1,4 +1,5 @@
 ﻿#include "UI.h"
+#include "Adjust.h" // Include the header for Toolbar
 
 Visualizer::Visualizer() {
 
@@ -18,7 +19,6 @@ void Visualizer::Process() {
 	Texture2D darkIcon = LoadTexture("Assets/Images/darkmode.png");
 	Texture2D titlebar = LoadTexture("Assets/Images/titlebar.png");
 	Texture2D backto = LoadTexture("Assets/Images/backto.png");
-
 
 	Vector2  iconPosition = { Screen_w - 140, 30 }; /// the Position of the lighticon or darkicon
 	Rectangle iconRec = { Screen_w - 140, 30, 80, 80 }; /// the rect of the lighticon or darkicon
@@ -47,6 +47,7 @@ void Visualizer::Process() {
 	auto graph = make_unique<GraphVisual>();
 	auto avl = make_unique<AVLTreeScreen>();
 
+	Toolbar toolbar; // Instantiate the Toolbar
 
 	about->Init();
 	setting->Init();
@@ -90,11 +91,14 @@ void Visualizer::Process() {
 		if (isHovering) tint = { 255, 255, 255, 150 };
 		if (isHovering && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) isDarkMode = !isDarkMode;
 
+		if (Program_state != Menu_state && Program_state != About_state && Program_state != Settings_state && Program_state != HowToUse_state) {
+			toolbar.Update(); // Update the Toolbar only on smaller screens
+		}
+
 		BeginDrawing();
 
 		if (!isDarkMode) ClearBackground(lightmode);
 		else ClearBackground(darkmode);
-
 
 		DrawTextureEx(!isDarkMode ? lightIcon : darkIcon, iconPosition, 0.0f, 1.f, tint);
 
@@ -123,11 +127,9 @@ void Visualizer::Process() {
 		else if (Program_state == Graph_state) graph->draw();
 		else if (Program_state == Trie_state) avl->Draw();
 
-
 		else if (Program_state == About_state) about->Draw();
 		else if (Program_state == Settings_state) setting->Draw();
 		else if (Program_state == HowToUse_state) helper->Draw();
-
 
 		if (Program_state == Trie_state) DataName = "AVL";
 		else if (Program_state == HashTable_state) DataName = "Hash table: Linear Probing";
@@ -136,6 +138,10 @@ void Visualizer::Process() {
 		else if (Program_state == About_state) DataName = "About";
 		else if (Program_state == Settings_state) DataName = "Settings";
 		else if (Program_state == HowToUse_state) DataName = "How to use";
+
+		if (Program_state != Menu_state && Program_state != About_state && Program_state != Settings_state && Program_state != HowToUse_state) {
+			toolbar.Draw(); // Draw the Toolbar only on smaller screens
+		}
 
 		EndDrawing();
 	}
