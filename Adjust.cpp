@@ -9,7 +9,7 @@ const int BUTTON_SPACING = 70;
 const int MENU_ICON_SIZE = 50;
 const int SLIDE_INCREMENT = 20;
 const float MIN_SPEED = 0.25f;
-const float MAX_SPEED = 2.0f;
+const float MAX_SPEED = 4.0f;
 const float SPEED_INCREMENT = 0.25f;
 
 const Color HOVER_COLOR = { 255, 255, 255, 128 };

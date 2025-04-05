@@ -1054,7 +1054,7 @@ void HashTableVisual::draw() {
     Input.draw(smallFont);
     loadFile.draw(font);
 
-    frameCnt++;
+    frameCnt += toolbar.speed;
 }
 
 HashTableVisual::~HashTableVisual() {
