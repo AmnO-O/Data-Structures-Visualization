@@ -30,7 +30,7 @@ Toolbar::Toolbar() {
     buttons[2] = { -280, 745, BUTTON_SIZE, BUTTON_SIZE }; // Next
     speedButtons[0] = { -140, 755, 40, 40 }; // Speed-
     speedButtons[1] = { -40, 755, 40, 40 }; // Speed+
-
+    /// 2, 3, 8, 9, 
     textures.resize(16);
     const char* textureFiles[16] = {
         "Assets/Toolbar/menu_light.png",
@@ -57,12 +57,16 @@ Toolbar::Toolbar() {
             std::cerr << "Failed to load " << textureFiles[i] << std::endl;
         }
     }
+
+    font = LoadFont("Assets/Fonts/LilitaOne-Regular.ttf");
 }
 
 Toolbar::~Toolbar() {
     for (auto& texture : textures) {
         UnloadTexture(texture);
     }
+
+    UnloadFont(font);
 }
 
 void Toolbar::Update() {
@@ -93,21 +97,12 @@ void Toolbar::Update() {
                     selectedButtonIndex = i;
                 }
                 if (i == 1) {
-                    static bool isPlaying = true;
                     isPlaying = !isPlaying;
-                    if (isDarkMode) {
-                        textures[8] = LoadTexture(isPlaying ? "Assets/Toolbar/play_dark.png" : "Assets/Toolbar/pause_dark.png");
-                    }
-                    else {
-                        textures[2] = LoadTexture(isPlaying ? "Assets/Toolbar/play_light.png" : "Assets/Toolbar/pause_light.png");
-                    }
                 }
             }
         }
     }
 
-    textures[4] = LoadTexture("Assets/Toolbar/next_light.png");
-    textures[10] = LoadTexture("Assets/Toolbar/next_dark.png");
 
     if (CheckCollisionPointRec(mousePos, speedButtons[0]) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && speed > MIN_SPEED) {
         speed -= SPEED_INCREMENT;
@@ -118,6 +113,7 @@ void Toolbar::Update() {
 }
 
 void Toolbar::Draw() {
+
     Vector2 mousePos = GetMousePosition();
     Color backgroundColor = isDarkMode ? CREAMY : CREAM_COLOR;
     Color hoverColor = isDarkMode ? SELECTED_COLOR : HOVER_COLOR;
@@ -140,7 +136,7 @@ void Toolbar::Draw() {
 
         int textureIndex;
         if (i == 0) textureIndex = isDarkMode ? 7 : 1; // Back
-        else if (i == 1) textureIndex = isDarkMode ? 8 : 2; // Play/Pause
+        else if (i == 1) textureIndex = (isDarkMode ? 8 : 2) + isPlaying; // Play/Pause
         else textureIndex = isDarkMode ? 10 : 4; // Next
 
         if (textures[textureIndex].id != 0) {
@@ -174,5 +170,5 @@ void Toolbar::Draw() {
                 { (float)speedButtons[i].x, (float)speedButtons[i].y, (float)speedButtons[i].width, (float)speedButtons[i].height }, { 0, 0 }, 0, WHITE);
         }
     }
-    DrawText(TextFormat("%.2fx", speed), (speedButtons[0].x + speedButtons[1].x) / 2, speedButtons[0].y + 10, 20, BLACK);
+    DrawTextEx(font, TextFormat("%.2fx", speed), { (speedButtons[0].x + speedButtons[1].x) / 2, speedButtons[0].y + 10 }, 20, 1, BLACK);
 }
