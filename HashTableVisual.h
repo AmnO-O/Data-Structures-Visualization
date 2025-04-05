@@ -30,14 +30,15 @@ private:
     Instruction loadFile;
     FileLoader readFile;
     HashTable H;
-
+    Toolbar toolbar;
+    string warning = "";
 
     Button valueButton;
     float valueTime = 0;
     float valueDuration = 2.f;
     bool valueAnimation = 0;
 
-    int frameCnt = 0;
+    float frameCnt = 0;
     int currentLine = 0;
 
     bool popActive;

@@ -88,7 +88,7 @@ HashTableVisual::HashTableVisual() {
     };
 
     animation.active = false;
-    animation.segmentDuration = 1.5f;
+    animation.segmentDuration = 0.8f;
     animation.currentPathIndex = 0;
     animation.elapsedTime = 0.0f;
     animation.operationSuccess = true;
@@ -96,24 +96,29 @@ HashTableVisual::HashTableVisual() {
 
     popActive = false;
     popElapsedTime = 0.0f;
-    popDuration = 1.0f; // 1 second for pop animation.
+    popDuration = 0.65f; // 1 second for pop animation.
     popScale = 0.0f;
 
     shrinkActive = false;
     shrinkElapsedTime = 0.0f;
-    shrinkDuration = 1.0f; // 1 second removal effect.
+    shrinkDuration = 0.65f; // 1 second removal effect.
     shrinkScale = 1.0f;
 
     searchActive = false;
     searchElapsedTime = 0.0f;
-    searchDuration = 1.0f; // 1 second search effect.
+    searchDuration = 0.65f; // 1 second search effect.
 }
 
 int HashTableVisual::handleEvent() {
+    toolbar.Update();
+
     if (Input.update()) {
         valueAnimation = true;
         currentLine = valueTime = 0;
         animation.operationSuccess = true;
+        warning = "";
+        toolbar.isOpen = toolbar.isPlaying = false;
+
 
         if (Input.isSearch) {
             Value.bounds.x = -500;
@@ -156,6 +161,11 @@ int HashTableVisual::handleEvent() {
                 }
             }
             if (num >= 0) H.ins(num);
+        }
+
+        if (Size.isEnter || Random.update()) {
+            if (Size.getDigit() < 0) warning = "Size must be a \npositive integer!";
+            else warning = "";
         }
 
         if (Size.isEnter && Size.getDigit() > 0) {
@@ -215,7 +225,14 @@ int HashTableVisual::handleEvent() {
             currentLine = 0;
         }
 
-        if (animation.active == false && Value.isEnter) {
+        if (Value.isEnter) {
+            if (Value.getDigit() < 0)
+                warning = "Value must be a positive integer!";
+            else warning = "", toolbar.isOpen = toolbar.isPlaying = true;
+        }
+
+
+        if (animation.active == false && Value.isEnter && Value.getDigit() >= 0) {
             vector <int> path = H.getInsertionPath(Value.getDigit());
             animation.key = Value.getDigit();
 
@@ -226,6 +243,7 @@ int HashTableVisual::handleEvent() {
                 animation.currentPos = H.getCenter(path[0]);
             else {
                 animation.operationSuccess = false;
+                toolbar.isOpen = toolbar.isPlaying = false;
                 return HashTable_state;
             }
 
@@ -235,11 +253,59 @@ int HashTableVisual::handleEvent() {
             frameCnt = 0;
         }
 
-        if (animation.active) {
+        if (animation.active && toolbar.isBack && popActive == false) {
+            if (animation.currentPathIndex > 0) {
+                animation.currentPathIndex--;
+            }
+
+            animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+        }
+
+        if (animation.active && toolbar.isNext && popActive == false) {
+            if (animation.currentPathIndex < animation.pathIndices.size() - 1) animation.currentPathIndex++, animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+            else {
+                if (animation.currentPathIndex < 2) {
+                    if (frameCnt < 50) {
+                        frameCnt += toolbar.speed;
+                    }
+                    else {
+                        animation.currentPathIndex++;
+                        frameCnt = 0;
+                        currentLine++;
+                        if (currentLine == 2) currentLine++;
+                    }
+                }
+                else if (frameCnt < 50) {
+                    frameCnt += toolbar.speed;
+                }
+                else if (!popActive) {
+                    frameCnt = 0;
+                    popActive = true;
+                    popElapsedTime = 0.0f;
+                    popScale = 0.0f;
+                }
+
+                animation.currentPos = H.getCenter(animation.pathIndices.back());
+            }
+        }
+
+        if (toolbar.isBack && popActive == true) {
+            if (animation.currentPathIndex > 0)
+                animation.currentPathIndex--;
+
+            animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+            animation.active = true;
+            popActive = false;
+            popElapsedTime = 0.0f;
+            popScale = 0.0f;
+            frameCnt = 0.0f;
+        }
+
+        if (animation.active && toolbar.isPlaying) {
             if (animation.currentPathIndex < animation.pathIndices.size() - 1) {
                 Vector2 startPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
                 Vector2 endPos = H.getCenter(animation.pathIndices[animation.currentPathIndex + 1]);
-                animation.elapsedTime += deltaTime;
+                animation.elapsedTime += toolbar.speed * deltaTime;
 
                 float t = animation.elapsedTime / animation.segmentDuration;
                 if (t > 1.0f) t = 1.0f;
@@ -252,12 +318,11 @@ int HashTableVisual::handleEvent() {
                 }
 
                 if (animation.currentPathIndex == 0 && abs(animation.currentPos.x - startPos.x) >= 20) currentLine = 1;
-
             }
             else {
                 if (animation.currentPathIndex < 2) {
-                    if ((frameCnt / 60) % 2 != 1) {
-                        frameCnt++;
+                    if (frameCnt < 50) {
+                        frameCnt += toolbar.speed;
                     }
                     else {
                         animation.currentPathIndex++;
@@ -266,8 +331,8 @@ int HashTableVisual::handleEvent() {
                         if (currentLine == 2) currentLine++;
                     }
                 }
-                else if ((frameCnt / 50) % 2 != 1) {
-                    frameCnt++;
+                else if (frameCnt < 50) {
+                    frameCnt += toolbar.speed;
                 }
                 else if (!popActive) {
                     frameCnt = 0;
@@ -278,11 +343,11 @@ int HashTableVisual::handleEvent() {
             }
         }
 
-        if (popActive) {
-            popElapsedTime += deltaTime;
+        if (popActive && toolbar.isPlaying) {
+            popElapsedTime += deltaTime * toolbar.speed;
             float t = popElapsedTime / popDuration;
             if (t > 1.0f) t = 1.0f;
-            // Using an ease-out effect for the pop (scale from 0 to 1).
+
             popScale = t * t * (3 - 2 * t);
 
             if (popElapsedTime >= popDuration) {
@@ -290,6 +355,7 @@ int HashTableVisual::handleEvent() {
                 H.ins(finalIndex, animation.key);
                 popActive = false;
                 animation.active = false;
+                toolbar.isPlaying = false;
             }
         }
     }
@@ -320,12 +386,19 @@ int HashTableVisual::handleEvent() {
 
         if (Value.isEnter) currentLine = 0;
 
-        if (animation.active == false && Value.isEnter) {
+        if (Value.isEnter) {
+            if (Value.getDigit() < 0)
+                warning = "Value must be a positive integer!";
+            else warning = "", toolbar.isOpen = toolbar.isPlaying = true;
+        }
+
+        if (animation.active == false && Value.isEnter && Value.getDigit() >= 0) {
             vector <int> path;
             int final = H.search(Value.getDigit(), path);
             animation.key = Value.getDigit();
             animation.operationSuccess = final >= 0;
             if (final < 0) { /// can't remove this number because not in the hashtable
+                toolbar.isOpen = toolbar.isPlaying = false;
                 return HashTable_state;
             }
 
@@ -337,7 +410,53 @@ int HashTableVisual::handleEvent() {
             frameCnt = 0;
         }
 
-        if (animation.active) {
+        if (animation.active && toolbar.isBack && shrinkActive == false) {
+            if (animation.currentPathIndex > 0) {
+                animation.currentPathIndex--;
+            }
+
+            animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+        }
+
+        if (animation.active && toolbar.isNext && shrinkActive == false) {
+            if (animation.currentPathIndex < animation.pathIndices.size() - 1) animation.currentPathIndex++, animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+            else {
+                if (animation.currentPathIndex < 2) {
+                    if (frameCnt < 80) {
+                        frameCnt += toolbar.speed;
+                    }
+                    else {
+                        animation.currentPathIndex++;
+                        frameCnt = 0;
+                        currentLine++;
+                        if (currentLine == 2) currentLine++;
+                    }
+                }
+                else if (frameCnt < 80) {
+                    frameCnt += toolbar.speed;
+                }
+                else if (!shrinkActive) {
+                    shrinkActive = true;
+                    shrinkElapsedTime = 0;
+                    shrinkScale = 1;
+                }
+                animation.currentPos = H.getCenter(animation.pathIndices.back());
+            }
+        }
+
+        if (toolbar.isBack && shrinkActive == true) {
+            if (animation.currentPathIndex > 0)
+                animation.currentPathIndex--;
+            animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+            animation.active = true;
+            shrinkActive = false;
+            popElapsedTime = 0.0f;
+            popScale = 0.0f;
+            frameCnt = 0.0f;
+        }
+
+
+        if (animation.active && toolbar.isPlaying) {
             if (animation.currentPathIndex < animation.pathIndices.size() - 1) {
                 Vector2 startPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
                 Vector2 endPos = H.getCenter(animation.pathIndices[animation.currentPathIndex + 1]);
@@ -357,8 +476,8 @@ int HashTableVisual::handleEvent() {
             }
             else {
                 if (animation.currentPathIndex < 2) {
-                    if ((frameCnt / 60) % 2 != 1) {
-                        frameCnt++;
+                    if (frameCnt < 50) {
+                        frameCnt += toolbar.speed;
                     }
                     else {
                         animation.currentPathIndex++;
@@ -367,8 +486,8 @@ int HashTableVisual::handleEvent() {
                         if (currentLine == 2) currentLine++;
                     }
                 }
-                else if ((frameCnt / 60) % 2 != 1) {
-                    frameCnt++;
+                else if (frameCnt < 50) {
+                    frameCnt += toolbar.speed;
                 }
                 else if (!shrinkActive) {
                     shrinkActive = true;
@@ -378,7 +497,7 @@ int HashTableVisual::handleEvent() {
             }
 
             if (shrinkActive) {
-                shrinkElapsedTime += deltaTime;
+                shrinkElapsedTime += deltaTime * toolbar.speed;
                 float t = shrinkElapsedTime / shrinkDuration;
 
                 if (t > 1) t = 1;
@@ -388,6 +507,7 @@ int HashTableVisual::handleEvent() {
                     shrinkActive = 0;
                     animation.active = 0;
                     H.rem(animation.key);
+                    toolbar.isPlaying = false;
                 }
             }
         }
@@ -428,7 +548,13 @@ int HashTableVisual::handleEvent() {
 
         if (Value.isEnter) currentLine = frameCnt = 0;
 
-        if (animation.active == false && Value.isEnter) {
+        if (Value.isEnter) {
+            if (Value.getDigit() < 0)
+                warning = "Value must be a positive integer!";
+            else warning = "", toolbar.isOpen = toolbar.isPlaying = true;
+        }
+
+        if (animation.active == false && Value.isEnter && Value.getDigit() >= 0) {
             vector <int> path;
             animation.key = Value.getDigit();
             int final = H.search(animation.key, path);
@@ -440,8 +566,52 @@ int HashTableVisual::handleEvent() {
             if (path.size()) animation.currentPos = H.getCenter(path[0]);
         }
 
+        if (animation.active && toolbar.isBack && searchActive == false) {
+            if (animation.currentPathIndex > 0) {
+                animation.currentPathIndex--;
+            }
 
-        if (animation.active) {
+            animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+        }
+
+        if (animation.active && toolbar.isNext && searchActive == false) {
+            if (animation.currentPathIndex < animation.pathIndices.size() - 1) animation.currentPathIndex++, animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+            else {
+                if (animation.currentPathIndex < 2) {
+                    if (frameCnt < 50) {
+                        frameCnt += toolbar.speed;
+                    }
+                    else {
+                        animation.currentPathIndex++;
+                        frameCnt = 0;
+                        currentLine++;
+                        if (currentLine == 1) currentLine++;
+                    }
+                }
+                else if (frameCnt < 50) {
+                    frameCnt += toolbar.speed;
+                }
+                else if (searchActive == false) {
+                    searchActive = 1;
+                    searchElapsedTime = 0;
+                }
+
+                animation.currentPos = H.getCenter(animation.pathIndices.back());
+            }
+        }
+
+        if (toolbar.isBack && searchActive == true) {
+            if (animation.currentPathIndex > 0)
+                animation.currentPathIndex--;
+            animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+
+            animation.active = 1;
+            searchActive = 0;
+            searchElapsedTime = 0;
+            frameCnt = 0.0f;
+        }
+
+        if (animation.active && toolbar.isPlaying) {
             if (animation.pathIndices.size() && animation.currentPathIndex < animation.pathIndices.size() - 1) {
 
                 Vector2 startPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
@@ -460,8 +630,8 @@ int HashTableVisual::handleEvent() {
             }
             else {
                 if (animation.currentPathIndex < 2) {
-                    if ((frameCnt / 70) % 2 != 1) {
-                        frameCnt++;
+                    if (frameCnt < 50) {
+                        frameCnt += toolbar.speed;
                     }
                     else {
                         animation.currentPathIndex++;
@@ -470,8 +640,8 @@ int HashTableVisual::handleEvent() {
                         if (currentLine == 1) currentLine++;
                     }
                 }
-                else if ((frameCnt / 70) % 2 != 1) {
-                    frameCnt++;
+                else if (frameCnt < 50) {
+                    frameCnt += toolbar.speed;
                 }
                 else if (searchActive == false) {
                     searchActive = 1;
@@ -480,11 +650,12 @@ int HashTableVisual::handleEvent() {
             }
         }
 
-        if (searchActive) {
-            searchElapsedTime += deltaTime;
+        if (searchActive && toolbar.isPlaying) {
+            searchElapsedTime += deltaTime * toolbar.speed;
             if (searchElapsedTime >= searchDuration) {
                 searchActive = false;
                 animation.active = false;
+                toolbar.isPlaying = false;
             }
         }
     }
@@ -500,7 +671,6 @@ void HashTableVisual::drawBackgroundInfo(int posX, int posY, int width, int heig
     DrawRectangleRounded({ (float)posX, (float)posY, (float)width, (float)height }, 0.1f, 10, PANEL_BACKGROUND);
     DrawRectangleRoundedLinesEx({ (float)posX, (float)posY, (float)width, (float)height }, 0.1f, 10, 1, PANEL_BORDER);
 }
-
 
 void HashTableVisual::drawCode(int posX, int posY, int width, int height, const vector<string>& codeLines) {
     const Color BACKGROUND_COLOR = { 245, 245, 250, 255 };
@@ -613,7 +783,7 @@ void HashTableVisual::draw() {
     Color panelColorx = isDarkMode ? Color{ 94, 172, 240, 180 } : Color{ 94, 172, 240, 180 };
     Color panelColory = isDarkMode ? Color{ 164, 235, 185, 200 } : Color{ 77, 168, 180, 200 };
 
-
+    toolbar.Draw();
     File.isChose = Random.isChose = 0;
 
     if (animation.active == false) H.draw(font);
@@ -633,6 +803,10 @@ void HashTableVisual::draw() {
         if (animation.operationSuccess == 0) {
             string msg = "Size too large! \nMust be <= 240.";
             DrawTextEx(font, msg.c_str(), { Size.bounds.x - 40, Size.bounds.y + 40 }, 18, 1, RED);
+        }
+
+        if (warning.size()) {
+            DrawTextEx(font, warning.c_str(), { Size.bounds.x - 40, Size.bounds.y + 40 }, 18, 1, RED);
         }
     }
     else if (Input.isInsert) {
@@ -671,6 +845,10 @@ void HashTableVisual::draw() {
             string msg = "The hashtable is full now, cannot insert more!";
             DrawTextEx(font, msg.c_str(), { valueButton.rect.x, valueButton.rect.y + 50 }, 18, 1, RED);
             highlightCode(info.x, info.y, info.width, info.height, 0);
+        }
+
+        if (warning.size()) {
+            DrawTextEx(font, warning.c_str(), { valueButton.rect.x, valueButton.rect.y + 50 }, 18, 1, RED);
         }
 
         if (animation.active) {
@@ -732,6 +910,10 @@ void HashTableVisual::draw() {
             string msg = "Number " + to_string(Value.getDigit()) + " was not found in hashtable!";
             DrawTextEx(font, msg.c_str(), { valueButton.rect.x, valueButton.rect.y + 50 }, 18, 1, RED);
             highlightCode(info.x, info.y, info.width, info.height, currentLine);
+        }
+
+        if (warning.size()) {
+            DrawTextEx(font, warning.c_str(), { valueButton.rect.x, valueButton.rect.y + 50 }, 18, 1, RED);
         }
 
         if (animation.active && !shrinkActive && animation.currentPathIndex < animation.pathIndices.size()) {
@@ -809,6 +991,10 @@ void HashTableVisual::draw() {
 
         valueButton.draw(smallFont);
         Value.draw();
+
+        if (warning.size()) {
+            DrawTextEx(font, warning.c_str(), { valueButton.rect.x, valueButton.rect.y + 50 }, 18, 1, RED);
+        }
 
         if (animation.active) {
             if (!searchActive) {

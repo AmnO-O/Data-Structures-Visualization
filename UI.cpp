@@ -47,7 +47,7 @@ void Visualizer::Process() {
 	auto graph = make_unique<GraphVisual>();
 	auto avl = make_unique<AVLTreeScreen>();
 
-	Toolbar toolbar; // Instantiate the Toolbar
+	//Toolbar toolbar; // Instantiate the Toolbar
 
 	about->Init();
 	setting->Init();
@@ -91,9 +91,9 @@ void Visualizer::Process() {
 		if (isHovering) tint = { 255, 255, 255, 150 };
 		if (isHovering && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) isDarkMode = !isDarkMode;
 
-		if (Program_state != Menu_state && Program_state != About_state && Program_state != Settings_state && Program_state != HowToUse_state) {
-			toolbar.Update(); // Update the Toolbar only on smaller screens
-		}
+		//if (Program_state != Menu_state && Program_state != About_state && Program_state != Settings_state && Program_state != HowToUse_state) {
+		//	toolbar.Update(); // Update the Toolbar only on smaller screens
+		//}
 
 		BeginDrawing();
 
@@ -139,9 +139,9 @@ void Visualizer::Process() {
 		else if (Program_state == Settings_state) DataName = "Settings";
 		else if (Program_state == HowToUse_state) DataName = "How to use";
 
-		if (Program_state != Menu_state && Program_state != About_state && Program_state != Settings_state && Program_state != HowToUse_state) {
-			toolbar.Draw(); // Draw the Toolbar only on smaller screens
-		}
+		//if (Program_state != Menu_state && Program_state != About_state && Program_state != Settings_state && Program_state != HowToUse_state) {
+		//	toolbar.Draw(); // Draw the Toolbar only on smaller screens
+		//}
 
 		EndDrawing();
 	}

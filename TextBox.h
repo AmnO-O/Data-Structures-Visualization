@@ -237,6 +237,7 @@ struct TextBoxCenter { /// put the cursor in the center
     int getDigit() {
         int c = 0;
         for (int i = 0; i < text.size(); i++) {
+            if (isdigit(text[i]) == 0) return -1;
             c = c * 10 + text[i] - '0';
         }
 
