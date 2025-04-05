@@ -100,7 +100,7 @@ void Graph::genRandom(int numnodes, int numedges) {
         numNodes = numnodes;
 
     if (numedges == -1)
-        numEdges = random(2, numNodes * (numNodes - 1) / 2);
+        numEdges = min(numNodes + 10, random(2, numNodes * (numNodes - 1) / 2));
     else
         numEdges = min(numedges, numNodes * (numNodes - 1) / 2);
 
@@ -135,13 +135,11 @@ void Graph::genRandom(int numnodes, int numedges) {
                     180  // Semi-transparent
                 };
 
-                edges.push_back(Edge(from, to, isWeighted ? random(1, 20) : -1e7 - 7 - 2 - 2006, BLACK, isDirected));
+                edges.push_back(Edge(from, to, isWeighted ? random(1, 30) : -1e7 - 7 - 2 - 2006, BLACK, isDirected));
             }
         }
         else i--;
     }
-
-    for (int i = 0; i < 100; i++) updGPT();
 }
 
 
@@ -262,20 +260,20 @@ void Graph::updEades() {
         nodes[i].position.y += nodes[i].velocity.y * timeStep;
 
         float padding = 100.0f;
-        if (nodes[i].position.x < padding + 200 + nodes[i].radius) {
-            nodes[i].position.x = padding + 200 + nodes[i].radius;
+        if (nodes[i].position.x < 200 + nodes[i].radius) {
+            nodes[i].position.x = 200 + nodes[i].radius;
             nodes[i].velocity.x *= -0.5f;
         }
-        if (nodes[i].position.x > Screen_w - padding - nodes[i].radius) {
-            nodes[i].position.x = Screen_w - padding - nodes[i].radius;
+        if (nodes[i].position.x > Screen_w - 200 - nodes[i].radius) {
+            nodes[i].position.x = Screen_w - 200 - nodes[i].radius;
             nodes[i].velocity.x *= -0.5f;
         }
-        if (nodes[i].position.y < padding + nodes[i].radius) {
-            nodes[i].position.y = padding + nodes[i].radius;
+        if (nodes[i].position.y < 60 + nodes[i].radius) {
+            nodes[i].position.y = 60 + nodes[i].radius;
             nodes[i].velocity.y *= -0.5f;
         }
-        if (nodes[i].position.y > Screen_h - padding - nodes[i].radius) {
-            nodes[i].position.y = Screen_h - padding - nodes[i].radius;
+        if (nodes[i].position.y > Screen_h - 100 - nodes[i].radius) {
+            nodes[i].position.y = Screen_h - 100 - nodes[i].radius;
             nodes[i].velocity.y *= -0.5f;
         }
     }
@@ -395,19 +393,23 @@ void Graph::updGPT() {
     }
 }
 
-void Graph::updFruchterman() {
-    numNodes = nodes.size();
-    if (numNodes <= 0) return;
+void Graph::updOld() {
+    float c_rep = 3000.0f;
+    float c_spring = 0.03f;
+    float desiredLen = 260.0f;
+    float damping = 0.85f;
+    float timeStep = 0.82f;
 
-    for (int i = 0; i < numNodes; i++) {
+    int n = numNodes;
+
+    for (int i = 0; i < n; i++) {
+        nodes[i].acceleration = { 0, 0 };
         forces[i] = { 0, 0 };
     }
 
-    len_frunch = sqrt(((Screen_w - 200) * (Screen_h - 200)) / numNodes);
-
     /// repulsive forces
-    for (int i = 0; i < numNodes; i++) {
-        for (int j = i + 1; j < numNodes; j++) {
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
             Vector2 posA = nodes[i].position;
             Vector2 posB = nodes[j].position;
 
@@ -416,7 +418,7 @@ void Graph::updFruchterman() {
             if (distance < 1.0f) distance = 1.0f;  // Prevent division by zero
 
             Vector2 unitDir = { dir.x / distance, dir.y / distance };
-            float repulsionForce = len_frunch * len_frunch / distance;
+            float repulsionForce = c_rep / (distance * distance);
 
             Vector2 force = { -unitDir.x * repulsionForce, -unitDir.y * repulsionForce };
 
@@ -437,8 +439,9 @@ void Graph::updFruchterman() {
         float distance = std::sqrt(dir.x * dir.x + dir.y * dir.y);
         if (distance < 1.0f) distance = 1.0f;  // prevent division by zero
 
+        // Normalize the direction vector.
         Vector2 unitDir = { dir.x / distance, dir.y / distance };
-        float springForce = distance * distance / len_frunch;
+        float springForce = c_spring * (distance - desiredLen);
         Vector2 force = { unitDir.x * springForce, unitDir.y * springForce };
 
         forces[edge.from].x += force.x;
@@ -449,32 +452,31 @@ void Graph::updFruchterman() {
     }
 
     // Update velocities and positions.
-    for (size_t i = 0; i < nodes.size(); i++) {
-        nodes[i].velocity.x += forces[i].x;
-        nodes[i].velocity.y += forces[i].y;
+    for (int i = 0; i < nodes.size(); i++) {
+        nodes[i].velocity.x += forces[i].x * timeStep;
+        nodes[i].velocity.y += forces[i].y * timeStep;
 
-        nodes[i].velocity.x *= coolingFactor_fruch;
-        nodes[i].velocity.y *= coolingFactor_fruch;
+        nodes[i].velocity.x *= damping;
+        nodes[i].velocity.y *= damping;
 
-        nodes[i].position.x += nodes[i].velocity.x;
-        nodes[i].position.y += nodes[i].velocity.y;
+        nodes[i].position.x += nodes[i].velocity.x * timeStep;
+        nodes[i].position.y += nodes[i].velocity.y * timeStep;
 
-        // Keep nodes within screen bounds with padding
-        float padding = 50.0f;
-        if (nodes[i].position.x < padding + nodes[i].radius) {
-            nodes[i].position.x = padding + nodes[i].radius;
+        float padding = 100.0f;
+        if (nodes[i].position.x < 400 + nodes[i].radius) {
+            nodes[i].position.x = 400 + nodes[i].radius;
             nodes[i].velocity.x *= -0.5f;
         }
-        if (nodes[i].position.x > Screen_w - padding - nodes[i].radius) {
-            nodes[i].position.x = Screen_w - padding - nodes[i].radius;
+        if (nodes[i].position.x > Screen_w - 200 - nodes[i].radius) {
+            nodes[i].position.x = Screen_w - 200 - nodes[i].radius;
             nodes[i].velocity.x *= -0.5f;
         }
-        if (nodes[i].position.y < padding + nodes[i].radius) {
-            nodes[i].position.y = padding + nodes[i].radius;
+        if (nodes[i].position.y < 50 + nodes[i].radius) {
+            nodes[i].position.y = 50 + nodes[i].radius;
             nodes[i].velocity.y *= -0.5f;
         }
-        if (nodes[i].position.y > Screen_h - padding - nodes[i].radius) {
-            nodes[i].position.y = Screen_h - padding - nodes[i].radius;
+        if (nodes[i].position.y > Screen_h - 100 - nodes[i].radius) {
+            nodes[i].position.y = Screen_h - 100 - nodes[i].radius;
             nodes[i].velocity.y *= -0.5f;
         }
     }
@@ -482,14 +484,14 @@ void Graph::updFruchterman() {
 
 void Graph::processMST() {
     edgesMST.clear(); curMST.clear();
-    inMST.clear(); 
+    inMST.clear();
 
-    inMST = vector<short>(edges.size() + 3, 0); 
+    inMST = vector<short>(edges.size() + 3, 0);
 
     for (Edge e : edges) edgesMST.push_back(e);
     sort(edgesMST.begin(), edgesMST.end());
     reverse(edgesMST.begin(), edgesMST.end());
-    highlightIndex = 0; 
+    highlightIndex = 0;
 
     dsu.init(numNodes);
     isFindMST = true;
@@ -497,7 +499,7 @@ void Graph::processMST() {
 }
 
 void Graph::update() {
-    updEades();
+    updOld();
 
     Vector2 mousePos = GetMousePosition();
 
@@ -524,7 +526,7 @@ void Graph::update() {
 }
 
 bool Graph::isProcessedMST() {
-    return !edgesMST.empty(); 
+    return !edgesMST.empty();
 }
 
 void Graph::draw(Font& font) {
@@ -565,12 +567,12 @@ void Graph::draw(Font& font) {
                 Edge& e = curMST.back();
 
                 if (e.color.r == RED.r && e.color.g == RED.g && e.color.b == RED.b) {
-                    
+
                     if (dsu.join(e.from, e.to) == 0) e.thickness = 0.3f, e.highlighted = 0, e.color = isDarkMode ? WHITE : BLACK, inMST[highlightIndex] = 1;
                     else e.highlighted = true, inMST[highlightIndex] = 2;
 
-                    highlightIndex++; 
-                    if (highlightIndex >= edges.size()) highlightIndex = 0; 
+                    highlightIndex++;
+                    if (highlightIndex >= edges.size()) highlightIndex = 0;
                 }
                 frameCnt = 0;
             }

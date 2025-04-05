@@ -162,20 +162,20 @@ public:
 	void processMST();
 
 	void updEades();
-	void updFruchterman();
+	void updOld();
 	void updGPT();
 	void update();
 	void draw(Font& font);
 	void reset();
 	bool isConencted();
 
-	bool isProcessedMST(); 
+	bool isProcessedMST();
 
 	int numNodes, numEdges;
-	int highlightIndex = 0; 
+	int highlightIndex = 0;
 	bool isDirected = false, isWeighted = false;
 	bool isFindMST = false;
-	vector <short> inMST; 
+	vector <short> inMST;
 	vector <Edge> edges;
 	vector <Edge> edgesMST;
 private:

@@ -7,7 +7,7 @@ const int TOOLBAR_HEIGHT = 80;
 const int BUTTON_SIZE = 60;
 const int BUTTON_SPACING = 70;
 const int MENU_ICON_SIZE = 50;
-const int SLIDE_INCREMENT = 20; 
+const int SLIDE_INCREMENT = 20;
 const float MIN_SPEED = 0.25f;
 const float MAX_SPEED = 2.0f;
 const float SPEED_INCREMENT = 0.25f;
@@ -70,6 +70,7 @@ Toolbar::~Toolbar() {
 }
 
 void Toolbar::Update() {
+    isBack = isNext = false;
     Vector2 mousePos = GetMousePosition();
 
     if (CheckCollisionPointRec(mousePos, menuIconRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -99,6 +100,12 @@ void Toolbar::Update() {
                 if (i == 1) {
                     isPlaying = !isPlaying;
                 }
+
+                if (i == 0)
+                    isBack = true;
+
+                if (i == 2)
+                    isNext = true;
             }
         }
     }

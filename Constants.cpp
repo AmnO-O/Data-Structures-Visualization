@@ -2,7 +2,7 @@
 
 
 void DrawThickArrow(Vector2 start, Vector2 end, float thickness, Color color, bool highlighted) {
-    float lineThickness = highlighted ? thickness * 2.0f : thickness;
+    float lineThickness = highlighted ? 4.f : thickness;
 
     // Draw the main line
     DrawLineEx(start, end, lineThickness, color);

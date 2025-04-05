@@ -22,10 +22,10 @@ GraphVisual::GraphVisual() {
     Vertices.textColor = DARKGRAY;
     Edges.textColor = DARKGRAY;
 
-    Go = { { PANEL_PADDING + 200, 420, 130, 40 }, "Go!" };
+    Go = { { PANEL_PADDING + 200, 440, 130, 40 }, "Go!" };
 
-    fileMatrix = { { PANEL_PADDING + 200, 510, 130, 40 }, "File Matrix" };
-    fileEdges = { { PANEL_PADDING + 200, 570, 130, 40 }, "File Edges" };
+    fileMatrix = { { PANEL_PADDING + 200, 530, 130, 40 }, "File Matrix" };
+    fileEdges = { { PANEL_PADDING + 200, 590, 130, 40 }, "File Edges" };
 
     loadFileEdges.width = 600;
     loadFileEdges.height = 300;
@@ -63,11 +63,11 @@ int GraphVisual::handleEvent() {
     float deltaTime = GetFrameTime();
 
     if (Input.update()) {
-        sortingAnimation = false; 
+        sortingAnimation = false;
         valueAnimation = true;
         valueTime = 0;
         G.isFindMST = 0;
-        highlightIndex = 0; 
+        highlightIndex = 0;
         warning = "";
 
         if (Input.isAddedge) {
@@ -94,12 +94,18 @@ int GraphVisual::handleEvent() {
 
 
     if (Input.isCreate) {
-        Go = { { PANEL_PADDING + 200, 420, 130, 40 }, "Go!" };
+        Go = { { PANEL_PADDING + 200, 435, 130, 40 }, "Go!" };
 
         if (Go.update()) {
-            G.genRandom((Vertices.text == "Random" ? -1 : Vertices.getDigit()), (Edges.text == "Random" ? -1 : Edges.getDigit()));
-            if (G.numNodes >= 0) Vertices.text = to_string(G.numNodes);
-            if (G.numEdges >= 0) Edges.text = to_string(G.numEdges);
+            if ((Vertices.text != "Random" && Vertices.getDigit() < 0) || (Edges.text != "Random" && Edges.getDigit() < 0)) {
+                warning = "Vertex and edge counts \nmust be positive integers!";
+            }
+            else {
+                warning = "";
+                G.genRandom((Vertices.text == "Random" ? -1 : Vertices.getDigit()), (Edges.text == "Random" ? -1 : Edges.getDigit()));
+                if (G.numNodes >= 0) Vertices.text = to_string(G.numNodes);
+                if (G.numEdges >= 0) Edges.text = to_string(G.numEdges);
+            }
         }
 
         fileMatrix.update();
@@ -116,7 +122,7 @@ int GraphVisual::handleEvent() {
 
                 for (string each : lines) {
                     int from = -1, to = -1, digit = -1;
-                    int weight = -1e9 - 7 - 2 - 2006;
+                    int weight = -1e7 - 7 - 2 - 2006;
 
                     for (int i = 0; i < each.size(); i++) {
                         if (each[i] == '-') {
@@ -245,7 +251,7 @@ int GraphVisual::handleEvent() {
                 valueAnimation = 0;
             }
         }
-        
+
         if (sortingAnimation) {
             sortTime += deltaTime / sortDuration;
 
@@ -253,14 +259,14 @@ int GraphVisual::handleEvent() {
                 sortTime = 1.0f;
                 sortingAnimation = false;
                 highlightIndex = 0;
-                G.highlightIndex = 0; 
+                G.highlightIndex = 0;
                 warning = "", G.processMST();
             }
 
             for (int i = 0; i < G.edges.size(); i++) {
                 float smoothT = sortTime * sortTime * (3 - 2 * sortTime);
 
-                Vector2 transition = Lerp({4, displayYs[i]}, {4, endYs[i]}, smoothT);
+                Vector2 transition = Lerp({ 4, displayYs[i] }, { 4, endYs[i] }, smoothT);
                 displayYs[i] = transition.y;
             }
         }
@@ -274,24 +280,24 @@ int GraphVisual::handleEvent() {
             }
             else {
                 tmpEdges.clear();
-                sortedEdges.clear(); 
+                sortedEdges.clear();
 
-                tmpEdges = G.edges; 
-                sortedEdges = G.edges; 
+                tmpEdges = G.edges;
+                sortedEdges = G.edges;
 
                 sort(sortedEdges.begin(), sortedEdges.end());
 
-                startYs = vector<float> (tmpEdges.size());
-                endYs = vector<float> (tmpEdges.size());
-                displayYs = vector<float> (tmpEdges.size());
-                
+                startYs = vector<float>(tmpEdges.size());
+                endYs = vector<float>(tmpEdges.size());
+                displayYs = vector<float>(tmpEdges.size());
+
                 for (int i = 0; i < tmpEdges.size(); i++) {
                     startYs[i] = i * rowHeight;
                     displayYs[i] = startYs[i];
                 }
 
-                warning = ""; 
-                sortTime = 0; 
+                warning = "";
+                sortTime = 0;
                 sortingAnimation = true;
 
                 for (int i = 0; i < tmpEdges.size(); i++) {
@@ -308,11 +314,17 @@ int GraphVisual::handleEvent() {
 
     G.update();
 
-    if (sortingAnimation == true) return Graph_state; 
+    if (sortingAnimation == true) return Graph_state;
     float wheel = GetMouseWheelMove();
-    
-    if (wheel != 0) 
+
+    if (wheel != 0)
         currentScrollOffset -= wheel * 20.0f;
+    else if (G.isFindMST && G.isProcessedMST()) {
+        float targetScrollOffset = calculateTargetScrollOffset(G.highlightIndex, rowHeight, tableVisibleHeight, G.edges.size());
+        float delta = (targetScrollOffset - currentScrollOffset) * 0.1f;  // Adjust speed here
+        currentScrollOffset += delta;
+        timer += GetFrameTime();
+    }
 
     float totalContentHeight = G.edges.size() * rowHeight;
     float maxScroll = totalContentHeight - tableVisibleHeight;
@@ -329,9 +341,9 @@ void GraphVisual::DrawTextCentered(const string& text, float x, float y, float w
     int textHeight = fontSize;  // Approximate height
     float posX = x + (w - textWidth) * 0.5f;
     float posY = y + (h - textHeight) * 0.5f;
-    DrawTextEx(font, text.c_str(), { posX, posY }, fontSize,1, color);
+    DrawTextEx(font, text.c_str(), { posX, posY }, fontSize, 1, color);
 }
-    
+
 void GraphVisual::DrawEdgeTableDuringAnimation(const vector<Edge>& originalEdges, const std::vector<float>& displayYs, Vector2 position, float width, float rowHeight, float scrollOffset, float tableVisibleHeight) {
     Color tableBg = isDarkMode ? Color{ 127, 205, 255, 255 } : Color{ 253, 196, 182, 255 };
     //Color{ 255,239, 213, 255 };
@@ -383,7 +395,7 @@ void GraphVisual::DrawEdgeTableDuringAnimation(const vector<Edge>& originalEdges
 }
 
 void GraphVisual::drawEdgesTable(const vector<Edge>& edges, Vector2 position, int highlightLine, float width, float rowHeight, float scrollOffset, float tableVisibleHeight) {
-    Color tableBg = isDarkMode ? Color{ 127, 205, 255, 255 } : Color{ 253, 196, 182, 255}; 
+    Color tableBg = isDarkMode ? Color{ 127, 205, 255, 255 } : Color{ 253, 196, 182, 255 };
     //Color{ 255,239, 213, 255 };
     Color headerBg = isDarkMode ? Color{ 29, 162, 216, 255 } : Color{ 234, 112, 112, 255 };
     Color highlightBg = { 230, 180, 0, 100 };
@@ -408,9 +420,9 @@ void GraphVisual::drawEdgesTable(const vector<Edge>& edges, Vector2 position, in
             if (i == highlightLine) {
                 DrawRectangleRounded({ position.x, rowY, width, rowHeight }, 0.8, 6, highlightBg);
             }
-            Color textCol = textColor; 
+            Color textCol = textColor;
             if (G.isFindMST) {
-                if (G.inMST[i] == 1) textCol = RED; 
+                if (G.inMST[i] == 1) textCol = RED;
                 if (G.inMST[i] == 2) textCol = DARKGREEN;
             }
 
@@ -455,8 +467,6 @@ void GraphVisual::draw() {
     valueButton.text = G.isWeighted ? "(u,v,w):" : "(u,v):";
 
     if (Input.isCreate) {
-
-        /// draw edge and nodes
         DrawRectangleRounded(Rectangle{ PANEL_WIDTH, panelMargin * 1.f, PANEL_WIDTH + 4, Screen_h * 1.f - 2 * panelMargin + 20 }, 0.2, 9, panelColorx);
 
         if (Vertices.text == "") Vertices.text = "Random";
@@ -477,12 +487,16 @@ void GraphVisual::draw() {
 
         // other stuff
 
+        if (warning.size() > 0) {
+            DrawTextEx(font, warning.c_str(), { PANEL_WIDTH * 1.f + 5, 250 + 140 }, 16, 1, RED);
+        }
+
         fileEdges.isChose = fileMatrix.isChose = Go.isChose = 0;
         fileMatrix.draw(smallFont);
         fileEdges.draw(smallFont);
         Go.draw(smallFont);
 
-        DrawLineEx(Vector2{ PANEL_WIDTH, 485 }, Vector2{ PANEL_WIDTH * 2 + 4, 485 }, 2, BLACK);
+        DrawLineEx(Vector2{ PANEL_WIDTH, 505 }, Vector2{ PANEL_WIDTH * 2 + 4, 505 }, 2, BLACK);
     }
     else if (Input.isAddedge) {
         valueRect.x = Value.bounds.x - 108;
@@ -524,18 +538,13 @@ void GraphVisual::draw() {
     }
 
     if (sortingAnimation) {
-        DrawEdgeTableDuringAnimation(tmpEdges, displayYs, { 1250, 260 }, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
+        DrawEdgeTableDuringAnimation(tmpEdges, displayYs, { 1250, 160 }, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
     }
     else if (G.isFindMST) {
-        float targetScrollOffset = calculateTargetScrollOffset(G.highlightIndex, rowHeight, tableVisibleHeight, G.edges.size());
-        float delta = (targetScrollOffset - currentScrollOffset) * 0.1f;  // Adjust speed here
-        currentScrollOffset += delta;
-        timer += GetFrameTime(); 
-
-        drawEdgesTable(sortedEdges, { 1250, 260 }, G.highlightIndex, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
+        drawEdgesTable(sortedEdges, { 1250, 160 }, G.highlightIndex, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
     }
     else {
-        drawEdgesTable(G.edges, { 1250, 260 }, highlightIndex, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
+        drawEdgesTable(G.edges, { 1250, 160 }, highlightIndex, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
     }
 
     DrawRectangleRounded(Rectangle{ 0, panelMargin * 1.f, PANEL_WIDTH, Screen_h * 1.f - 2 * panelMargin + 20 }, 0.2, 9, panelColor);
