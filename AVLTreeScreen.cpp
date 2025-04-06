@@ -664,7 +664,7 @@ void AVLTreeScreen::DrawOperationsPanel() {
         int textWidth2 = MeasureTextEx(myFont, "File", fontSize, 1.f).x;
         DrawTextEx(myFont, "File", { 200, 420 }, fontSize, spacing, BLACK);
 
-        Color fileColor = fileHovered ? Color{ 244, 162, 83, 210 } : Color{ 244, 162, 83, 210 };
+        Color fileColor = RAYWHITE;
         DrawRectangleRounded(fileButton, 0.2f, 4, fileColor);
         DrawRectangleRoundedLinesEx(fileButton, 0.2f, 4, 2.0f, DARKGRAY);
 
@@ -708,7 +708,6 @@ void AVLTreeScreen::Draw() {
 
         float totalWidth = GetTotalTraversalWidth(InTraversalValues, (int)InTraversalValues.size(), myFont, fontSize, spacing, padding);
 
-        // ====== VẼ NỀN VỚI ANIMATION ======
         float targetWidth = totalWidth + 2 * bgPaddingX;
         float speed = 400.0f;  // pixels per second
         float deltaTime = GetFrameTime();
@@ -721,7 +720,6 @@ void AVLTreeScreen::Draw() {
             }
         }
 
-        // ====== Căn giữa theo chiều cao nút ======
         float bgHeight = inorderButton.height;
         float y = inorderButton.y + (inorderButton.height - textHeight) / 2.0f; // Vị trí chữ
         float bgY = inorderButton.y; // Vị trí nền
@@ -735,7 +733,6 @@ void AVLTreeScreen::Draw() {
         };
         DrawRectangleRounded(bgRect, 0.3f, 10, isDarkMode ? Color{ 250, 206, 231, 255 } : Color{ 245, 148, 203, 190 });
 
-        // ====== HIỆN SỐ SAU KHI NỀN XONG ======
         if (isInTraversalReady) {
             IntraversalTimer += deltaTime;
             if (currentInIndex < (int)InTraversalValues.size() && IntraversalTimer >= 0.5f) {
@@ -767,7 +764,6 @@ void AVLTreeScreen::Draw() {
 
         float totalWidth = GetTotalTraversalWidth(PreTraversalValues, (int)PreTraversalValues.size(), myFont, fontSize, spacing, padding);
 
-        // ====== VẼ NỀN VỚI ANIMATION ======
         float targetWidth = totalWidth + 2 * bgPaddingX;
         float speed = 400.0f;  // pixels per second
         float deltaTime = GetFrameTime();
@@ -780,7 +776,6 @@ void AVLTreeScreen::Draw() {
             }
         }
 
-        // ====== Căn giữa theo chiều cao nút ======
         float bgHeight = preorderButton.height;
         float y = preorderButton.y + (preorderButton.height - textHeight) / 2.0f; // Vị trí chữ
         float bgY = preorderButton.y; // Vị trí nền
@@ -794,7 +789,6 @@ void AVLTreeScreen::Draw() {
         };
         DrawRectangleRounded(bgRect, 0.3f, 10, isDarkMode ? Color{ 250, 206, 231, 255 } : Color{ 245, 148, 203, 190 });
 
-        // ====== HIỆN SỐ SAU KHI NỀN XONG ======
         if (isPreTraversalReady) {
             PretraversalTimer += deltaTime;
             if (currentPreIndex < (int)PreTraversalValues.size() && PretraversalTimer >= 0.5f) {
@@ -827,7 +821,6 @@ void AVLTreeScreen::Draw() {
 
         float totalWidth = GetTotalTraversalWidth(PostTraversalValues, (int)PostTraversalValues.size(), myFont, fontSize, spacing, padding);
 
-        // ====== VẼ NỀN VỚI ANIMATION ======
         float targetWidth = totalWidth + 2 * bgPaddingX;
         float speed = 400.0f;  // pixels per second
         float deltaTime = GetFrameTime();
@@ -840,7 +833,6 @@ void AVLTreeScreen::Draw() {
             }
         }
 
-        // ====== Căn giữa theo chiều cao nút ======
         float bgHeight = postorderButton.height;
         float y = postorderButton.y + (postorderButton.height - textHeight) / 2.0f; // Vị trí chữ
         float bgY = postorderButton.y; // Vị trí nền
@@ -854,7 +846,6 @@ void AVLTreeScreen::Draw() {
         };
         DrawRectangleRounded(bgRect, 0.3f, 10, isDarkMode ? Color{ 250, 206, 231, 255 } : Color{ 245, 148, 203, 190 });
 
-        // ====== HIỆN SỐ SAU KHI NỀN XONG ======
         if (isPostTraversalReady) {
             PosttraversalTimer += deltaTime;
             if (currentPostIndex < (int)PostTraversalValues.size() && PosttraversalTimer >= 0.5f) {
