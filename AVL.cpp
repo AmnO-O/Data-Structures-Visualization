@@ -332,3 +332,46 @@ void AVLtree::readNumbersFromFile(const std::string& filename) {
 
     file.close();
 }
+
+void AVLtree::InorderTraversal(std::vector<int>& result) {
+    InorderHelper(m_root, result);
+}
+
+void AVLtree::PreorderTraversal(std::vector<int>& result) {
+    PreorderHelper(m_root, result);
+}
+
+void AVLtree::PostorderTraversal(std::vector<int>& result) {
+    PostorderHelper(m_root, result);
+}
+
+void AVLtree::InorderHelper(AVLNode* node, std::vector<int>& result) {
+    if (!node) return;
+    InorderHelper(node->left, result);
+    result.push_back(node->val);
+    InorderHelper(node->right, result);
+}
+
+void AVLtree::PreorderHelper(AVLNode* node, std::vector<int>& result) {
+    if (!node) return;
+    result.push_back(node->val);
+    PreorderHelper(node->left, result);
+    PreorderHelper(node->right, result);
+}
+
+void AVLtree::PostorderHelper(AVLNode* node, std::vector<int>& result) {
+    if (!node) return;
+    PostorderHelper(node->left, result);
+    PostorderHelper(node->right, result);
+    result.push_back(node->val);
+}
+
+void AVLtree::GetInOrder(std::vector<int>& result) {
+    GetInOrderHelper(m_root, result);
+}
+void AVLtree::GetInOrderHelper(AVLNode* node, std::vector<int>& result) {
+    if (!node) return;
+    GetInOrderHelper(node->left, result);
+    result.push_back(node->val);
+    GetInOrderHelper(node->right, result);
+}

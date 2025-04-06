@@ -5,6 +5,7 @@
 class AboutScreen {
 private:
 	Font aboutFont;      // Font chữ cho màn hình "How to Use"
+	Font font;
 public:
 	// Hàm khởi tạo màn hình How to Use
 	void Init();

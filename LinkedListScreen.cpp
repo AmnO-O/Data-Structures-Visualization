@@ -94,9 +94,6 @@ void LinkedListScreen::Redo() {
 }
 
 void LinkedListScreen::Init() {
-    // Khởi tạo nút Back
-    backButton = { 20, Screen_h - 60, 150, 40 };
-
     // Load font
     linkedListFont = LoadFontEx("Assets/Fonts/LilitaOne-Regular.ttf", 64, NULL, 0);
     SetTextureFilter(linkedListFont.texture, TEXTURE_FILTER_BILINEAR);
@@ -143,9 +140,6 @@ float LinkedListScreen::SmoothStep(float a, float b, float t) {
 void LinkedListScreen::Update(int& state) {
     Vector2 mouse = GetMousePosition();
 
-    // Kiểm tra hover vào nút "Back"
-    backHovered = CheckCollisionPointRec(mouse, backButton);
-
     // Kiểm tra hover vào nút "Insert"
     insertHovered = CheckCollisionPointRec(mouse, insertButton);
 
@@ -175,13 +169,6 @@ void LinkedListScreen::Update(int& state) {
 
     // Kiểm tra hover vào nút "Redo"
     redoHovered = CheckCollisionPointRec(mouse, redoRect);
-
-    // 
-
-    // Xử lý sự kiện khi nhấn vào nút "Back"
-    if (backHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        state = Menu_state; // Quay lại màn hình Menu
-    }
 
     // Kiểm tra nút Insert
     if (insertHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -497,16 +484,21 @@ void LinkedListScreen::Update(int& state) {
 }
 
 void LinkedListScreen::DrawOperationsPanel() {
-    // Vẽ nền bảng
-    int panelMargin = 250;  // Khoảng cách lề trên & dưới
-    Color panelColor = isDarkMode ? Color{ 229, 229, 229, 255 } : Color{ 189, 224, 254, 255 };  // Chọn màu theo chế độ
+    int panelMargin = 250;
+    float roundness = 0.15f;  // Độ bo góc
+    int segments = 20;        // Độ mượt của bo góc
 
-    DrawRectangle(0, panelMargin, PANEL_WIDTH, Screen_h - 2 * panelMargin, Fade(panelColor, 0.8f));
+    Color panelColor = isDarkMode ? Color{ 229, 229, 229, 255 } : Color{ 189, 224, 254, 255 };
+    Color panelColorFade = Fade(panelColor, 0.8f);
 
-    // Vẽ nền bảng
-    Color panelColorx = isDarkMode ? Color{ 94, 172, 240, 180 } : Color{ 94, 172, 240, 180 };  // Chọn màu theo chế độ
+    Rectangle leftPanel = { 0, (float)panelMargin, (float)PANEL_WIDTH, (float)(Screen_h - 2 * panelMargin) };
+    DrawRectangleRounded(leftPanel, roundness, segments, panelColorFade);
 
-    DrawRectangle(PANEL_WIDTH, panelMargin, PANEL_WIDTH, Screen_h - 2 * panelMargin, Fade(panelColorx, 0.8f));
+    Color panelColorx = isDarkMode ? Color{ 94, 172, 240, 180 } : Color{ 94, 172, 240, 180 };
+    Color panelColorxFade = Fade(panelColorx, 0.8f);
+
+    Rectangle rightPanel = { (float)PANEL_WIDTH, (float)panelMargin, (float)PANEL_WIDTH, (float)(Screen_h - 2 * panelMargin) };
+    DrawRectangleRounded(rightPanel, roundness, segments, panelColorxFade);
 
     // Vẽ nền bảng cho [INFO]
     Color panelColory = isDarkMode ? Color{ 164, 235, 185, 200 } : Color{ 77, 168, 180, 200 };  // Chọn màu theo chế độ
@@ -664,28 +656,6 @@ void LinkedListScreen::DrawOperationsPanel() {
 
 void LinkedListScreen::Draw() {
     ClearBackground(isDarkMode ? darkmode : lightmode);   // Sử dụng màu nền ở chế độ hiện tại 
-
-    // Hiển thị tiêu đề Linked List
-    int fontSize = 50;
-    float spacing = 3.0f;
-    Vector2 titleSize = MeasureTextEx(linkedListFont, "Linked List", fontSize, spacing);
-
-    float titleX = (Screen_w - titleSize.x) / 2;
-    float titleY = 80; // Đưa tiêu đề lên cao hơn
-
-    Color titleColor = isDarkMode ? WHITE : DARKBLUE;
-    DrawTextEx(linkedListFont, "Linked List",
-        { titleX, titleY }, fontSize, spacing, titleColor);
-
-    // Vẽ nút "Back"
-    Color backColor = backHovered ? LIGHTGRAY : RAYWHITE;
-    DrawRectangleRounded(backButton, 0.2f, 4, backColor);
-    DrawRectangleRoundedLinesEx(backButton, 0.2f, 4, 2.0f, GRAY);
-
-    Vector2 textSize = MeasureTextEx(myFont, "<< Back to Menu", 20, 1);
-    DrawTextEx(myFont, "<< Back to Menu",
-        { backButton.x + (backButton.width - textSize.x) / 2, backButton.y + (backButton.height - textSize.y) / 2 },
-        20, 1, DARKBLUE);
 
     // Vẽ bảng điều khiển
     DrawOperationsPanel();

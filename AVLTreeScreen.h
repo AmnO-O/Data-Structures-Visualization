@@ -4,6 +4,7 @@
 #include "AVL.h"
 #include "TextBox.h"
 #include "tinyfiledialogs.h"
+#include <stack>
 
 enum SelectedButtonAVL {
 	NONEAVL,
@@ -14,12 +15,23 @@ enum SelectedButtonAVL {
 	CREATEAVL,
 	FILEAVL,
 	OKAVL,
+	INORDERAVL,
+	PREORDERAVL,
+	POSTORDERAVL,
+};
+
+struct Spark {
+	Vector2 position;
+	float alpha;    // Độ trong suốt
+	float scale;    // Kích thước
+	float lifetime; // Thời gian sống
 };
 
 class AVLTreeScreen {
 private:
 #define PANEL_WIDTH 188  // Độ rộng bảng
 #define PANEL_PADDING 20 // Khoảng cách lề
+
 	Font AVLtreeFont;   // Font chữ cho màn hình AVL
 	Font valueFont;
 	Font IN4Font;
@@ -59,6 +71,11 @@ private:
 	bool createHovered = false;
 	bool fileHovered = false;
 	bool fileokHovered = false;
+	bool inorderHovered = false;
+	bool preorderHovered = false;
+	bool postorderHovered = false;
+	bool undoHovered = false;
+	bool redoHovered = false;
 
 	// Vị trí của Panel
 	Rectangle createButton = { PANEL_PADDING + 8, 330, 130, 40 };
@@ -67,9 +84,18 @@ private:
 	Rectangle searchButton = { PANEL_PADDING + 8, 510, 130, 40 };
 	Rectangle clearButton = { PANEL_PADDING + 8, 570, 130, 40 };;
 	Rectangle fileButton = { 270, 420, 90, 30 };
+	Rectangle inorderButton = { PANEL_PADDING + 40, Screen_h - 230, 130, 40 };
+	Rectangle preorderButton = { PANEL_PADDING + 40, Screen_h - 180, 130, 40 };
+	Rectangle postorderButton = { PANEL_PADDING + 40, Screen_h - 130, 130, 40 };
 
 	// Nút OK dưới textBox
-	Rectangle okButton = { PANEL_PADDING + 217, 500, 90, 30 };
+	Rectangle okButton = { PANEL_PADDING + 197, 500, 130, 40 };
+
+	// Undo, Redo 
+	Vector2 Undoposition = { 700, 840 };
+	Vector2 Redoposition = { 800, 840 };
+	Rectangle undoRect = { Undoposition.x, Undoposition.y, 50, 50 };
+	Rectangle redoRect = { Redoposition.x, Redoposition.y, 50, 50 };
 
 	// Kiểm tra trang hiện tại người dùng đang sử dụng
 	int AVLtreeState;
@@ -79,6 +105,11 @@ private:
 	int ClearState = 6;
 	int CreateState = 7;
 	int FileState = 8;
+	int InorderState = 9;
+	int PreorderState = 10;
+	int PostorderState = 11;
+	int UndoState = 7;
+	int RedoState = 8;
 
 	SelectedButtonAVL currentButton; // Xác định operation đang sử dụng
 
@@ -86,7 +117,7 @@ private:
 	TextBox Value;
 	TextBoxCenter Nodes;
 
-	AVLtree AVLtree;
+	AVLtree CurrAVLtree;
 
 	// Kiểm soát đang thực hiện animation nào
 	bool isInsert = false;
@@ -95,6 +126,9 @@ private:
 	bool isClear = false;
 	bool isCreateRandom = false;
 	bool isCreateFile = false;
+	bool isInordered = false;
+	bool isPreordered = false;
+	bool isPostordered = false;
 
 	bool entered = false;
 	bool animating = false;   // Đang chạy animation hay không
@@ -126,6 +160,40 @@ private:
 	// Hàm reset lại nội dung trong textBox 
 	void handleButtonClick(SelectedButtonAVL newButton, TextBox& textBox);
 	void handleButtonClick2(SelectedButtonAVL newButton, TextBoxCenter& textBox);
+
+
+	// Traversal 
+	std::vector<int> InTraversalValues;        // Lưu giá trị trả về từ traversal
+	std::vector<int> PreTraversalValues;
+	std::vector<int> PostTraversalValues;
+	float IntraversalTimer = 0.0f;
+	float PretraversalTimer = 0.0f;
+	float PosttraversalTimer = 0.0f;
+	int currentInIndex = 0, currentPreIndex = 0, currentPostIndex = 0;
+	float GetTotalTraversalWidth(const std::vector<int>& values, int currentIndex, Font font, float fontSize, float spacing, float padding);
+	float InTraversalBgWidth = 0.0f;
+	bool isInTraversalReady = false;
+	float PreTraversalBgWidth = 0.0f;
+	bool isPreTraversalReady = false;
+	float PostTraversalBgWidth = 0.0f;
+	bool isPostTraversalReady = false;
+
+	std::vector<Spark> sparks;
+
+
+	// Dùng để vẽ cây một cách tĩnh, không có animation khi bấm Undo, Redo 
+	bool isUndo = false;
+	bool isRedo = false;
+	// Ảnh icon Redo, Undo 
+	Image imageRedo;
+	Image imageUndo;
+	Image imageRedoHovered;
+	Image imageUndoHovered;
+	// Chuyển sang Texture 
+	Texture2D textureRedo;
+	Texture2D textureUndo;
+	Texture2D textureUndoHovered;
+	Texture2D textureRedoHovered;
 public:
 	// Hàm khởi tạo màn hình AVL
 	void Init();
@@ -149,3 +217,5 @@ public:
 
 	void DrawInfo();
 };
+
+
