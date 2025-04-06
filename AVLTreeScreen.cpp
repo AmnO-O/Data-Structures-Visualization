@@ -664,7 +664,7 @@ void AVLTreeScreen::DrawOperationsPanel() {
         int textWidth2 = MeasureTextEx(myFont, "File", fontSize, 1.f).x;
         DrawTextEx(myFont, "File", { 200, 420 }, fontSize, spacing, BLACK);
 
-        Color fileColor = RAYWHITE;
+        Color fileColor = isDarkMode ? Color{ 244, 162, 83, 210 } : RAYWHITE;
         DrawRectangleRounded(fileButton, 0.2f, 4, fileColor);
         DrawRectangleRoundedLinesEx(fileButton, 0.2f, 4, 2.0f, DARKGRAY);
 
