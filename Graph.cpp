@@ -558,7 +558,7 @@ void Graph::update() {
                     if (dsu.join(e.from, e.to) == 0)
                         e.thickness = 0.3f, e.highlighted = 0, e.color = isDarkMode ? WHITE : BLACK, inMST[highlightIndex] = 1;
                     else
-                        e.highlighted = true, inMST[highlightIndex] = 2, MSTweight += e.weight;
+                        e.highlighted = true, inMST[highlightIndex] = 2, MSTweight += e.weight, e.color = WHITE;
                 }
             }
 
@@ -596,7 +596,7 @@ void Graph::update() {
                             if (dsu.join(e.from, e.to) == 0)
                                 e.thickness = 0.3f, e.highlighted = 0, e.color = isDarkMode ? WHITE : BLACK, inMST[highlightIndex] = 1;
                             else
-                                e.highlighted = true, inMST[highlightIndex] = 2, MSTweight += e.weight;
+                                e.highlighted = true, inMST[highlightIndex] = 2, MSTweight += e.weight, e.color = WHITE;
                         }
                     }
 
