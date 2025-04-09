@@ -461,7 +461,7 @@ int HashTableVisual::handleEvent() {
                 Vector2 startPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
                 Vector2 endPos = H.getCenter(animation.pathIndices[animation.currentPathIndex + 1]);
 
-                animation.elapsedTime += deltaTime;
+                animation.elapsedTime += deltaTime * toolbar.speed;
 
                 float t = animation.elapsedTime / animation.segmentDuration;
                 if (t > 1.0f) t = 1.0f;
@@ -617,7 +617,7 @@ int HashTableVisual::handleEvent() {
                 Vector2 startPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
                 Vector2 endPos = H.getCenter(animation.pathIndices[animation.currentPathIndex + 1]);
 
-                animation.elapsedTime += deltaTime;
+                animation.elapsedTime += deltaTime * toolbar.speed;
                 float t = animation.elapsedTime / animation.segmentDuration;
                 if (t > 1) t = 1;
 

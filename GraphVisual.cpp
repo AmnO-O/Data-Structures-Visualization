@@ -47,7 +47,26 @@ GraphVisual::GraphVisual() {
         " 4 5\n"
         " 5 6 5\n");
 
+    mstCode = {
+    "Sort Edges(E) by increasing weight.",
+    "MST = an empty set []",
+    " ",
+    "For(Edge (u, v) in sorted E)",
+    "   if(add (u, v) not form cycle)",
+    "       add edge(u, v) to MST",
+    "   else ignore edge(u, v)",
+    "",
+    "return MST;"
+    };
+
     readFileEdges = FileLoader();
+
+    int rectWidth = 400;
+    int rectHeight = 300;
+    int posX = Screen_w - rectWidth;
+    int posY = Screen_h - rectHeight;
+
+    info = { posX * 1.f, posY * 1.f, rectWidth * 1.f, rectHeight * 1.f };
 }
 
 float calculateTargetScrollOffset(int highlightIndex, float rowHeight, float tableVisibleHeight, int totalRows) {
@@ -69,6 +88,8 @@ int GraphVisual::handleEvent() {
         G.isFindMST = 0;
         highlightIndex = 0;
         warning = "";
+
+        G.toolbar.isOpen = G.toolbar.isPlaying = false;
 
         if (Input.isAddedge) {
             Value.bounds.x = -500;
@@ -142,7 +163,7 @@ int GraphVisual::handleEvent() {
                     }
 
                     if (to < 0) to = digit;
-                    else if (digit != -1) weight = (weight == -1e9 - 7 - 2 - 2006 ? digit : -digit);
+                    else if (digit != -1) weight = (weight == -1e7 - 7 - 2 - 2006 ? digit : -digit);
 
                     while (G.numNodes <= max(from, to)) G.addNode(G.numNodes);
                     if (from >= 0 && to >= 0 && from != to) G.addEdge(from, to, weight);
@@ -252,7 +273,7 @@ int GraphVisual::handleEvent() {
             }
         }
 
-        if (sortingAnimation) {
+        if (sortingAnimation && G.toolbar.isPlaying) {
             sortTime += deltaTime / sortDuration;
 
             if (sortTime >= 1.0f) {
@@ -285,6 +306,8 @@ int GraphVisual::handleEvent() {
                 tmpEdges = G.edges;
                 sortedEdges = G.edges;
 
+                G.MSTweight = 0.f;
+
                 sort(sortedEdges.begin(), sortedEdges.end());
 
                 startYs = vector<float>(tmpEdges.size());
@@ -299,6 +322,8 @@ int GraphVisual::handleEvent() {
                 warning = "";
                 sortTime = 0;
                 sortingAnimation = true;
+
+                G.toolbar.isPlaying = G.toolbar.isOpen = true;
 
                 for (int i = 0; i < tmpEdges.size(); i++) {
                     for (int j = 0; j < sortedEdges.size(); j++) {
@@ -319,7 +344,7 @@ int GraphVisual::handleEvent() {
 
     if (wheel != 0)
         currentScrollOffset -= wheel * 20.0f;
-    else if (G.isFindMST && G.isProcessedMST()) {
+    else if (G.isFindMST && G.isProcessedMST() && G.toolbar.isPlaying) {
         float targetScrollOffset = calculateTargetScrollOffset(G.highlightIndex, rowHeight, tableVisibleHeight, G.edges.size());
         float delta = (targetScrollOffset - currentScrollOffset) * 0.1f;  // Adjust speed here
         currentScrollOffset += delta;
@@ -457,6 +482,165 @@ void GraphVisual::drawEdgesTable(const vector<Edge>& edges, Vector2 position, in
     }
 }
 
+void GraphVisual::drawBackgroundInfo(int posX, int posY, int width, int height) {
+    const Color PANEL_BACKGROUND = { 240, 245, 255, 240 };
+    const Color PANEL_BORDER = { 180, 190, 210, 255 };
+
+    DrawRectangle(posX - 5, posY - 5, width + 10, height + 10, { 150, 150, 150, 50 }); // Subtle shadow
+    DrawRectangleRounded({ (float)posX, (float)posY, (float)width, (float)height }, 0.1f, 10, PANEL_BACKGROUND);
+    DrawRectangleRoundedLinesEx({ (float)posX, (float)posY, (float)width, (float)height }, 0.1f, 10, 1, PANEL_BORDER);
+}
+
+void GraphVisual::drawCode(int posX, int posY, int width, int height, const vector<string>& codeLines) {
+    const Color BACKGROUND_COLOR = { 245, 245, 250, 255 };
+    const Color CODE_HIGHLIGHT = { 255, 255, 200, 200 };
+    const Color EMPTY_SLOT_COLOR = { 230, 230, 230, 255 };
+    const Color FILLED_SLOT_COLOR = { 200, 210, 230, 255 };
+    const Color CURRENT_SLOT_COLOR = { 255, 240, 150, 255 };
+    const Color FOUND_SLOT_COLOR = { 150, 230, 150, 255 };
+    const Color NOT_FOUND_COLOR = { 230, 150, 150, 255 };
+    const Color TEXT_PRIMARY = { 50, 60, 80, 255 };
+    const Color TEXT_SECONDARY = { 100, 110, 130, 255 };
+    const Color BUTTON_COLOR = { 210, 220, 240, 255 };
+    const Color BUTTON_HOVER = { 190, 200, 220, 255 };
+    const Color BUTTON_ACTIVE = { 170, 180, 200, 255 };
+    const Color TITLE_COLOR = { 200, 50, 50, 255 }; // Red for title
+
+
+    const int lineSpacing = 6; // Increased for readability
+    const int fontSize = 20;
+    const int titleFontSize = 24;
+    int yCursor = posY + 15; // Start higher for title
+
+    const char* title = "[INFO]:";
+    DrawTextEx(font, title, Vector2{ (float)(posX + 20), (float)yCursor }, titleFontSize, 1, { 255, 0, 0, 255 });
+    yCursor += titleFontSize + 15; // Space after title
+
+    // Draw code lines
+    for (int i = 0; i < (int)codeLines.size(); i++) {
+        string line = codeLines[i];
+        int textX = posX + 30;
+
+        // Split code and comments
+        size_t commentPos = line.find("//");
+        string code = (commentPos != std::string::npos) ? line.substr(0, commentPos) : line;
+        string comment = (commentPos != std::string::npos) ? line.substr(commentPos) : "";
+
+        // Draw code with shadow for contrast
+        DrawTextEx(font, code.c_str(), Vector2{ (float)textX + 1, (float)yCursor + 1 }, fontSize, 1, { 0, 0, 0, 50 }); // Shadow
+        DrawTextEx(font, code.c_str(), Vector2{ (float)textX, (float)yCursor }, fontSize, 1, TEXT_PRIMARY);
+        if (!comment.empty()) {
+            int commentX = textX + MeasureTextEx(font, code.c_str(), fontSize, 1).x + 10;
+            DrawTextEx(font, comment.c_str(), Vector2{ (float)commentX, (float)yCursor }, fontSize, 1, TEXT_SECONDARY);
+        }
+        yCursor += fontSize + lineSpacing;
+    }
+
+    // Draw interactive buttons
+    //const int buttonWidth = 80;
+    //const int buttonHeight = 30;
+    //const int buttonSpacing = 10;
+    //int buttonY = posY + height - 50;
+
+    //DrawRectangleRounded({ (float)posX + 20, (float)buttonY, (float)buttonWidth, (float)buttonHeight }, 0.2f, 8, BUTTON_COLOR);
+    //DrawTextEx(font, "Execute", Vector2{ (float)posX + 30, (float)buttonY + 5 }, 16, 1, TEXT_PRIMARY);
+
+    //DrawRectangleRounded({ (float)posX + 20 + buttonWidth + buttonSpacing, (float)buttonY, (float)buttonWidth, (float)buttonHeight }, 0.2f, 8, BUTTON_COLOR);
+    //DrawTextEx(font, "Explain", Vector2{ (float)posX + 30 + buttonWidth + buttonSpacing, (float)buttonY + 5 }, 16, 1, TEXT_PRIMARY);
+
+    //DrawRectangleRounded({ (float)posX + 20 + 2 * (buttonWidth + buttonSpacing), (float)buttonY, (float)buttonWidth, (float)buttonHeight }, 0.2f, 8, BUTTON_COLOR);
+    //DrawTextEx(font, "Lucky", Vector2{ (float)posX + 30 + 2 * (buttonWidth + buttonSpacing), (float)buttonY + 5 }, 16, 1, TEXT_PRIMARY);
+}
+
+void GraphVisual::highlightCode(int posX, int posY, int width, int height, int currentLine) {
+    const Color CODE_HIGHLIGHT = { 255, 255, 200, 200 };
+
+    const int lineSpacing = 6; // Increased for readability
+    const int fontSize = 20;
+
+    const int titleFontSize = 24;
+
+    int yCursor = posY + 15; // Start higher for title
+    yCursor += titleFontSize + 15;
+
+    for (int i = 0; i <= currentLine; i++) {
+        if (i == currentLine) {
+            DrawRectangleRounded(
+                { (float)posX + 10, (float)yCursor - 5, (float)width - 20, (float)fontSize + 10 },
+                0.3f, 8, CODE_HIGHLIGHT
+            );
+            DrawRectangleRoundedLinesEx(
+                { (float)posX + 10, (float)yCursor - 5, (float)width - 20, (float)fontSize + 10 },
+                0.3f, 8, 1, { 200, 200, 200, 255 }
+            );
+        }
+
+        yCursor += fontSize + lineSpacing;
+    }
+}
+
+void GraphVisual::drawMSTWeightPanel(int x, int y, int width, int height, int mstWeight) {
+    // Color scheme - using a cohesive palette
+    Color panelColor = { 240, 240, 245, 255 };      // Light blue-gray background
+    Color outlineColor = { 210, 210, 220, 255 };    // Subtle outline
+    Color textColor = { 60, 70, 80, 255 };          // Dark blue-gray for text
+    Color accentColor = { 70, 130, 180, 255 };      // Steel blue for values
+    Color mstAccentColor = { 220, 80, 80, 255 };    // Red accent for MST weight
+
+    // Panel dimensions and spacing
+    float cornerRadius = 0.2f;
+    int roundingSegments = 10;
+    float outlineThickness = 2.0f;
+    int padding = 15;
+    int fontSize = 20;
+    int valuesFontSize = 21;
+    int lineHeight = 30;
+
+    // Draw the panel background with rounded corners
+    DrawRectangleRounded(
+        Rectangle{ (float)x, (float)y, (float)width, (float)height },
+        cornerRadius, roundingSegments, panelColor
+    );
+
+    // Draw subtle outline
+    DrawRectangleRoundedLinesEx(
+        Rectangle{ (float)x, (float)y, (float)width, (float)height },
+        cornerRadius, roundingSegments, outlineThickness, outlineColor
+    );
+
+    // Starting position for text
+    float textX = x + padding;
+    float textY = y + padding;
+
+    // Draw MST Weight (with special highlighting)
+    DrawTextEx(font, "Vertices:", { textX, textY }, fontSize, 1, textColor);
+    DrawTextEx(font, std::to_string(G.numNodes).c_str(),
+        { textX + 130, textY }, valuesFontSize, 1, accentColor);
+
+    // Draw Vertex Count
+    textY += lineHeight;
+    DrawTextEx(font, "Edges:", { textX, textY }, fontSize, 1, textColor);
+    DrawTextEx(font, std::to_string(G.numEdges).c_str(),
+        { textX + 130, textY }, valuesFontSize, 1, accentColor);
+
+    // Draw Edge Count
+    if (Input.isMst) {
+        textY += lineHeight + 8;
+        string title = "MST's weight:";
+        int textwidth = MeasureTextEx(font, title.c_str(), fontSize, 1).x;
+
+        DrawTextEx(font, "MST's weight:", { (width * 1.f - textwidth) / 2.f, textY }, fontSize, 1, textColor);
+        string wei = G.isWeighted ? to_string(mstWeight) : "None";
+        wei = "\n" + wei;
+
+        textwidth = MeasureTextEx(font, wei.c_str(), 20, 1).x;
+
+        DrawTextEx(font, wei.c_str(),
+            { (width * 1.f - textwidth) / 2.f, textY }, 20, 1, mstAccentColor);
+    }
+}
+
+
 
 void GraphVisual::draw() {
     int panelMargin = 250;
@@ -465,6 +649,23 @@ void GraphVisual::draw() {
     Color panelColory = isDarkMode ? Color{ 164, 235, 185, 200 } : Color{ 77, 168, 180, 200 };
 
     valueButton.text = G.isWeighted ? "(u,v,w):" : "(u,v):";
+
+    drawBackgroundInfo(info.x, info.y, info.width, info.height);
+
+
+
+    if (Input.isCreate == 0) {
+        int panelWidth = 180;
+        int panelHeight = 120;
+        int panelX = GetScreenWidth() - panelWidth - 20;
+        int panelY = 20;
+
+        if (Input.isMst == 0)
+            drawMSTWeightPanel(0, 100, panelWidth, panelHeight - 40, G.MSTweight);
+        else
+            drawMSTWeightPanel(0, 100, panelWidth, panelHeight + 20, G.MSTweight);
+    }
+
 
     if (Input.isCreate) {
         DrawRectangleRounded(Rectangle{ PANEL_WIDTH, panelMargin * 1.f, PANEL_WIDTH + 4, Screen_h * 1.f - 2 * panelMargin + 20 }, 0.2, 9, panelColorx);
@@ -526,6 +727,7 @@ void GraphVisual::draw() {
     }
     else if (Input.isMst) {
 
+
         valueRect.x = Value.bounds.x - 108;
         valueRect.y = Value.bounds.y - 7 - 5;
         DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
@@ -537,15 +739,37 @@ void GraphVisual::draw() {
         }
     }
 
+    if ((G.isFindMST && G.edgesMST.size() == G.numEdges && G.timeFind == 0) || sortingAnimation) {
+        highlightCode(info.x, info.y, info.width, info.height, 0);
+        highlightCode(info.x, info.y, info.width, info.height, 1);
+    }
+
     if (sortingAnimation) {
-        DrawEdgeTableDuringAnimation(tmpEdges, displayYs, { 1250, 160 }, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
+        DrawEdgeTableDuringAnimation(tmpEdges, displayYs, { 1250, 140 }, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
     }
     else if (G.isFindMST) {
-        drawEdgesTable(sortedEdges, { 1250, 160 }, G.highlightIndex, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
+        drawEdgesTable(sortedEdges, { 1250, 140 }, G.highlightIndex, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
+
+
+        if (G.isProcessedMST()) {
+            if (G.timeFind == -1)
+                highlightCode(info.x, info.y, info.width, info.height, 3);
+            else if (G.timeFind >= 0 && G.highlightIndex >= 0) {
+                highlightCode(info.x, info.y, info.width, info.height, 4);
+                if (G.inMST[G.highlightIndex] == 2) highlightCode(info.x, info.y, info.width, info.height, 5);
+                else highlightCode(info.x, info.y, info.width, info.height, 6);
+            }
+        }
+        else {
+            highlightCode(info.x, info.y, info.width, info.height, 8);
+        }
     }
     else {
-        drawEdgesTable(G.edges, { 1250, 160 }, highlightIndex, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
+        drawEdgesTable(G.edges, { 1250, 140 }, highlightIndex, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
     }
+
+    if (Input.isMst)
+        drawCode(info.x, info.y, info.width, info.height, mstCode);
 
     DrawRectangleRounded(Rectangle{ 0, panelMargin * 1.f, PANEL_WIDTH, Screen_h * 1.f - 2 * panelMargin + 20 }, 0.2, 9, panelColor);
 

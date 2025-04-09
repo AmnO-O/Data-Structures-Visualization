@@ -1,27 +1,65 @@
 #pragma once
 #include "Constants.h"
+#include <stack>
 
-struct DSU {
-	vector <int> par;
+struct item {
+	int u, v, sz_u, par_u;
+};
+
+struct DSU_Roll_Back {
+	vector <int> par, sz;
+	stack <item> st;
+	stack <int> flag;
 	int nc;
 
-	void init(int _ = 0) {
-		nc = _;
-		par = vector <int>(_ + 3, -1);
+	void init(const int& t = 0) {
+		par = vector <int>(t + 3, 0);
+		sz = vector <int>(t + 3, 1);
+		for (int i = 0; i <= t; i++) par[i] = i;
+		nc = t;
 	}
 
-	int root(int u) {
-		return par[u] < 0 ? u : par[u] = root(par[u]);
+	int root(int i) {
+		if (i == par[i])
+			return i;
+		return root(par[i]);
 	}
 
 	bool join(int u, int v) {
 		if ((u = root(u)) == (v = root(v))) return 0;
-		if (-par[u] < -par[v]) swap(u, v);
-		par[u] += par[v];
-		par[v] = u;
 		nc--;
+		if (sz[u] > sz[v]) swap(u, v);
+		st.push({ u, v, sz[u], par[u] });
+		par[u] = v;
+		sz[v] += sz[u];
+		sz[u] = 0;
 		return 1;
 	}
+
+	void save() {
+		flag.push(st.size());
+	}
+
+	void roll_back() {
+		item x = st.top();
+		int u = x.u;
+		int v = x.v;
+
+		sz[u] = x.sz_u;
+		sz[v] -= sz[u];
+		par[u] = x.par_u;
+		nc++;
+
+		st.pop();
+	}
+
+	void roll() {
+		if (flag.empty()) return;
+		int last = flag.top();
+		flag.pop();
+		while (st.size() != last) roll_back();
+	}
+
 };
 
 struct GraphNode {
@@ -136,6 +174,12 @@ struct Edge {
 	bool highlighted = false;
 	float thickness = 2.12f;
 
+	void reset() {
+		color = BLACK;
+		directed = highlighted = false;
+		thickness = 2.12f;
+	}
+
 	Edge(int f, int t, float w, Color c, bool dir = false) {
 		from = f;
 		to = t;
@@ -178,18 +222,25 @@ public:
 	vector <short> inMST;
 	vector <Edge> edges;
 	vector <Edge> edgesMST;
+	Toolbar toolbar;
+	float timeFind = 0.0f;
+	float timeJoin = 0.0f;
+	float MSTweight = 0.0f;
+
 private:
 	void drawEdge(const Edge& edge, Font& font);
 
 	vector <GraphNode> nodes;
 	vector <Edge> curMST;
 
-	DSU dsu;
+	DSU_Roll_Back dsu;
 
 	int matrix[1000][1000];
 	Vector2 forces[1000];
 
-	int frameCnt = 0;
+	float stepFind = 1.0f;
+	float stepJoin = 1.0f;
+
 	int selectedNode = -1;
 
 	float c_rep = 1000.0f;

@@ -396,7 +396,7 @@ void Graph::updGPT() {
 void Graph::updOld() {
     float c_rep = 3000.0f;
     float c_spring = 0.03f;
-    float desiredLen = 260.0f;
+    float desiredLen = 200.f;
     float damping = 0.85f;
     float timeStep = 0.82f;
 
@@ -491,14 +491,18 @@ void Graph::processMST() {
     for (Edge e : edges) edgesMST.push_back(e);
     sort(edgesMST.begin(), edgesMST.end());
     reverse(edgesMST.begin(), edgesMST.end());
-    highlightIndex = 0;
+    highlightIndex = -1;
 
     dsu.init(numNodes);
     isFindMST = true;
-    frameCnt = 0;
+    toolbar.isPlaying = toolbar.isOpen = true;
+    timeJoin = timeFind = 0;
 }
 
 void Graph::update() {
+    float deltaTime = GetFrameTime();
+
+    toolbar.Update();
     updOld();
 
     Vector2 mousePos = GetMousePosition();
@@ -523,6 +527,102 @@ void Graph::update() {
             selectedNode = -1;
         }
     }
+
+    if (isFindMST) {
+        if (toolbar.isBack)
+            timeFind = timeJoin = 0.0f;
+
+        if (toolbar.isBack && curMST.size()) {
+            dsu.roll();
+
+            Edge e = curMST.back();
+            e.reset();
+            e.directed = isDirected;
+
+            edgesMST.push_back(e);
+            curMST.pop_back();
+
+            if (inMST[highlightIndex] == 2)
+                MSTweight -= e.weight;
+            inMST[highlightIndex] = 0;
+            highlightIndex--;
+        }
+
+        if (toolbar.isNext) {
+            if (curMST.size()) {
+                Edge& e = curMST.back();
+
+                if (e.color.r == RED.r && e.color.g == RED.g && e.color.b == RED.b) {
+                    dsu.save();
+
+                    if (dsu.join(e.from, e.to) == 0)
+                        e.thickness = 0.3f, e.highlighted = 0, e.color = isDarkMode ? WHITE : BLACK, inMST[highlightIndex] = 1;
+                    else
+                        e.highlighted = true, inMST[highlightIndex] = 2, MSTweight += e.weight;
+                }
+            }
+
+            if (edgesMST.size()) {
+                highlightIndex++;
+                if (highlightIndex >= edges.size()) highlightIndex = 0;
+
+                Edge e = edgesMST.back();
+                edgesMST.pop_back();
+
+                e.highlighted = false;
+                e.color = RED;
+                e.thickness = 4.f;
+                curMST.push_back(e);
+            }
+
+            timeFind = timeJoin = 0.0f;
+        }
+
+        if (toolbar.isPlaying) {
+            if (timeFind >= 0)
+                timeFind += deltaTime * toolbar.speed;
+            else {
+                timeJoin += deltaTime * toolbar.speed;
+
+                if (timeJoin >= stepJoin) {
+                    if (curMST.size()) {
+                        Edge& e = curMST.back();
+
+                        if (e.color.r == RED.r && e.color.g == RED.g && e.color.b == RED.b) {
+                            dsu.save();
+
+                            // cout << "Nodes: " << e.from << ' ' << e.to << ", Root : " << dsu.root(e.from) << ' ' << dsu.root(e.to) << '\n';
+
+                            if (dsu.join(e.from, e.to) == 0)
+                                e.thickness = 0.3f, e.highlighted = 0, e.color = isDarkMode ? WHITE : BLACK, inMST[highlightIndex] = 1;
+                            else
+                                e.highlighted = true, inMST[highlightIndex] = 2, MSTweight += e.weight;
+                        }
+                    }
+
+                    timeJoin = timeFind = 0;
+                }
+            }
+
+            if (timeFind >= stepFind) {
+                if (edgesMST.size()) {
+                    highlightIndex++;
+                    if (highlightIndex >= edges.size()) highlightIndex = 0;
+
+                    Edge e = edgesMST.back();
+                    edgesMST.pop_back();
+
+                    e.highlighted = false;
+                    e.color = RED;
+                    e.thickness = 4.f;
+                    curMST.push_back(e);
+                }
+
+                timeFind = -1;
+                timeJoin = 0;
+            }
+        }
+    }
 }
 
 bool Graph::isProcessedMST() {
@@ -530,91 +630,28 @@ bool Graph::isProcessedMST() {
 }
 
 void Graph::draw(Font& font) {
+    toolbar.Draw();
+
     float deltaTime = GetFrameTime();
 
     if (isFindMST) {
-        if (frameCnt == 60 && !edgesMST.empty()) {
-            Edge e = edgesMST.back();
-            edgesMST.pop_back();
-
-            for (Edge& edge : edgesMST) {
-                edge.color = isDarkMode ? WHITE : BLACK;
-                drawEdge(edge, font);
-            }
-
-            for (Edge& edge : curMST) {
-                if (edge.color.r == RED.r && edge.color.g == RED.g && edge.color.b == RED.b) {
-
-                }
-                else edge.color = isDarkMode ? WHITE : BLACK;
-
-                drawEdge(edge, font);
-            }
-
-            e.highlighted = false;
-            e.color = RED;
-            e.thickness = 4.f;
-            curMST.push_back(e);
-            drawEdge(e, font);
-
-            for (int i = 0; i < nodes.size(); i++) {
-                nodes[i].highlighted = (i == e.from || i == e.to);
-                nodes[i].draw(deltaTime, font);
-            }
-        }
-        else if (frameCnt >= 60) {
-            if (frameCnt == 120 && curMST.size()) {
-                Edge& e = curMST.back();
-
-                if (e.color.r == RED.r && e.color.g == RED.g && e.color.b == RED.b) {
-
-                    if (dsu.join(e.from, e.to) == 0) e.thickness = 0.3f, e.highlighted = 0, e.color = isDarkMode ? WHITE : BLACK, inMST[highlightIndex] = 1;
-                    else e.highlighted = true, inMST[highlightIndex] = 2;
-
-                    highlightIndex++;
-                    if (highlightIndex >= edges.size()) highlightIndex = 0;
-                }
-                frameCnt = 0;
-            }
-
-            for (Edge& edge : curMST) {
-                if (edge.color.r == RED.r && edge.color.g == RED.g && edge.color.b == RED.b) {
-
-                }
-                else edge.color = isDarkMode ? WHITE : BLACK;
-                drawEdge(edge, font);
-            }
-
-            for (Edge& edge : edgesMST) {
-                edge.color = isDarkMode ? WHITE : BLACK;
-                drawEdge(edge, font);
-            }
-
-            for (int i = 0; i < nodes.size(); i++)
-                nodes[i].draw(deltaTime, font);
-        }
-        else {
-            for (Edge& edge : edgesMST) {
-                edge.color = isDarkMode ? WHITE : BLACK;
-                drawEdge(edge, font);
-            }
-
-            for (Edge edge : curMST) {
-                if (edge.color.r == RED.r && edge.color.g == RED.g && edge.color.b == RED.b) {
-
-                }
-                else edge.color = isDarkMode ? WHITE : BLACK;
-
-                drawEdge(edge, font);
-            }
-
-            for (int i = 0; i < nodes.size(); i++) {
-                nodes[i].highlighted = false;
-                nodes[i].draw(deltaTime, font);
-            }
+        for (Edge& edge : edgesMST) {
+            edge.color = isDarkMode ? WHITE : BLACK;
+            drawEdge(edge, font);
         }
 
-        frameCnt++;
+        for (Edge edge : curMST) {
+            if (edge.color.r != RED.r || edge.color.g != RED.g || edge.color.b != RED.b)
+                edge.color = isDarkMode ? WHITE : BLACK;
+
+            drawEdge(edge, font);
+        }
+
+        for (int i = 0; i < nodes.size(); i++) {
+            nodes[i].highlighted = false;
+            nodes[i].draw(deltaTime, font);
+        }
+
         return;
     }
 

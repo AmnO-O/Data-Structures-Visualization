@@ -11,13 +11,19 @@ public:
 	int handleEvent();
 	void draw();
 private:
+	void drawMSTWeightPanel(int x, int y, int width, int height, int mstWeight);
+
 	void drawEdgesTable(const std::vector<Edge>& edges, Vector2 position, int highlightLine, float width, float rowHeight, float scrollOffset, float tableVisibleHeight);
 	void DrawTextCentered(const string& text, float x, float y, float w, float h, int fontSize, Color color);
 	void DrawEdgeTableDuringAnimation(const std::vector<Edge>& originalEdges, const std::vector<float>& displayYs, Vector2 position, float width, float rowHeight, float scrollOffset, float tableVisibleHeight);
 
+	void drawCode(int posX, int posY, int width, int height, const vector<string>& codeLines);
+	void highlightCode(int posX, int posY, int width, int height, int currentLine);
+	void drawBackgroundInfo(int posX, int posY, int width, int height);
+
 #define PANEL_WIDTH 188  // Độ rộng bảng
 #define PANEL_PADDING 20 // Khoảng cách lề
-	
+
 	float timer = 0.0f;
 	int highlightIndex = 0;
 	float rowHeight = 40.0f;
@@ -28,7 +34,9 @@ private:
 	float sortTime = 0.0f;
 	float sortDuration = 1.0f;
 
-	vector <Edge> tmpEdges, sortedEdges; 
+	vector<string> mstCode;
+
+	vector <Edge> tmpEdges, sortedEdges;
 	vector<float> startYs;
 	vector<float> endYs;
 	vector<float> displayYs;
