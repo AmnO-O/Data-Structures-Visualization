@@ -8,7 +8,6 @@
 
 const float nodeSpacing = 45.0f;
 
-
 struct AVLNode {
     int val;
     AVLNode* left;
@@ -62,15 +61,12 @@ public:
     void GetInOrder(std::vector<int>& result);
     void GetInOrderHelper(AVLNode* node, std::vector<int>& result);
 
-    AVLNode* copyTree(AVLNode* root);
-    void deleteTree(AVLNode* root); // Hàm h? tr? xóa cây
     std::stack<AVLNode*> undoStack;
     std::stack<AVLNode*> redoStack;
-    bool isUndoing = false;
-    bool isRedoing = false;
+   
+    AVLNode* clone(AVLNode* root);
     void Undo();
     void Redo();
-    void clearAnimationData(AVLNode* root);
 private:
     void Clear(AVLNode* root);
     AVLNode* DeleteNode(AVLNode*& root, int key);

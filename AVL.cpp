@@ -375,3 +375,33 @@ void AVLtree::GetInOrderHelper(AVLNode* node, std::vector<int>& result) {
     result.push_back(node->val);
     GetInOrderHelper(node->right, result);
 }
+
+AVLNode* AVLtree::clone(AVLNode* root) {
+    if (root == nullptr) return nullptr;
+
+    AVLNode* newNode = new AVLNode(root->val);
+    newNode->height = root->height;
+    newNode->left = clone(root->left);
+    newNode->right = clone(root->right);
+    return newNode;
+}
+
+void AVLtree::Undo() {
+    if (undoStack.empty()) return;
+
+    AVLNode* newAVLNode = clone(m_root);
+    redoStack.push(newAVLNode);
+    Clear();
+    m_root = undoStack.top();
+    undoStack.pop();
+}
+
+void AVLtree::Redo() {
+    if (redoStack.empty()) return;
+
+    AVLNode* newAVLNode = clone(m_root);
+    undoStack.push(newAVLNode);
+    Clear();
+    m_root = redoStack.top();
+    redoStack.pop();
+}

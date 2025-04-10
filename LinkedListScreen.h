@@ -3,6 +3,7 @@
 #include "SettingScreen.h"
 #include "LinkedList.h"
 #include "TextBox.h"
+#include "Adjust.h"
 #include <unordered_set>
 
 
@@ -44,8 +45,6 @@ private:
 	bool insertAtTailHovered = false;
 	bool insertPosHovered = false;
 	bool okHovered = false;
-	bool undoHovered = false;
-	bool redoHovered = false;
 
 	float insertHeadAlpha = 1.0f;  // Alpha của nút Head
 	float insertTailAlpha = 1.0f;  // Alpha của nút Tail
@@ -68,8 +67,6 @@ private:
 	// Nút undo, redo 
 	Vector2 Undoposition = { 700, 840 };
 	Vector2 Redoposition = { 800, 840 };
-	Rectangle undoRect = { Undoposition.x, Undoposition.y, 50, 50 };
-	Rectangle redoRect = { Redoposition.x, Redoposition.y, 50, 50 };
 
 	float Clamp(float value, float minValue, float maxValue);
 	float SmoothStep(float a, float b, float t);
@@ -134,16 +131,7 @@ private:
 	std::vector<Command> undoStack; // Lưu trữ các thao tác
 	std::vector<Command> redoStack;
 
-	// Ảnh icon Redo, Undo 
-	Image imageRedo;
-	Image imageUndo;
-	Image imageRedoHovered;
-	Image imageUndoHovered;
-	// Chuyển sang Texture 
-	Texture2D textureRedo;
-	Texture2D textureUndo;
-	Texture2D textureUndoHovered;
-	Texture2D textureRedoHovered;
+	Toolbar toolbar;
 public:
 	// Hàm khởi tạo màn hình Linked List
 	void Init();

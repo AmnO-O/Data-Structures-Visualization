@@ -116,7 +116,7 @@ private:
 	// TextBox Value và Index 
 	TextBox Value;
 	TextBoxCenter Nodes;
-
+	Vector2 mouse;
 	AVLtree CurrAVLtree;
 
 	// Kiểm soát đang thực hiện animation nào

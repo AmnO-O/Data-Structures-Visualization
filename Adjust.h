@@ -21,6 +21,7 @@ public:
     bool isOpen = false;
     bool isPlaying = false;
     float speed;
+    float duration;
 
     Toolbar();
     ~Toolbar();

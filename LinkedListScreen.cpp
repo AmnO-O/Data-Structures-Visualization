@@ -106,20 +106,6 @@ void LinkedListScreen::Init() {
     IN4Font = LoadFont("Assets/Fonts/Acme-Regular.ttf");
     SetTextureFilter(IN4Font.texture, TEXTURE_FILTER_BILINEAR);
 
-    // Tải ảnh undo, redo 
-    imageRedo = LoadImage("Assets/Images/Redo.png");
-    imageUndo = LoadImage("Assets/Images/Undo.png");
-    imageRedoHovered = LoadImage("Assets/Images/RedoHovered.png");
-    imageUndoHovered = LoadImage("Assets/Images/UndoHovered.png");
-    ImageResize(&imageRedo, 50, 50);
-    ImageResize(&imageUndo, 50, 50);
-    ImageResize(&imageRedoHovered, 50, 50);
-    ImageResize(&imageUndoHovered, 50, 50);
-    textureRedo = LoadTextureFromImage(imageRedo);
-    textureUndo = LoadTextureFromImage(imageUndo);
-    textureUndoHovered = LoadTextureFromImage(imageUndoHovered);
-    textureRedoHovered = LoadTextureFromImage(imageRedoHovered);
-
     currentButton = NONE;
 
     Value = { {270, 350, 90, 30} };
@@ -164,12 +150,6 @@ void LinkedListScreen::Update(int& state) {
     // Kiểm tra hover vào nút "OK"
     okHovered = CheckCollisionPointRec(mouse, okButton);
 
-    // Kiểm tra hover vào nút "Undo"
-    undoHovered = CheckCollisionPointRec(mouse, undoRect);
-
-    // Kiểm tra hover vào nút "Redo"
-    redoHovered = CheckCollisionPointRec(mouse, redoRect);
-
     // Kiểm tra nút Insert
     if (insertHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         showInsertOptions = !showInsertOptions;
@@ -180,11 +160,13 @@ void LinkedListScreen::Update(int& state) {
         Value.isClickedEnter = true;
     }
 
-    if (undoHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    toolbar.Update();
+
+    if (toolbar.isBack) {
         Undo();
     }
 
-    if (redoHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    if (toolbar.isNext) {
         Redo();
     }
 
@@ -229,7 +211,7 @@ void LinkedListScreen::Update(int& state) {
         insertPosAlpha = 0.0f;   // Giảm alpha của Pos ngay lập tức
 
         // Cập nhật vị trí của các nút khi menu đóng
-        insertOptionsOffset = SmoothStep(insertOptionsOffset, 0.0f, 0.002f); // Menu sẽ thu lại khi đóng
+        insertOptionsOffset = SmoothStep(insertOptionsOffset, 0.0f, 0.03f); // Menu sẽ thu lại khi đóng
 
         // Nếu menu đã đóng xong, reset lại các nút khác
         deleteButton.y = 380 + insertOptionsOffset;
@@ -265,6 +247,7 @@ void LinkedListScreen::Update(int& state) {
             Value.outputMessage = "";
 
             // Kích hoạt animation sau mỗi lần thay đổi
+            toolbar.isPlaying = true;
             isHeadInserting = true;
             timer = 0.0f;
             entered = true;
@@ -277,6 +260,7 @@ void LinkedListScreen::Update(int& state) {
                 Value.outputMessage = "";
 
                 // Kích hoạt animation sau mỗi lần thay đổi
+                toolbar.isPlaying = true;
                 isHeadInserting = true;
                 timer = 0.0f;
                 entered = true;
@@ -293,6 +277,7 @@ void LinkedListScreen::Update(int& state) {
             Value.outputMessage = "";
 
             // Kích hoạt animation sau mỗi lần thay đổi
+            toolbar.isPlaying = true;
             isTailInserting = true;
             timer = 0.0f;
             entered = true;
@@ -305,6 +290,7 @@ void LinkedListScreen::Update(int& state) {
                 Value.outputMessage = "";
 
                 // Kích hoạt animation sau mỗi lần thay đổi
+                toolbar.isPlaying = true;
                 isTailInserting = true;
                 timer = 0.0f;
                 entered = true;
@@ -338,6 +324,7 @@ void LinkedListScreen::Update(int& state) {
             Index.outputMessage = "";
 
             // Kích hoạt animation sau mỗi lần thay đổi
+            toolbar.isPlaying = true;
             isPosInserting = true;
             timer = 0.0f;
             entered = true;
@@ -363,6 +350,7 @@ void LinkedListScreen::Update(int& state) {
                 Index.outputMessage = "";
 
                 // Kích hoạt animation sau mỗi lần thay đổi
+                toolbar.isPlaying = true;
                 isPosInserting = true;
                 timer = 0.0f;
                 entered = true;
@@ -379,6 +367,7 @@ void LinkedListScreen::Update(int& state) {
             Value.outputMessage = "";
             if (linkedList.SearchNode(valueDelete)) {
                 // Kích hoạt animation sau mỗi lần thay đổi
+                toolbar.isPlaying = true;
                 isDeleting = true;
                 timer = 0.0f;
                 entered = true;
@@ -394,6 +383,7 @@ void LinkedListScreen::Update(int& state) {
                 valueDelete = stoi(Value.outputMessage);
                 if (linkedList.SearchNode(valueDelete)) {
                     // Kích hoạt animation sau mỗi lần thay đổi
+                    toolbar.isPlaying = true;
                     isDeleting = true;
                     timer = 0.0f;
                     infoMessage = "Deleting " + to_string(valueDelete) + " of Linked List.";  // Cập nhật infoMessage
@@ -414,6 +404,7 @@ void LinkedListScreen::Update(int& state) {
             Value.outputMessage = "";
 
             // Kích hoạt animation sau mỗi lần thay đổi
+            toolbar.isPlaying = true;
             isSearch = true;
             timer = 0.0f;
             entered = true;
@@ -425,6 +416,7 @@ void LinkedListScreen::Update(int& state) {
                 Value.outputMessage = "";
 
                 // Kích hoạt animation sau mỗi lần thay đổi
+                toolbar.isPlaying = true;
                 isSearch = true;
                 timer = 0.0f;
                 entered = true;
@@ -436,6 +428,7 @@ void LinkedListScreen::Update(int& state) {
         }
     }
     else if (linkedlistState == ClearState) {
+        toolbar.isPlaying = true;
         isClean = true;
         infoMessage = "Clearing the Linked List...";
     }
@@ -464,7 +457,7 @@ void LinkedListScreen::Update(int& state) {
             }
             entered = !entered;
         }
-        if (timer >= duration) {
+        if (timer >= toolbar.duration) {
             if (isDeleting) {
                 SaveStateForUndo(SelectedButton::DELETE, valueDelete, linkedList.GetPosition(valueDelete));
                 linkedList.DeleteValue(valueDelete);
@@ -474,6 +467,7 @@ void LinkedListScreen::Update(int& state) {
                 currentSearchNode = currentSearchNode->next;
             }
             else {
+                toolbar.isPlaying = false;
                 isHeadInserting = isTailInserting = isPosInserting = isDeleting = isSearch = false;
                 timer = 0.0f;  // Reset lại bộ đếm thời gian
             }
@@ -648,10 +642,6 @@ void LinkedListScreen::DrawOperationsPanel() {
             18, 2, DARKBLUE);
     }
     else if (linkedlistState == ClearState) {}
-
-    // Vẽ nút Undo, Redo
-    DrawTexture(textureUndo, Undoposition.x, Undoposition.y, WHITE);
-    DrawTexture(textureRedo, Redoposition.x, Redoposition.y, WHITE);
 }
 
 void LinkedListScreen::Draw() {
@@ -660,9 +650,9 @@ void LinkedListScreen::Draw() {
     // Vẽ bảng điều khiển
     DrawOperationsPanel();
 
-
+    toolbar.Draw();
     // Gọi vẽ danh sách với progress từ 0 -> 1
-    float animationProgress = timer / duration;
+    float animationProgress = timer / toolbar.duration;
     drawLinkedList(animationProgress);
 }
 
@@ -926,7 +916,9 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
         if (fadeProgress <= 0.0f) {
             fadeProgress = 0.0f;
             linkedList.ClearList(); // Xóa danh sách khi hiệu ứng kết thúc
+            toolbar.isPlaying = false;
             isClean = false;
+            linkedlistState = NONE;
         }
     }
 }
@@ -934,6 +926,4 @@ void LinkedListScreen::Unload() {
     UnloadFont(linkedListFont);
     UnloadFont(myFont);
     UnloadFont(IN4Font);
-    UnloadImage(imageUndo);
-    UnloadImage(imageRedo);
 }

@@ -55,7 +55,7 @@ void AVLTreeScreen::Init() {
 }
 
 void AVLTreeScreen::Update(int& state) {
-    Vector2 mouse = GetMousePosition();
+    mouse = GetMousePosition();
 
     // Xử lý input để tạo spark mới
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -106,11 +106,11 @@ void AVLTreeScreen::Update(int& state) {
     redoHovered = CheckCollisionPointRec(mouse, redoRect);
 
     if (undoHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-
+        //CurrAVLtree.Undo();
     }
 
     if (redoHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-
+        //CurrAVLtree.Redo();
     }
 
     // Kiểm tra nút Inorder
@@ -162,72 +162,6 @@ void AVLTreeScreen::Update(int& state) {
         SearchNode = nullptr;
 
     }
-
-    if (showFileInfoPopup) {
-        // Kích thước và vị trí popup
-        float popupWidth = 600;
-        float popupHeight = 300;
-        float popupX = (GetScreenWidth() - popupWidth) / 2;  // Căn giữa màn hình
-        float popupY = (GetScreenHeight() - popupHeight) / 2;
-        Rectangle popupRect = { popupX, popupY, popupWidth, popupHeight };
-
-        // Vẽ nền bảng thông báo với góc bo tròn
-        DrawRectangleRounded(popupRect, 0.2, 10, WHITE);
-        DrawRectangleRoundedLines(popupRect, 0.2, 10, DARKGRAY);
-
-        // Tiêu đề
-        const char* titleText = "File Format Requirement";
-        float titleWidth = MeasureTextEx(font, titleText, 27, 2).x;
-        Vector2 titlePos = { popupX + (popupWidth - titleWidth) / 2, popupY + 20 };
-        DrawTextEx(font, titleText, titlePos, 27, 2, PURPLE);
-
-        // Nội dung
-        const char* text =
-            "* The file must have a .txt extension.\n"
-            "* The numbers on each line must be separated by space.\n"
-            "* The numbers represent the nodes to be inserted into \nthe AVL tree in the order they appear in the file.\n\n"
-            "Example:\n"
-            "   29 4 99 23 100 32 55 34 66 82 42\n"
-            "   84 12 11\n";
-
-        Vector2 textPos = { popupRect.x + 20, popupRect.y + 60 };
-        DrawTextEx(font, text, textPos, 21, 2, BLACK);
-
-        // Vẽ nút OK 
-        // Kích thước và vị trí nút OK
-        float buttonWidth = 100;
-        float buttonHeight = 40;
-        float buttonX = popupRect.x + popupRect.width / 2 - buttonWidth / 2;  // Căn giữa
-        float buttonY = popupRect.y + popupRect.height - 60;
-        Rectangle fileokButton = { buttonX, buttonY, buttonWidth, buttonHeight };
-        float radius = 10.0f;  // Độ bo góc
-
-        // Vẽ nút OK
-        fileokHovered = CheckCollisionPointRec(mouse, fileokButton);
-        Color fileokColor = fileokHovered ? Color{ 250, 228, 49, 255 } : LIGHTGRAY;
-        DrawRectangleRounded(fileokButton, radius, 16, fileokColor);
-
-        // Căn giữa chữ "OK"
-        Vector2 fileokTextSize = MeasureTextEx(font, "OK", 22, 2);
-        Vector2 fileokTextPos = { fileokButton.x + (fileokButton.width - fileokTextSize.x) / 2, fileokButton.y + (fileokButton.height - fileokTextSize.y) / 2 };
-        DrawTextEx(font, "OK", fileokTextPos, 22, 2, BLUE);
-
-        // Xử lý sự kiện khi nhấn OK
-        if (fileokHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            showFileInfoPopup = false; // Đóng popup
-
-            // **Mở hộp thoại chọn file**
-            const char* filterPatterns[1] = { "*.txt" };
-            filePath = tinyfd_openFileDialog("Choose file .txt ", "", 1, filterPatterns, NULL, 0);
-
-            if (filePath) {
-                printf("File which was choose: %s\n", filePath);
-                isCreateFile = true;
-                cont = true;
-            }
-        }
-    }
-
 
     // Kiểm tra nút Insert
     if (insertHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -898,6 +832,74 @@ void AVLTreeScreen::Draw() {
     float animationProgress = timer / duration;
     drawAVLtree(animationProgress, Animationmroot);
     finnishAnimation = true;
+
+    mouse = GetMousePosition();
+    if (showFileInfoPopup) {
+        DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.6f));
+
+        // Kích thước và vị trí popup
+        float popupWidth = 600;
+        float popupHeight = 300;
+        float popupX = (GetScreenWidth() - popupWidth) / 2;  // Căn giữa màn hình
+        float popupY = (GetScreenHeight() - popupHeight) / 2;
+        Rectangle popupRect = { popupX, popupY, popupWidth, popupHeight };
+
+        // Vẽ nền bảng thông báo với góc bo tròn
+        DrawRectangleRounded(popupRect, 0.2, 10, WHITE);
+        DrawRectangleRoundedLines(popupRect, 0.2, 10, DARKGRAY);
+
+        // Tiêu đề
+        const char* titleText = "File Format Requirement";
+        float titleWidth = MeasureTextEx(font, titleText, 27, 2).x;
+        Vector2 titlePos = { popupX + (popupWidth - titleWidth) / 2, popupY + 20 };
+        DrawTextEx(font, titleText, titlePos, 27, 2, PURPLE);
+
+        // Nội dung
+        const char* text =
+            "* The file must have a .txt extension.\n"
+            "* The numbers on each line must be separated by space.\n"
+            "* The numbers represent the nodes to be inserted into \nthe AVL tree in the order they appear in the file.\n\n"
+            "Example:\n"
+            "   29 4 99 23 100 32 55 34 66 82 42\n"
+            "   84 12 11\n";
+
+        Vector2 textPos = { popupRect.x + 20, popupRect.y + 60 };
+        DrawTextEx(font, text, textPos, 21, 2, BLACK);
+
+        // Vẽ nút OK 
+        // Kích thước và vị trí nút OK
+        float buttonWidth = 100;
+        float buttonHeight = 40;
+        float buttonX = popupRect.x + popupRect.width / 2 - buttonWidth / 2;  // Căn giữa
+        float buttonY = popupRect.y + popupRect.height - 60;
+        Rectangle fileokButton = { buttonX, buttonY, buttonWidth, buttonHeight };
+        float radius = 10.0f;  // Độ bo góc
+
+        // Vẽ nút OK
+        fileokHovered = CheckCollisionPointRec(mouse, fileokButton);
+        Color fileokColor = fileokHovered ? Color{ 250, 228, 49, 255 } : LIGHTGRAY;
+        DrawRectangleRounded(fileokButton, radius, 16, fileokColor);
+
+        // Căn giữa chữ "OK"
+        Vector2 fileokTextSize = MeasureTextEx(font, "OK", 22, 2);
+        Vector2 fileokTextPos = { fileokButton.x + (fileokButton.width - fileokTextSize.x) / 2, fileokButton.y + (fileokButton.height - fileokTextSize.y) / 2 };
+        DrawTextEx(font, "OK", fileokTextPos, 22, 2, BLUE);
+
+        // Xử lý sự kiện khi nhấn OK
+        if (fileokHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            showFileInfoPopup = false; // Đóng popup
+
+            // **Mở hộp thoại chọn file**
+            const char* filterPatterns[1] = { "*.txt" };
+            filePath = tinyfd_openFileDialog("Choose file .txt ", "", 1, filterPatterns, NULL, 0);
+
+            if (filePath) {
+                printf("File which was choose: %s\n", filePath);
+                isCreateFile = true;
+                cont = true;
+            }
+        }
+    }
 }
 
 void AVLTreeScreen::drawAVLtree(float animationProgress, AVLNode* root) {

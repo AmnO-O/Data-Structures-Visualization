@@ -11,6 +11,7 @@ const int SLIDE_INCREMENT = 20;
 const float MIN_SPEED = 0.25f;
 const float MAX_SPEED = 4.0f;
 const float SPEED_INCREMENT = 0.25f;
+const float DURATION_INCREMENT = 0.1f;
 
 const Color HOVER_COLOR = { 255, 255, 255, 128 };
 const Color SELECTED_COLOR = { 0, 0, 0, 128 };
@@ -22,6 +23,7 @@ Toolbar::Toolbar() {
     slidePos = 0.0f;
     speed = 1.0f;
     selectedButtonIndex = -1;
+    duration = 0.6f;
 
     menuIconRect = { 20, 750, MENU_ICON_SIZE, MENU_ICON_SIZE };
     toolbarRect = { -TOOLBAR_WIDTH, 740, TOOLBAR_WIDTH, TOOLBAR_HEIGHT };
@@ -113,9 +115,11 @@ void Toolbar::Update() {
 
     if (CheckCollisionPointRec(mousePos, speedButtons[0]) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && speed > MIN_SPEED) {
         speed -= SPEED_INCREMENT;
+        duration += DURATION_INCREMENT;
     }
     if (CheckCollisionPointRec(mousePos, speedButtons[1]) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && speed < MAX_SPEED) {
         speed += SPEED_INCREMENT;
+        duration -= DURATION_INCREMENT;
     }
 }
 
