@@ -2,7 +2,7 @@
 #define PANEL_PADDING 20 // Khoảng cách lề
 
 CommonButton::CommonButton() {
-	isInsert = isRemove = isSearch = 0;
+	isInsert = isRemove = isSearch = hide = 0;
 	isCreate = 1;
 
 	rect = { PANEL_PADDING + 8, 330, 130, 40 };
@@ -29,7 +29,7 @@ bool CommonButton::update() {
 			else if (i == 1) isSearch = 1;
 			else if (i == 2) isInsert = 1;
 			else isRemove = 1;
-
+			hide = false; 
 			ok = true;
 		}
 	}
@@ -48,8 +48,9 @@ void CommonButton::draw(Font font) {
 
 
 GraphButton::GraphButton() {
-	isAddedge = isRemove = isMst = 0;
+	isAddedge = isRemove = isMst = hide = 0; 
 	isCreate = 1;
+
 
 	rect = { PANEL_PADDING + 8, 330, 130, 40 };
 	color = DARKBLUE;
@@ -57,7 +58,7 @@ GraphButton::GraphButton() {
 	cButton.push_back({ { PANEL_PADDING + 8, 330, 130, 40 }, "Create", btnNormal, btnHover, btnClick });
 	cButton.push_back({ { PANEL_PADDING + 8, 390, 130, 40 }, "Add Edge", btnNormal, btnHover, btnClick });
 	cButton.push_back({ { PANEL_PADDING + 8, 450, 130, 40 }, "Delete Edge", btnNormal, btnHover, btnClick });
-	cButton.push_back({ { PANEL_PADDING + 8, 510, 130, 40 }, "MST (Prim)", btnNormal, btnHover, btnClick });
+	cButton.push_back({ { PANEL_PADDING + 8, 510, 130, 40 }, "MST(Kruskal)", btnNormal, btnHover, btnClick });
 
 
 	cButton[0].isChose = 1;
@@ -77,13 +78,14 @@ bool GraphButton::update() {
 			else if (i == 2) isRemove = 1;
 			else isMst = 1;
 
+			hide = false; 
+
 			ok = true;
 		}
 	}
 
 	return ok;
 }
-
 
 void GraphButton::draw(Font font) {
 	DrawRectangleRec(rect, color);

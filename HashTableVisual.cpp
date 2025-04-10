@@ -30,8 +30,8 @@ HashTableVisual::HashTableVisual() {
     Value.fontSize = 22;
     Size.fontSize = 22;
 
-    File = { { PANEL_PADDING + 200, 450, 130, 40 }, "File" };
-    Random = { { PANEL_PADDING + 200, 510, 130, 40 }, "Random" };
+    File = { { PANEL_PADDING + 200, 470, 130, 40 }, "File" };
+    Random = { { PANEL_PADDING + 200, 530, 130, 40 }, "Random" };
 
     int rectWidth = 400;
     int rectHeight = 300;
@@ -228,7 +228,7 @@ int HashTableVisual::handleEvent() {
         if (Value.isEnter) {
             if (Value.getDigit() < 0)
                 warning = "Value must be a positive integer!";
-            else warning = "", toolbar.isOpen = toolbar.isPlaying = true;
+            else warning = "", toolbar.isOpen = toolbar.isPlaying = Input.hide = true;
         }
 
 
@@ -389,7 +389,7 @@ int HashTableVisual::handleEvent() {
         if (Value.isEnter) {
             if (Value.getDigit() < 0)
                 warning = "Value must be a positive integer!";
-            else warning = "", toolbar.isOpen = toolbar.isPlaying = true;
+            else warning = "", toolbar.isOpen = toolbar.isPlaying = Input.hide = true;
         }
 
         if (animation.active == false && Value.isEnter && Value.getDigit() >= 0) {
@@ -551,7 +551,7 @@ int HashTableVisual::handleEvent() {
         if (Value.isEnter) {
             if (Value.getDigit() < 0)
                 warning = "Value must be a positive integer!";
-            else warning = "", toolbar.isOpen = toolbar.isPlaying = true;
+            else warning = "", toolbar.isOpen = toolbar.isPlaying = true, Input.hide = true;
         }
 
         if (animation.active == false && Value.isEnter && Value.getDigit() >= 0) {
@@ -796,6 +796,8 @@ void HashTableVisual::draw() {
         float spacing = 1.0f;
 
         DrawTextEx(font, "Size: ", { 207, 352 }, fontSize, spacing, BLACK);
+        DrawLineEx(Vector2{ PANEL_WIDTH, 425}, Vector2{ PANEL_WIDTH * 2 , 425}, 2, BLACK);
+
         Size.draw();
         File.draw(smallFont);
         Random.draw(smallFont);
@@ -817,12 +819,14 @@ void HashTableVisual::draw() {
         int fontSize = 24;
         float spacing = 1.0f;
 
-        valueRect.x = Value.bounds.x - 108;
-        valueRect.y = Value.bounds.y - 7 - 5;
-        DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
+        if (Input.hide == false) {
+            valueRect.x = Value.bounds.x - 108;
+            valueRect.y = Value.bounds.y - 7 - 5;
+            DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
 
-        valueButton.draw(smallFont);
-        Value.draw();
+            valueButton.draw(smallFont);
+            Value.draw();
+        }
 
         if (animation.active && !popActive && animation.currentPathIndex < animation.pathIndices.size()) { // animation process
             int fontSize = 20;
@@ -899,12 +903,15 @@ void HashTableVisual::draw() {
         int fontSize = 24;
         float spacing = 1.0f;
 
-        valueRect.x = Value.bounds.x - 108;
-        valueRect.y = Value.bounds.y - 7 - 5;
-        DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
+        if (Input.hide == false) {
+            valueRect.x = Value.bounds.x - 108;
+            valueRect.y = Value.bounds.y - 7 - 5;
+            DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
 
-        valueButton.draw(smallFont);
-        Value.draw();
+            valueButton.draw(smallFont);
+            Value.draw();
+        }
+
 
         if (animation.operationSuccess == 0) {
             string msg = "Number " + to_string(Value.getDigit()) + " was not found in hashtable!";
@@ -984,13 +991,14 @@ void HashTableVisual::draw() {
 
         int fontSize = 24;
         float spacing = 1.0f;
+        if (Input.hide == false) {
+            valueRect.x = Value.bounds.x - 108;
+            valueRect.y = Value.bounds.y - 7 - 5;
+            DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
 
-        valueRect.x = Value.bounds.x - 108;
-        valueRect.y = Value.bounds.y - 7 - 5;
-        DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
-
-        valueButton.draw(smallFont);
-        Value.draw();
+            valueButton.draw(smallFont);
+            Value.draw();
+        }
 
         if (warning.size()) {
             DrawTextEx(font, warning.c_str(), { valueButton.rect.x, valueButton.rect.y + 50 }, 18, 1, RED);

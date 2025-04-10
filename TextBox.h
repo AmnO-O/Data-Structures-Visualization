@@ -459,7 +459,7 @@ struct TextBoxEdge {
     }
 
     void draw() {
-        // Draw the textbox background and border.
+        // Draw the textbox background and border
         Color boxColor = focused ? YELLOW : Color{ 244, 162, 83, 210 };
         float roundness = 0.25f;
         int segments = 6;
@@ -467,25 +467,31 @@ struct TextBoxEdge {
         DrawRectangleRounded(bounds, roundness, segments, boxColor);
         DrawRectangleRoundedLinesEx(bounds, roundness, segments, outlineThickness, DARKGRAY);
 
-        // Compose the final string with non-editable parentheses.
-        std::string displayText = "(" + text + ")";
-        // Measure the display text size.
+        // Define the content area inside the border
+        float contentX = bounds.x + outlineThickness;
+        float contentY = bounds.y + outlineThickness;
+        float contentWidth = bounds.width - 2 * outlineThickness;
+        float contentHeight = bounds.height - 2 * outlineThickness;
+
+        // Compose the final string with non-editable parentheses
+        std::string displayText = "( " + text + " )";
+        // Measure the display text size
         Vector2 textSize = MeasureTextEx(font, displayText.c_str(), fontSize, 1);
-        // Center the display text inside the textbox.
-        float textX = bounds.x + (bounds.width - textSize.x) / 2.0f;
-        float textY = bounds.y + (bounds.height - textSize.y) / 2.0f;
+        // Center the display text inside the content area
+        float textX = contentX + (contentWidth - textSize.x) / 2.0f;
+        float textY = contentY + (contentHeight - textSize.y) / 2.0f;
         DrawTextEx(font, displayText.c_str(), { textX, textY }, fontSize, 1, textColor);
 
-        // If focused, draw the blinking caret.
-        if (focused && ((framesCounter / 490) % 2 == 0)) {
-            // Build a string containing the non-editable "(" plus the text before the caret.
-            std::string caretSubstr = "(" + text.substr(0, pos);
-            // Measure its width.
+        // If focused, draw the blinking caret
+        if (focused && ((framesCounter / 30) % 2 == 0)) {
+            // Build a string containing the non-editable "(" plus the text before the caret
+            std::string caretSubstr = "( " + text.substr(0, pos);
+            // Measure its width
             float caretOffset = MeasureTextEx(font, caretSubstr.c_str(), fontSize, 1).x;
-            // The caret's x-position is the centered text start plus the offset.
+            // The caret's x-position is the text start plus the offset
             float caretX = textX + caretOffset;
-            // Draw the caret as a vertical line.
-            DrawLine((int)caretX, (int)textY, (int)caretX, (int)(textY + fontSize), BLACK);
+            // Draw the caret as a vertical line with thickness
+            DrawLineEx({ caretX, textY }, { caretX, textY + fontSize }, 2.0f, BLACK);
         }
     }
 

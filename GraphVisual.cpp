@@ -35,6 +35,7 @@ GraphVisual::GraphVisual() {
 
     iconDirected = { PANEL_PADDING + 100, 565, 50, 45 };
     iconWeighted = { PANEL_PADDING + 100, 620, 50, 50 };
+    iconStatic = { PANEL_PADDING + 100, 675, 50, 50 };
 
     loadFileEdges.show("File Format Requirement",
         " Every line in the file corresponds to one edge.\n"
@@ -112,6 +113,7 @@ int GraphVisual::handleEvent() {
 
     if (CheckCollisionPointRec(mousePos, iconDirected) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) G.isDirected ^= 1;
     if (CheckCollisionPointRec(mousePos, iconWeighted) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) G.isWeighted ^= 1, Value.weighted = G.isWeighted, Value.setDefault();
+    if (CheckCollisionPointRec(mousePos, iconStatic) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) G.isStatic ^= 1; 
 
 
     if (Input.isCreate) {
@@ -324,6 +326,7 @@ int GraphVisual::handleEvent() {
                 sortingAnimation = true;
 
                 G.toolbar.isPlaying = G.toolbar.isOpen = true;
+                Input.hide = true; 
 
                 for (int i = 0; i < tmpEdges.size(); i++) {
                     for (int j = 0; j < sortedEdges.size(); j++) {
@@ -630,6 +633,9 @@ void GraphVisual::drawMSTWeightPanel(int x, int y, int width, int height, int ms
         int textwidth = MeasureTextEx(font, title.c_str(), fontSize, 1).x;
 
         DrawTextEx(font, "MST's weight:", { (width * 1.f - textwidth) / 2.f, textY }, fontSize, 1, textColor);
+
+        DrawLineEx(Vector2{0, textY - 8}, Vector2{width * 1.f, textY - 8}, 2, BLACK);
+
         string wei = G.isWeighted ? to_string(mstWeight) : "None";
         wei = "\n" + wei;
 
@@ -650,8 +656,6 @@ void GraphVisual::draw() {
 
     valueButton.text = G.isWeighted ? "(u,v,w):" : "(u,v):";
 
-    drawBackgroundInfo(info.x, info.y, info.width, info.height);
-
 
 
     if (Input.isCreate == 0) {
@@ -662,13 +666,12 @@ void GraphVisual::draw() {
 
         if (Input.isMst == 0)
             drawMSTWeightPanel(0, 100, panelWidth, panelHeight - 40, G.MSTweight);
-        else
+        else 
             drawMSTWeightPanel(0, 100, panelWidth, panelHeight + 20, G.MSTweight);
     }
 
-
     if (Input.isCreate) {
-        DrawRectangleRounded(Rectangle{ PANEL_WIDTH, panelMargin * 1.f, PANEL_WIDTH + 4, Screen_h * 1.f - 2 * panelMargin + 20 }, 0.2, 9, panelColorx);
+        DrawRectangleRounded(Rectangle{ PANEL_WIDTH, panelMargin * 1.f, PANEL_WIDTH + 4, Screen_h * 1.f - 2 * panelMargin + 50}, 0.2, 9, panelColorx);
 
         if (Vertices.text == "") Vertices.text = "Random";
         if (Edges.text == "") Edges.text = "Random";
@@ -726,17 +729,22 @@ void GraphVisual::draw() {
         Value.draw();
     }
     else if (Input.isMst) {
+        drawBackgroundInfo(info.x, info.y, info.width, info.height);
 
-
-        valueRect.x = Value.bounds.x - 108;
-        valueRect.y = Value.bounds.y - 7 - 5;
-        DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
-        Go.isChose = 0;
-        Go.draw(smallFont);
+        if (Input.hide == 0) {
+            valueRect.x = Value.bounds.x - 108;
+            valueRect.y = Value.bounds.y - 7 - 5;
+            DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
+            Go.isChose = 0;
+            Go.draw(smallFont);
+        }
 
         if (warning.size() > 0) {
             DrawTextEx(font, warning.c_str(), { Go.rect.x - 9, valueRect.y + 65 }, 18, 1, RED);
         }
+    }
+    else if (G.isFindMST || sortingAnimation) {
+        drawBackgroundInfo(info.x, info.y, info.width, info.height);
     }
 
     if ((G.isFindMST && G.edgesMST.size() == G.numEdges && G.timeFind == 0) || sortingAnimation) {
@@ -768,10 +776,10 @@ void GraphVisual::draw() {
         drawEdgesTable(G.edges, { 1250, 140 }, highlightIndex, 300, rowHeight, currentScrollOffset, tableVisibleHeight);
     }
 
-    if (Input.isMst)
+    if (Input.isMst || G.isFindMST || sortingAnimation)
         drawCode(info.x, info.y, info.width, info.height, mstCode);
 
-    DrawRectangleRounded(Rectangle{ 0, panelMargin * 1.f, PANEL_WIDTH, Screen_h * 1.f - 2 * panelMargin + 20 }, 0.2, 9, panelColor);
+    DrawRectangleRounded(Rectangle{ 0, panelMargin * 1.f, PANEL_WIDTH, Screen_h * 1.f - 2 * panelMargin + 50 }, 0.2, 9, panelColor);
 
     Color operationColor = isDarkMode ? DARKBLUE : DARKBLUE;
     DrawTextEx(smallFont, "Operations", { PANEL_PADDING + 10, 280 }, 26, 2, operationColor);
@@ -779,6 +787,7 @@ void GraphVisual::draw() {
 
     DrawTextEx(font, "Directed: ", { PANEL_PADDING + 5, 583 }, 20, 1, BLACK);
     DrawTextEx(font, "Weighted: ", { PANEL_PADDING + 3, 623 }, 20, 1, BLACK);
+    DrawTextEx(font, "Stabilize: ", { PANEL_PADDING + 3, 663 }, 20, 1, BLACK);
 
     Vector2 mousePos = GetMousePosition();
     bool isHovering = CheckCollisionPointRec(mousePos, iconDirected);
@@ -786,6 +795,9 @@ void GraphVisual::draw() {
 
     isHovering = CheckCollisionPointRec(mousePos, iconWeighted);
     DrawTextureEx(G.isWeighted ? switch_on : switch_off, { PANEL_PADDING + 100, 610 }, 0.0f, 1.f, isHovering ? Color{ 255, 255, 255, 200 } : WHITE);
+
+    isHovering = CheckCollisionPointRec(mousePos, iconStatic);
+    DrawTextureEx(G.isStatic ? switch_on : switch_off, { PANEL_PADDING + 100, 650 }, 0.0f, 1.f, isHovering ? Color{ 255, 255, 255, 200 } : WHITE);
 
     /// Draw graph
 

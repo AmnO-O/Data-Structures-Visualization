@@ -4,7 +4,7 @@ Graph::Graph() {
     numNodes = 0;
     for (int i = 0; i < 14; i++) addNode(i);
     genRandom();
-    isDirected = isWeighted = 0;
+    isDirected = isWeighted = isStatic = 0;
     selectedNode = -1;
 }
 
@@ -33,6 +33,7 @@ void Graph::addNode(int id) {
 }
 
 void Graph::addEdge(int from, int to, int weight, bool dir) {
+    if (from == to) return; 
     for (const Edge& edge : edges) {
         if ((edge.from == from && edge.to == to) || (edge.from == to && edge.to == from)) {
             return;
@@ -71,12 +72,11 @@ void Graph::remEdge(int from, int to, int weight) {
 }
 
 
-
 void Graph::genRandom(int numnodes, int numedges) {
     nodes.clear();
     edges.clear();
-    // Generate a pleasing color palette
 
+    // Generate a pleasing color palette
     Color palette[] = {
         {41, 98, 255, 255},    // Blue
         {255, 61, 127, 255},   // Pink
@@ -85,63 +85,100 @@ void Graph::genRandom(int numnodes, int numedges) {
         {79, 195, 247, 255},   // Sky blue
         {77, 182, 172, 255},   // Teal
         LIME,
-
     };
-
 
     uniform_real_distribution<float> posDist(200.0f, Screen_w - 100.0f);
     uniform_real_distribution<float> posDist2(200.0f, Screen_h - 100.0f);
     uniform_real_distribution<float> weightDist(1.0f, 50.0f);
 
-
+    // Determine number of nodes
     if (numnodes == -1)
         numNodes = random(4, 15);
     else
         numNodes = numnodes;
 
+    // Minimum edges needed for connectivity
+    int minEdges = (numNodes >= 2) ? numNodes - 1 : 0;
+
+    // Determine number of edges
     if (numedges == -1)
-        numEdges = min(numNodes + 10, random(2, numNodes * (numNodes - 1) / 2));
+        numEdges = min(numNodes + 10, random(minEdges, numNodes * (numNodes - 1) / 2));
     else
         numEdges = min(numedges, numNodes * (numNodes - 1) / 2);
 
+    // Generate nodes
     for (int i = 0; i < numNodes; i++) {
         Color nodeColor = palette[i % 7];
         nodes.push_back(GraphNode(posDist(rd), posDist2(rd), 22.0f, nodeColor, to_string(i)));
         forces[i] = { 0, 0 };
     }
 
+    vector<int> degrees(numNodes, 0);
+    vector<vector<bool>> adj(numNodes, vector<bool>(numNodes, false));
+    int edgeCount = 0;
 
-    for (int i = 0; i < numEdges; i++) {
-        int from = random(0, numNodes - 1);
-        int to = random(0, numNodes - 1);
+    // Generate a spanning tree if possible
+    if (numEdges >= minEdges && numNodes >= 2) {
+        vector<int> shuffled(numNodes);
+        for (int i = 0; i < numNodes; i++) shuffled[i] = i;
+        random_shuffle(shuffled.begin(), shuffled.end());
 
-        // Ensure we don't add self-loops or duplicate edges
-        if (from != to) {
-            bool edgeExists = false;
+        for (int i = 1; i < numNodes; i++) {
+            int a = shuffled[i - 1];
+            int b = shuffled[i];
+            Color edgeColor = {
+                (unsigned char)((nodes[a].color.r + nodes[b].color.r) / 2),
+                (unsigned char)((nodes[a].color.g + nodes[b].color.g) / 2),
+                (unsigned char)((nodes[a].color.b + nodes[b].color.b) / 2),
+                180  // Semi-transparent
+            };
+            edges.push_back(Edge(a, b, isWeighted ? weightDist(rd) : -1e7 - 7 - 2 - 2006, edgeColor, isDirected));
+            adj[a][b] = adj[b][a] = true;
+            degrees[a]++;
+            degrees[b]++;
+            edgeCount++;
+        }
+    }
 
-            for (const Edge& edge : edges) {
-                if ((edge.from == from && edge.to == to) || (edge.from == to && edge.to == from)) {
-                    edgeExists = true;
-                    i--;
-                    break;
+    // Add additional edges greedily
+    while (edgeCount < numEdges) {
+        int bestA = -1;
+        int bestB = -1;
+        int minSum = INT_MAX;
+
+        for (int i = 0; i < numNodes; i++) {
+            for (int j = i + 1; j < numNodes; j++) {
+                if (!adj[i][j]) {
+                    int currentSum = degrees[i] + degrees[j];
+                    if (currentSum < minSum) {
+                        minSum = currentSum;
+                        bestA = i;
+                        bestB = j;
+                    }
                 }
             }
-
-            if (!edgeExists) {
-                Color edgeColor = {
-                    (unsigned char)((nodes[from].color.r + nodes[to].color.r) / 2),
-                    (unsigned char)((nodes[from].color.g + nodes[to].color.g) / 2),
-                    (unsigned char)((nodes[from].color.b + nodes[to].color.b) / 2),
-                    180  // Semi-transparent
-                };
-
-                edges.push_back(Edge(from, to, isWeighted ? random(1, 30) : -1e7 - 7 - 2 - 2006, BLACK, isDirected));
-            }
         }
-        else i--;
-    }
-}
 
+        if (bestA != -1 && bestB != -1) {
+            Color edgeColor = {
+                (unsigned char)((nodes[bestA].color.r + nodes[bestB].color.r) / 2),
+                (unsigned char)((nodes[bestA].color.g + nodes[bestB].color.g) / 2),
+                (unsigned char)((nodes[bestA].color.b + nodes[bestB].color.b) / 2),
+                180  // Semi-transparent
+            };
+            edges.push_back(Edge(bestA, bestB, isWeighted ? weightDist(rd) : -1e7 - 7 - 2 - 2006, edgeColor, isDirected));
+            adj[bestA][bestB] = adj[bestB][bestA] = true;
+            degrees[bestA]++;
+            degrees[bestB]++;
+            edgeCount++;
+        }
+        else {
+            break; // No more edges can be added
+        }
+    }
+
+    for (int i = 0; i < 100; i++) updGPT();
+}
 
 void Graph::drawEdge(const Edge& edge, Font& font) {
     Vector2 start = nodes[edge.from].position;
@@ -503,7 +540,8 @@ void Graph::update() {
     float deltaTime = GetFrameTime();
 
     toolbar.Update();
-    updOld();
+    if(isStatic == 0) 
+        updOld();
 
     Vector2 mousePos = GetMousePosition();
 
@@ -580,9 +618,9 @@ void Graph::update() {
 
         if (toolbar.isPlaying) {
             if (timeFind >= 0)
-                timeFind += deltaTime * toolbar.speed;
+                timeFind += deltaTime * (toolbar.speed + 0.75);
             else {
-                timeJoin += deltaTime * toolbar.speed;
+                timeJoin += deltaTime * (toolbar.speed + 0.75);
 
                 if (timeJoin >= stepJoin) {
                     if (curMST.size()) {

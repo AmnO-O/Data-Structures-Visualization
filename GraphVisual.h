@@ -43,7 +43,7 @@ private:
 
 	string warning = "";
 	Toolbar toolbar;
-	Rectangle iconWeighted, iconDirected;
+	Rectangle iconWeighted, iconDirected, iconStatic;
 	GraphButton Input;
 	TextBoxCenter Vertices, Edges;
 	Font font, infoFont, smallFont;

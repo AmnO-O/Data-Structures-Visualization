@@ -116,6 +116,7 @@ public:
     bool isInsert = false;
     bool isRemove = false;
     bool isSearch = false;
+    bool hide = false; 
     vector <Button> cButton;
 
 private:
@@ -137,6 +138,7 @@ public:
     bool isAddedge = false;
     bool isRemove = false;
     bool isMst = true;
+    bool hide = false; 
     vector <Button> cButton;
 
 private:

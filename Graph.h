@@ -217,7 +217,7 @@ public:
 
 	int numNodes, numEdges;
 	int highlightIndex = 0;
-	bool isDirected = false, isWeighted = false;
+	bool isDirected = false, isWeighted = false, isStatic = false;
 	bool isFindMST = false;
 	vector <short> inMST;
 	vector <Edge> edges;
