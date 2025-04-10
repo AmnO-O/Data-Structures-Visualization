@@ -152,6 +152,7 @@ void LinkedListScreen::Update(int& state) {
 
     // Kiểm tra nút Insert
     if (insertHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (toolbar.isOpen == true) toolbar.isOpen = false;
         showInsertOptions = !showInsertOptions;
     }
 
@@ -161,6 +162,9 @@ void LinkedListScreen::Update(int& state) {
     }
 
     toolbar.Update();
+    if (toolbar.isPlaying && !isHeadInserting && !isTailInserting && !isPosInserting && !isDeleting && !isSearch) {
+        toolbar.isPlaying = false;
+    }
 
     if (toolbar.isBack) {
         Undo();
@@ -189,16 +193,19 @@ void LinkedListScreen::Update(int& state) {
 
         // Nếu Insert đang mở, kiểm tra các nút con
         if (CheckCollisionPointRec(mouse, insertHeadButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            if(toolbar.isOpen == true) toolbar.isOpen = false;
             linkedlistState = InsertHeadState;
             handleButtonClick(INSERTHEAD, Value);
             currentButton = INSERTHEAD;
         }
         if (CheckCollisionPointRec(mouse, insertTailButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            if (toolbar.isOpen == true)  toolbar.isOpen = false;
             linkedlistState = InsertTailState;
             handleButtonClick(INSERTTAIL, Value);
             currentButton = INSERTTAIL;
         }
         if (CheckCollisionPointRec(mouse, insertPosButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            if (toolbar.isOpen == true)  toolbar.isOpen = false;
             linkedlistState = InsertPosState;
             handleButtonClick(INSERTPOS, Value);
             handleButtonClick(INSERTPOS, Index);
@@ -221,6 +228,7 @@ void LinkedListScreen::Update(int& state) {
 
     // Kiểm tra nút Delete
     if (CheckCollisionPointRec(mouse, deleteButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (toolbar.isOpen == true) toolbar.isOpen = false;
         linkedlistState = DeleteState;
         handleButtonClick(DELETE, Value);
         currentButton = DELETE;
@@ -228,12 +236,14 @@ void LinkedListScreen::Update(int& state) {
 
     // Kiểm tra nút Reverse
     if (CheckCollisionPointRec(mouse, searchButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (toolbar.isOpen == true) toolbar.isOpen = false;
         linkedlistState = SearchState;
         currentButton = SEARCH;
     }
 
     // Kiểm tra nút Clean 
     if (CheckCollisionPointRec(mouse, cleanButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (toolbar.isOpen == true) toolbar.isOpen = false;
         linkedlistState = ClearState;
         currentButton = CLEAN;
     }
@@ -436,7 +446,7 @@ void LinkedListScreen::Update(int& state) {
     if (linkedlistState != SearchState)   SearchNode = nullptr;
 
     // Cập nhật tiến trình animation
-    if (isHeadInserting || isTailInserting || isPosInserting || isDeleting || isSearch) {
+    if ((isHeadInserting || isTailInserting || isPosInserting || isDeleting || isSearch) && toolbar.isPlaying) {
         timer += GetFrameTime();
         if (entered) {
             if (isHeadInserting) {
