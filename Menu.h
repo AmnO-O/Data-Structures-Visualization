@@ -24,10 +24,12 @@ public:
 	Menu();
 
 	string dsName[4] = {
-		"Singly Linked List", "Hash Table", "AVL",  "Graph"
+		"Singly Linked List", "Hash Table", "AVL Tree",  "Graph"
 	};
 
 	vector <Item> dsItem;
+	Image iconImage[4];
+	Texture2D iconList[4];
 	Font myFont; // Add new Font for Menu
 	Font titleFont;
 

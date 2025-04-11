@@ -1,5 +1,4 @@
 ﻿#include "AVLTreeScreen.h"
-#include "Constants.h"
 #include <string>
 #include <unordered_set>
 
@@ -52,6 +51,8 @@ void AVLTreeScreen::Init() {
     textureRedoHovered = LoadTextureFromImage(imageRedoHovered);
 
     sparks.clear();
+
+    myTable.Init(Screen_w - 700, Screen_h - 310, 290, 310);
 }
 
 void AVLTreeScreen::Update(int& state) {
@@ -68,6 +69,8 @@ void AVLTreeScreen::Update(int& state) {
         };
         sparks.push_back(newSpark);
     }
+
+    myTable.Update();
 
     // Kiểm tra hover vào nút "Insert"
     insertHovered = CheckCollisionPointRec(mouse, insertButton);
@@ -90,15 +93,6 @@ void AVLTreeScreen::Update(int& state) {
     // Kiểm tra hover vào nút "OK"
     okHovered = CheckCollisionPointRec(mouse, okButton);
 
-    // Kiểm tra hover vào nút "Inorder"
-    inorderHovered = CheckCollisionPointRec(mouse, inorderButton);
-
-    // Kiểm tra hover vào nút "Preorder"
-    preorderHovered = CheckCollisionPointRec(mouse, preorderButton);
-
-    // Kiểm tra hover vào nút "PostOrder"
-    postorderHovered = CheckCollisionPointRec(mouse, postorderButton);
-
     // Kiểm tra hover vào nút "Undo"
     undoHovered = CheckCollisionPointRec(mouse, undoRect);
 
@@ -111,39 +105,6 @@ void AVLTreeScreen::Update(int& state) {
 
     if (redoHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         //CurrAVLtree.Redo();
-    }
-
-    // Kiểm tra nút Inorder
-    if (inorderHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        isInordered = true;
-        InTraversalValues.clear();
-        CurrAVLtree.InorderTraversal(InTraversalValues);
-        InTraversalBgWidth = 0.0f;
-        isInTraversalReady = false;
-        currentInIndex = 0;
-        IntraversalTimer = 0.0f;
-    }
-
-    // Kiểm tra nút Preorder
-    if (preorderHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        isPreordered = true;
-        PreTraversalValues.clear();
-        CurrAVLtree.PreorderTraversal(PreTraversalValues);
-        PreTraversalBgWidth = 0.0f;
-        isPreTraversalReady = false;
-        currentPreIndex = 0;
-        PretraversalTimer = 0.0f;
-    }
-
-    // Kiểm tra nút Postorder
-    if (postorderHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        isPostordered = true;
-        PostTraversalValues.clear();
-        CurrAVLtree.PostorderTraversal(PostTraversalValues);
-        PostTraversalBgWidth = 0.0f;
-        isPostTraversalReady = false;
-        currentPostIndex = 0;
-        PosttraversalTimer = 0.0f;
     }
 
     // Kiểm tra nút Create
@@ -220,7 +181,7 @@ void AVLTreeScreen::Update(int& state) {
         Value.update();
         if (Value.isEnter && Value.outputMessage != "") {
             valueInsert = stoi(Value.outputMessage);
-            Value.isEnter = false; // Reset trạng thái ENTER 
+            Value.isEnter = false;
             Value.outputMessage = "";
 
             // Kích hoạt animation sau mỗi lần thay đổi
@@ -239,7 +200,7 @@ void AVLTreeScreen::Update(int& state) {
             Value.getMessage();
             if (Value.outputMessage != "") {
                 valueInsert = stoi(Value.outputMessage);
-                Value.isEnter = false; // Reset trạng thái ENTER 
+                Value.isEnter = false;
                 Value.outputMessage = "";
 
                 // Kích hoạt animation sau mỗi lần thay đổi
@@ -261,8 +222,9 @@ void AVLTreeScreen::Update(int& state) {
         Value.update();
         if (Value.isEnter && Value.outputMessage != "") {
             valueDelete = stoi(Value.outputMessage);
-            Value.isEnter = false; // Reset trạng thái ENTER 
+            Value.isEnter = false;
             Value.outputMessage = "";
+
             //SearchAnimation
             if (CurrAVLtree.m_root != NULL) {
                 currentSearchNode = CurrAVLtree.m_root;
@@ -281,7 +243,7 @@ void AVLTreeScreen::Update(int& state) {
             Value.getMessage();
             if (Value.outputMessage != "") {
                 valueDelete = stoi(Value.outputMessage);
-                Value.isEnter = false; // Reset trạng thái ENTER 
+                Value.isEnter = false;
                 Value.outputMessage = "";
 
                 // SearchAnimation
@@ -305,7 +267,7 @@ void AVLTreeScreen::Update(int& state) {
         Value.update();
         if (Value.isEnter && Value.outputMessage != "") {
             valueSearch = stoi(Value.outputMessage);
-            Value.isEnter = false; // Reset trạng thái ENTER 
+            Value.isEnter = false;
             Value.outputMessage = "";
 
             // Kích hoạt animation sau mỗi lần thay đổi
@@ -321,7 +283,7 @@ void AVLTreeScreen::Update(int& state) {
             Value.getMessage();
             if (Value.outputMessage != "") {
                 valueSearch = stoi(Value.outputMessage);
-                Value.isEnter = false; // Reset trạng thái ENTER 
+                Value.isEnter = false;
                 Value.outputMessage = "";
 
                 // Kích hoạt animation sau mỗi lần thay đổi
@@ -340,7 +302,7 @@ void AVLTreeScreen::Update(int& state) {
         Nodes.update();
         if (Nodes.isEnter && Nodes.outputMessage != "") {
             valueNodes = stoi(Nodes.outputMessage);
-            Nodes.isEnter = false; // Reset trạng thái ENTER 
+            Nodes.isEnter = false;
             Nodes.outputMessage = "";
 
             if (valueNodes > 0) {
@@ -363,7 +325,7 @@ void AVLTreeScreen::Update(int& state) {
             Nodes.getMessage();
             if (Nodes.outputMessage != "") {
                 valueNodes = stoi(Nodes.outputMessage);
-                Nodes.isEnter = false; // Reset trạng thái ENTER 
+                Nodes.isEnter = false;
                 Nodes.outputMessage = "";
 
                 if (valueNodes > 0) {
@@ -404,22 +366,52 @@ void AVLTreeScreen::Update(int& state) {
 
     //Cập nhật tiến trình animation
     if (isInsert || isDeleting || isSearch || isClear || isCreateRandom || isCreateFile) {
-        timer += GetFrameTime();
+        timer += 1.0f / 60.0f;
         if (entered && SearchAnimationFinished) {
             if (isInsert && AVLtreeState == InsertState) {
                 CurrAVLtree.Insert(valueInsert);
+                InTraversalValues.clear();
+                PreTraversalValues.clear();
+                PostTraversalValues.clear();
+                CurrAVLtree.InorderTraversal(InTraversalValues);
+                CurrAVLtree.PreorderTraversal(PreTraversalValues);
+                CurrAVLtree.PostorderTraversal(PostTraversalValues);
             }
             else if (isDeleting) {
                 CurrAVLtree.Delete(valueDelete);
+                InTraversalValues.clear();
+                PreTraversalValues.clear();
+                PostTraversalValues.clear();
+                CurrAVLtree.InorderTraversal(InTraversalValues);
+                CurrAVLtree.PreorderTraversal(PreTraversalValues);
+                CurrAVLtree.PostorderTraversal(PostTraversalValues);
             }
             else if (isSearch) {
                 SearchNode = CurrAVLtree.Search(valueSearch);
+                InTraversalValues.clear();
+                PreTraversalValues.clear();
+                PostTraversalValues.clear();
+                CurrAVLtree.InorderTraversal(InTraversalValues);
+                CurrAVLtree.PreorderTraversal(PreTraversalValues);
+                CurrAVLtree.PostorderTraversal(PostTraversalValues);
             }
             else if (isCreateRandom) {
                 CurrAVLtree.CreateRandomAVL(valueNodes, 1, 100);
+                InTraversalValues.clear();
+                PreTraversalValues.clear();
+                PostTraversalValues.clear();
+                CurrAVLtree.InorderTraversal(InTraversalValues);
+                CurrAVLtree.PreorderTraversal(PreTraversalValues);
+                CurrAVLtree.PostorderTraversal(PostTraversalValues);
             }
             else if (isCreateFile) {
                 CurrAVLtree.readNumbersFromFile(filePath);
+                InTraversalValues.clear();
+                PreTraversalValues.clear();
+                PostTraversalValues.clear();
+                CurrAVLtree.InorderTraversal(InTraversalValues);
+                CurrAVLtree.PreorderTraversal(PreTraversalValues);
+                CurrAVLtree.PostorderTraversal(PostTraversalValues);
             }
 
             timer = duration + 0.1f;
@@ -534,36 +526,6 @@ void AVLTreeScreen::DrawOperationsPanel() {
           clearButton.y + (clearButton.height - clearSize.y) / 2 },
         18, 2, DARKBLUE);
 
-    // Thêm nút Inorder (không viền, bo tròn)
-    Color inorderColor = inorderHovered ? Color{ 25, 164, 116, 225 } : Color{ 30, 207, 145, 255 };
-    if (currentButton == INORDERAVL) inorderColor = { 250, 228, 49, 255 };
-    DrawRectangleRounded(inorderButton, 0.2f, 4, inorderColor);
-    Vector2 inorderSize = MeasureTextEx(myFont, "Inorder", 20, 2);
-    DrawTextEx(myFont, "Inorder",
-        { inorderButton.x + (inorderButton.width - inorderSize.x) / 2,
-          inorderButton.y + (inorderButton.height - inorderSize.y) / 2 },
-        20, 2, DARKBLUE);
-
-    // Thêm nút Preorder (không viền, bo tròn)
-    Color preorderColor = preorderHovered ? Color{ 25, 164, 116, 225 } : Color{ 30, 207, 145, 255 };
-    if (currentButton == PREORDERAVL) preorderColor = { 250, 228, 49, 255 };
-    DrawRectangleRounded(preorderButton, 0.2f, 4, preorderColor);
-    Vector2 preorderSize = MeasureTextEx(myFont, "Preorder", 20, 2);
-    DrawTextEx(myFont, "Preorder",
-        { preorderButton.x + (preorderButton.width - preorderSize.x) / 2,
-          preorderButton.y + (preorderButton.height - preorderSize.y) / 2 },
-        20, 2, DARKBLUE);
-
-    // Thêm nút Postorder (không viền, bo tròn)
-    Color postorderColor = postorderHovered ? Color{ 25, 164, 116, 225 } : Color{ 30, 207, 145, 255 };
-    if (currentButton == POSTORDERAVL) postorderColor = { 250, 228, 49, 255 };
-    DrawRectangleRounded(postorderButton, 0.2f, 4, postorderColor);
-    Vector2 postorderSize = MeasureTextEx(myFont, "Postorder", 20, 2);
-    DrawTextEx(myFont, "Postorder",
-        { postorderButton.x + (postorderButton.width - postorderSize.x) / 2,
-          postorderButton.y + (postorderButton.height - postorderSize.y) / 2 },
-        20, 2, DARKBLUE);
-
     DrawInfo();
 
     if (AVLtreeState == InsertState || AVLtreeState == DeleteState || AVLtreeState == SearchState) {
@@ -621,183 +583,10 @@ void AVLTreeScreen::DrawOperationsPanel() {
             18, 2, DARKBLUE);
     }
     else if (AVLtreeState == ClearState) {}
-
-    // Vẽ nút Undo, Redo
-    DrawTexture(textureUndo, Undoposition.x, Undoposition.y, WHITE);
-    DrawTexture(textureRedo, Redoposition.x, Redoposition.y, WHITE);
 }
 
 void AVLTreeScreen::Draw() {
     ClearBackground(isDarkMode ? darkmode : lightmode);   // Sử dụng màu nền ở chế độ hiện tại 
-
-    // INORDER 
-    if (isInordered) {
-        float x = inorderButton.x + inorderButton.width + 10.0f;
-        float padding = 15.0f;
-        float fontSize = 25.0f;
-        float spacing = 1.0f;
-        float textHeight = fontSize;
-        float bgPaddingX = 10.0f;
-        float bgPaddingY = 5.0f;
-
-        float totalWidth = GetTotalTraversalWidth(InTraversalValues, (int)InTraversalValues.size(), myFont, fontSize, spacing, padding);
-
-        float targetWidth = totalWidth + 2 * bgPaddingX;
-        float speed = 400.0f;  // pixels per second
-        float deltaTime = GetFrameTime();
-
-        if (InTraversalBgWidth < targetWidth) {
-            InTraversalBgWidth += speed * deltaTime;
-            if (InTraversalBgWidth >= targetWidth) {
-                InTraversalBgWidth = targetWidth;
-                isInTraversalReady = true;
-            }
-        }
-
-        float bgHeight = inorderButton.height;
-        float y = inorderButton.y + (inorderButton.height - textHeight) / 2.0f; // Vị trí chữ
-        float bgY = inorderButton.y; // Vị trí nền
-
-        float extendLeft = 20.0f; // khoảng muốn nền lùi trái
-        Rectangle bgRect = {
-            x - bgPaddingX - extendLeft,
-            bgY,
-            InTraversalBgWidth + extendLeft,
-            bgHeight
-        };
-        DrawRectangleRounded(bgRect, 0.3f, 10, isDarkMode ? Color{ 250, 206, 231, 255 } : Color{ 245, 148, 203, 190 });
-
-        if (isInTraversalReady) {
-            IntraversalTimer += deltaTime;
-            if (currentInIndex < (int)InTraversalValues.size() && IntraversalTimer >= 0.5f) {
-                currentInIndex++;
-                IntraversalTimer = 0.0f;
-            }
-        }
-
-        float drawX = x;
-        for (int i = 0; i < currentInIndex; ++i) {
-            std::string val = std::to_string(InTraversalValues[i]);
-            Vector2 pos = { drawX, y };
-            DrawTextEx(myFont, val.c_str(), pos, fontSize, spacing, DARKBLUE);
-
-            Vector2 textSize = MeasureTextEx(myFont, val.c_str(), fontSize, spacing);
-            drawX += textSize.x + padding;
-        }
-    }
-
-    // PREORDER
-    if (isPreordered) {
-        float x = preorderButton.x + preorderButton.width + 10.0f;
-        float padding = 15.0f;
-        float fontSize = 25.0f;
-        float spacing = 1.0f;
-        float textHeight = fontSize;
-        float bgPaddingX = 10.0f;
-        float bgPaddingY = 5.0f;
-
-        float totalWidth = GetTotalTraversalWidth(PreTraversalValues, (int)PreTraversalValues.size(), myFont, fontSize, spacing, padding);
-
-        float targetWidth = totalWidth + 2 * bgPaddingX;
-        float speed = 400.0f;  // pixels per second
-        float deltaTime = GetFrameTime();
-
-        if (PreTraversalBgWidth < targetWidth) {
-            PreTraversalBgWidth += speed * deltaTime;
-            if (PreTraversalBgWidth >= targetWidth) {
-                PreTraversalBgWidth = targetWidth;
-                isPreTraversalReady = true;
-            }
-        }
-
-        float bgHeight = preorderButton.height;
-        float y = preorderButton.y + (preorderButton.height - textHeight) / 2.0f; // Vị trí chữ
-        float bgY = preorderButton.y; // Vị trí nền
-
-        float extendLeft = 20.0f; // khoảng muốn nền lùi trái
-        Rectangle bgRect = {
-            x - bgPaddingX - extendLeft,
-            bgY,
-            PreTraversalBgWidth + extendLeft,
-            bgHeight
-        };
-        DrawRectangleRounded(bgRect, 0.3f, 10, isDarkMode ? Color{ 250, 206, 231, 255 } : Color{ 245, 148, 203, 190 });
-
-        if (isPreTraversalReady) {
-            PretraversalTimer += deltaTime;
-            if (currentPreIndex < (int)PreTraversalValues.size() && PretraversalTimer >= 0.5f) {
-                currentPreIndex++;
-                PretraversalTimer = 0.0f;
-            }
-        }
-
-        float drawX = x;
-        for (int i = 0; i < currentPreIndex; ++i) {
-            std::string val = std::to_string(PreTraversalValues[i]);
-            Vector2 pos = { drawX, y };
-            DrawTextEx(myFont, val.c_str(), pos, fontSize, spacing, DARKBLUE);
-
-            Vector2 textSize = MeasureTextEx(myFont, val.c_str(), fontSize, spacing);
-            drawX += textSize.x + padding;
-        }
-    }
-
-
-    // POSTORDER
-    if (isPostordered) {
-        float x = postorderButton.x + postorderButton.width + 10.0f;
-        float padding = 15.0f;
-        float fontSize = 25.0f;
-        float spacing = 1.0f;
-        float textHeight = fontSize;
-        float bgPaddingX = 10.0f;
-        float bgPaddingY = 5.0f;
-
-        float totalWidth = GetTotalTraversalWidth(PostTraversalValues, (int)PostTraversalValues.size(), myFont, fontSize, spacing, padding);
-
-        float targetWidth = totalWidth + 2 * bgPaddingX;
-        float speed = 400.0f;  // pixels per second
-        float deltaTime = GetFrameTime();
-
-        if (PostTraversalBgWidth < targetWidth) {
-            PostTraversalBgWidth += speed * deltaTime;
-            if (PostTraversalBgWidth >= targetWidth) {
-                PostTraversalBgWidth = targetWidth;
-                isPostTraversalReady = true;
-            }
-        }
-
-        float bgHeight = postorderButton.height;
-        float y = postorderButton.y + (postorderButton.height - textHeight) / 2.0f; // Vị trí chữ
-        float bgY = postorderButton.y; // Vị trí nền
-
-        float extendLeft = 20.0f; // khoảng muốn nền lùi trái
-        Rectangle bgRect = {
-            x - bgPaddingX - extendLeft,
-            bgY,
-            PostTraversalBgWidth + extendLeft,
-            bgHeight
-        };
-        DrawRectangleRounded(bgRect, 0.3f, 10, isDarkMode ? Color{ 250, 206, 231, 255 } : Color{ 245, 148, 203, 190 });
-
-        if (isPostTraversalReady) {
-            PosttraversalTimer += deltaTime;
-            if (currentPostIndex < (int)PostTraversalValues.size() && PosttraversalTimer >= 0.5f) {
-                currentPostIndex++;
-                PosttraversalTimer = 0.0f;
-            }
-        }
-
-        float drawX = x;
-        for (int i = 0; i < currentPostIndex; ++i) {
-            std::string val = std::to_string(PostTraversalValues[i]);
-            Vector2 pos = { drawX, y };
-            DrawTextEx(myFont, val.c_str(), pos, fontSize, spacing, DARKBLUE);
-
-            Vector2 textSize = MeasureTextEx(myFont, val.c_str(), fontSize, spacing);
-            drawX += textSize.x + padding;
-        }
-    }
 
     // Vẽ bảng điều khiển
     DrawOperationsPanel();
@@ -813,9 +602,8 @@ void AVLTreeScreen::Draw() {
             continue;
         }
 
-        // Tính toán alpha và scale dựa trên lifetime
-        spark.alpha = spark.lifetime / 0.5f;  // Giảm dần từ 1 về 0
-        spark.scale = 1.0f - spark.alpha;     // Tăng từ 0 lên 1
+        spark.alpha = spark.lifetime / 0.5f;
+        spark.scale = 1.0f - spark.alpha;
 
         // Vẽ đốm sáng
         int radius = 25 * spark.scale;
@@ -824,7 +612,7 @@ void AVLTreeScreen::Draw() {
             (int)spark.position.y,
             radius,
             { 243, 15, 21, (unsigned char)(255 * spark.alpha) },
-            { 243, 15, 21, 0 }  // Trong suốt ở rìa
+            { 243, 15, 21, 0 }
         );
     }
 
@@ -832,6 +620,9 @@ void AVLTreeScreen::Draw() {
     float animationProgress = timer / duration;
     drawAVLtree(animationProgress, Animationmroot);
     finnishAnimation = true;
+
+    myTable.SetData(InTraversalValues, PreTraversalValues, PostTraversalValues);
+    myTable.Draw();
 
     mouse = GetMousePosition();
     if (showFileInfoPopup) {
@@ -925,14 +716,15 @@ void AVLTreeScreen::drawAVLtree(float animationProgress, AVLNode* root) {
     string nodeText = TextFormat("%d", root->val);
     Vector2 textSize = MeasureTextEx(myFont, nodeText.c_str(), 25, 1.25);
 
-    Vector2 textPos = { root->displayX - textSize.x / 2,  root->displayY - textSize.y / 2 }; // Căn giữa Node 
+    Vector2 textPos = { root->displayX - textSize.x / 2,  root->displayY - textSize.y / 2 };
     DrawTextEx(myFont, nodeText.c_str(), textPos, 25, 1.25, Fade(BLACK, fadeProgress));
 
     if (isClear) {
         fadeProgress -= GetFrameTime();
         if (fadeProgress <= 0.0f) {
             fadeProgress = 1.0f;
-            CurrAVLtree.Clear(); // Xóa danh sách khi hiệu ứng kết thúc
+            CurrAVLtree.Clear();
+            InTraversalValues = PreTraversalValues = PostTraversalValues = {};
             isClear = false;
             Animationmroot = NULL;
         }

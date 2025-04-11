@@ -63,7 +63,7 @@ public:
 
     std::stack<AVLNode*> undoStack;
     std::stack<AVLNode*> redoStack;
-   
+
     AVLNode* clone(AVLNode* root);
     void Undo();
     void Redo();

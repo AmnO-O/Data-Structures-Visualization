@@ -193,7 +193,7 @@ void LinkedListScreen::Update(int& state) {
 
         // Nếu Insert đang mở, kiểm tra các nút con
         if (CheckCollisionPointRec(mouse, insertHeadButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-            if(toolbar.isOpen == true) toolbar.isOpen = false;
+            if (toolbar.isOpen == true) toolbar.isOpen = false;
             linkedlistState = InsertHeadState;
             handleButtonClick(INSERTHEAD, Value);
             currentButton = INSERTHEAD;

@@ -31,6 +31,22 @@ Menu::Menu() {
 
         dsItem.push_back(item);
     }
+
+    iconImage[0] = LoadImage("Assets/Images/SinglyLinkedList.png");
+    iconImage[1] = LoadImage("Assets/Images/HashTable.png");
+    iconImage[2] = LoadImage("Assets/Images/AVLTree.png");
+    iconImage[3] = LoadImage("Assets/Images/Graph.png");
+
+    iconList[0] = LoadTextureFromImage(iconImage[0]);
+    iconList[1] = LoadTextureFromImage(iconImage[1]);
+    iconList[2] = LoadTextureFromImage(iconImage[2]);
+    iconList[3] = LoadTextureFromImage(iconImage[3]);
+
+
+    // Làm mịn ảnh bằng bilinear filtering
+    for (int i = 0; i < 4; i++) {
+        SetTextureFilter(iconList[i], TEXTURE_FILTER_BILINEAR);
+    }
 }
 
 void Menu::Init() {
@@ -159,4 +175,41 @@ void Menu::Draw() {
     DrawTextEx(myFont, "Settings",
         { settingsButton.x + (settingsButton.width - textSize.x) / 2, settingsButton.y + (settingsButton.height - textSize.y) / 2 },
         20, 1, textColor);
+
+    for (int i = 0; i < 4; ++i) {
+        Item item = dsItem[i];
+        Texture2D icon = iconList[i];
+        float iconSize;
+
+        if (i == 0) iconSize = 300.0f;
+        else if (i == 1) iconSize = 150.0f;
+        else if (i == 2) iconSize = 190.0f;
+        else if (i == 3) iconSize = 220.0f;
+
+        // Scale ảnh để có kích thước đúng
+        float scale = iconSize / std::max(icon.width, icon.height);
+
+        // Tính lại width, height sau khi scale
+        float drawWidth = icon.width * scale;
+        float drawHeight = icon.height * scale;
+
+        // Căn giữa icon trong bounds của item
+        float iconX = item.bounds.x + (item.bounds.width - drawWidth) / 2;
+        float iconY = item.bounds.y + (item.bounds.height - drawHeight) / 2 - 10.0f;
+        if (i == 3) {
+            iconX += 10.0f;
+            iconY -= 10.0f;
+        }
+        else if (i == 2) {
+            iconY -= 10.0f;
+        }
+        else if (i == 0) {
+            iconX += 10.0f;
+            iconY -= 5.0f;
+        }
+
+        DrawTextureEx(icon, { iconX, iconY }, 0.0f, scale, RAYWHITE);
+    }
+
+
 }

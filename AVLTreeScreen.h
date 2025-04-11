@@ -4,6 +4,7 @@
 #include "AVL.h"
 #include "TextBox.h"
 #include "tinyfiledialogs.h"
+#include "Table.h"
 #include <stack>
 
 enum SelectedButtonAVL {
@@ -84,9 +85,6 @@ private:
 	Rectangle searchButton = { PANEL_PADDING + 8, 510, 130, 40 };
 	Rectangle clearButton = { PANEL_PADDING + 8, 570, 130, 40 };;
 	Rectangle fileButton = { 270, 420, 90, 30 };
-	Rectangle inorderButton = { PANEL_PADDING + 40, Screen_h - 230, 130, 40 };
-	Rectangle preorderButton = { PANEL_PADDING + 40, Screen_h - 180, 130, 40 };
-	Rectangle postorderButton = { PANEL_PADDING + 40, Screen_h - 130, 130, 40 };
 
 	// Nút OK dưới textBox
 	Rectangle okButton = { PANEL_PADDING + 197, 500, 130, 40 };
@@ -105,9 +103,6 @@ private:
 	int ClearState = 6;
 	int CreateState = 7;
 	int FileState = 8;
-	int InorderState = 9;
-	int PreorderState = 10;
-	int PostorderState = 11;
 	int UndoState = 7;
 	int RedoState = 8;
 
@@ -126,9 +121,6 @@ private:
 	bool isClear = false;
 	bool isCreateRandom = false;
 	bool isCreateFile = false;
-	bool isInordered = false;
-	bool isPreordered = false;
-	bool isPostordered = false;
 
 	bool entered = false;
 	bool animating = false;   // Đang chạy animation hay không
@@ -163,7 +155,7 @@ private:
 
 
 	// Traversal 
-	std::vector<int> InTraversalValues;        // Lưu giá trị trả về từ traversal
+	std::vector<int> InTraversalValues;
 	std::vector<int> PreTraversalValues;
 	std::vector<int> PostTraversalValues;
 	float IntraversalTimer = 0.0f;
@@ -194,6 +186,8 @@ private:
 	Texture2D textureUndo;
 	Texture2D textureUndoHovered;
 	Texture2D textureRedoHovered;
+
+	TraversalTable myTable;
 public:
 	// Hàm khởi tạo màn hình AVL
 	void Init();

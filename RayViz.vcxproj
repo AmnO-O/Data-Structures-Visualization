@@ -142,6 +142,7 @@
     <ClInclude Include="LinkedListScreen.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="SettingScreen.h" />
+    <ClInclude Include="Table.h" />
     <ClInclude Include="TextBox.h" />
     <ClInclude Include="tinyfiledialogs.h" />
     <ClInclude Include="UI.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="SettingScreen.cpp" />
+    <ClCompile Include="Table.cpp" />
     <ClCompile Include="tinyfiledialogs.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
