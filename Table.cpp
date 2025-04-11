@@ -12,7 +12,7 @@ void TraversalTable::Init(float x, float y, float width, float height) {
     tableArea = { x, y, width, height };
 
     // Nút ở phía trên bên phải bảng
-    toggleButton = { x + width - 140, y - 50, 140, 40 };
+    toggleButton = { x + width - 110, y - 45, 110, 35 };
 
     myFont = LoadFont("Assets/Fonts/PublicSans-bold.ttf");
     SetTextureFilter(myFont.texture, TEXTURE_FILTER_BILINEAR);
