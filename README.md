@@ -47,7 +47,7 @@ RayViz/
 │   │   │   ├── Button.cpp
 │   │   │   └── TextBox.h
 │   │   │
-│   │   ├── screens/         # Các màn hình cụ thể
+│   │   ├── Screens/         # Các màn hình cụ thể
 │   │   │   ├── AboutScreen.h
 │   │   │   ├── AboutScreen.cpp
 |   |   |   ├── Helper.h
@@ -55,7 +55,7 @@ RayViz/
 │   │   │   ├── SettingScreen.h
 │   │   │   └── SettingScreen.cpp
 │   │   │
-│   │   ├── toolbar/         # Toolbar chung
+│   │   ├── Toolbar/         # Toolbar chung
 │   │   │   ├── Adjust.cpp    
 │   │   │   └── Adjust.h
 │   │   │
