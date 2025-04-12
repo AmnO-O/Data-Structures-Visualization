@@ -28,7 +28,7 @@ RayViz/
 │   │   |   ├── GraphVisual.h
 │   │   |   └── GraphVisual.cpp
 |   |   |
-│   │   ├── hash_table/
+│   │   ├── Hash_table/
 │   │   │   ├── HashTable.h
 │   │   │   ├── HashTable.cpp
 │   │   │   ├── HashTableVisual.h
