@@ -1,5 +1,5 @@
 ﻿#include "HashTableVisual.h"
-#include "Constants.h"
+#include "../../Constants.h"
 
 
 HashTableVisual::HashTableVisual() {

@@ -1,11 +1,11 @@
 ﻿#pragma once
 #include "raylib.h"
-#include "SettingScreen.h"
 #include "AVL.h"
-#include "TextBox.h"
-#include "tinyfiledialogs.h"
+#include "../../UI/Components/TextBox.h"
+#include "../../External/tinyfiledialogs.h"
 #include "Table.h"
 #include <stack>
+#include <string>
 
 enum SelectedButtonAVL {
 	NONEAVL,

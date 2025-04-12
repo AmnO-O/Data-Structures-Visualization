@@ -1,5 +1,7 @@
 ﻿#include "LinkedListScreen.h"
-#include "Constants.h"
+#include "../../Constants.h"
+#include "../../UI/Screens/SettingScreen.h"
+
 #include <string>
 #include <unordered_set>
 

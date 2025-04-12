@@ -1,5 +1,6 @@
 ﻿#include "Helper.h"
-#include "Constants.h"
+#include "SettingScreen.h"
+#include "../../Constants.h"
 
 
 void HelperScreen::Init() {

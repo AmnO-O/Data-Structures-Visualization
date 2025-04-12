@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "Constants.h"
-#include "Button.h"
-#include "TextBox.h"
+#include "../../Constants.h"
+#include "../../UI/Components/Button.h"
+#include "../../UI/Components/TextBox.h"
 
 
 struct Node {

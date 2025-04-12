@@ -1,4 +1,7 @@
 ﻿#include "AVLTreeScreen.h"
+#include "AVLTreeScreen.h"
+#include "../../UI/Screens/SettingScreen.h"
+
 #include <string>
 #include <unordered_set>
 

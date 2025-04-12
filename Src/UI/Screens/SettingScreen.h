@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "raylib.h"
-#include "Constants.h"
+#include "../../Constants.h"
 
 // Biến kiểm tra hover cho nút Back và Theme
 extern bool backHovered;

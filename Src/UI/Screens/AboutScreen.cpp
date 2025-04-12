@@ -1,5 +1,5 @@
 ﻿#include "AboutScreen.h"
-#include "Constants.h"
+#include "../../Constants.h"
 
 void AboutScreen::Init() {
     // Khởi tạo nút "Back"

@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "Constants.h"
-#include "tinyfiledialogs.h"
+#include "../../Constants.h"
+#include "../../External/tinyfiledialogs.h"
 #include <sstream>
 #include <fstream>
 

@@ -1,5 +1,5 @@
 ﻿#include "UI.h"
-#include "Adjust.h" // Include the header for Toolbar
+#include "Toolbar/Adjust.h" // Include the header for Toolbar
 
 Visualizer::Visualizer() {
 

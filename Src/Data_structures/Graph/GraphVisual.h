@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "Graph.h"
-#include "Button.h"
-#include "TextBox.h"
+#include "../../UI/Components/Button.h"
+#include "../../UI/Components/TextBox.h"
 
 class GraphVisual {
 public:

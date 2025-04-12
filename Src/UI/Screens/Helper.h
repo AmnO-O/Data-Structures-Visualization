@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "raylib.h"
-#include "SettingScreen.h"
 
 class HelperScreen {
 private:

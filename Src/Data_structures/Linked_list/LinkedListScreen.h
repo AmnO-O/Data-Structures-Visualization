@@ -1,11 +1,10 @@
 ﻿#pragma once
 #include "raylib.h"
-#include "SettingScreen.h"
 #include "LinkedList.h"
-#include "TextBox.h"
-#include "Adjust.h"
+#include "../../UI/Components/Textbox.h"
+#include "../../UI/Toolbar/Adjust.h"
 #include <unordered_set>
-
+#include <string>
 
 enum SelectedButton {
 	NONE,

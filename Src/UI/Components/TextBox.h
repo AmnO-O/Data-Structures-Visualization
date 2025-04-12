@@ -1,7 +1,8 @@
 ﻿#pragma once
-#include "Constants.h"
+#include "../../Constants.h"
 #include <sstream>
 #include <fstream>
+
 struct TextBox {
     Rectangle bounds;      // Text box 's area
     string text = "";           // Content entered

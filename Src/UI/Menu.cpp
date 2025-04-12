@@ -1,5 +1,5 @@
 ﻿#include "Menu.h"
-#include "Constants.h"
+#include "../Constants.h"
 
 Menu::Menu() {
     // Khởi tạo nút "How to Use"
