@@ -10,7 +10,7 @@ RayViz/
 ├── Src/
 │   │
 │   ├── main.cpp
-│   ├── Constants.h
+│   ├── Constants.h # Constants and utility functions (e.g., `random`, `drawline`)
 |   ├── Constants.cpp
 |   |
 │   ├── Data_structures/
@@ -70,10 +70,11 @@ RayViz/
 │       ├── tinyfiledialogs.cpp
 │       └── tinyfiledialogs.h
 │
-├── Assets/                  # Resources
-│   ├── Images/
-│   ├── Fonts/
-│   └── Sound/
+├── Assets/    # Resources
+│   ├── Images/  # images of data structures, dark theme, light theme, ect.
+│   ├── Fonts/  # fonts
+|   ├── Toolbar/ #  images of switch on, switch off, pause, play, ect.
+│   └── Sound/  # Music files
 │
 └── docs/                    # Tài liệu dự án
 ```
