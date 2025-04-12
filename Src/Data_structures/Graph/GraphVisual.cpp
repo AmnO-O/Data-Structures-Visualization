@@ -30,6 +30,9 @@ GraphVisual::GraphVisual() {
     loadFileEdges.width = 600;
     loadFileEdges.height = 300;
 
+    loadFileMatrix.width = 600;
+    loadFileMatrix.height = 300;
+
     switch_off = LoadTexture("Assets/Images/switch-off.png");
     switch_on = LoadTexture("Assets/Images/switch-on.png");
 
@@ -48,11 +51,22 @@ GraphVisual::GraphVisual() {
         " 4 5\n"
         " 5 6 5\n");
 
+    loadFileMatrix.show("File Format Requirement",
+        "First line contains N (vertices)\n"
+        "Each row should contain exactly N values.\n"
+        "Each line corresponds to a single row of matrix.\n"
+        "Elements on the same line should be separated by a space.\n"
+        "Example:\n"
+        "3\n"
+        "0 1 1\n"
+        "1 0 1\n"
+        "0 0 1\n");
+
     mstCode = {
     "Sort Edges(E) by increasing weight.",
     "MST = an empty set []",
     " ",
-    "For(Edge (u, v) in sorted E)",
+    "for(Edge (u, v) in sorted E)",
     "   if(add (u, v) not form cycle)",
     "       add edge(u, v) to MST",
     "   else ignore edge(u, v)",
@@ -131,7 +145,9 @@ int GraphVisual::handleEvent() {
             }
         }
 
-        fileMatrix.update();
+        if (fileMatrix.update()) {
+            loadFileMatrix.display = true; 
+        }
 
         if (fileEdges.update()) {
             loadFileEdges.display = true;
@@ -174,6 +190,50 @@ int GraphVisual::handleEvent() {
                 if (G.numNodes >= 0) Vertices.text = to_string(G.numNodes);
                 if (G.numEdges >= 0) Edges.text = to_string(G.numEdges);
             }
+        }
+
+        if (loadFileMatrix.update()) {
+            vector <string> lines = readFileEdges.loadFileLines();
+
+            if (!lines.empty()) {
+                G.reset();
+
+                int num = stoll(lines[0]); 
+                while (G.numNodes < num) G.addNode(G.numNodes); 
+
+                for (int i = 1; i < lines.size(); i++) {
+                    int wei = -1e7 - 7 - 2006; 
+                    int digit = -1; 
+                    int from = i; 
+                    int to = 0; 
+
+                    for (int j = 0; j < lines[i].size(); j++) {
+                        if (lines[i][j] == '-') {
+                            wei = -1;
+                        }
+                        else if (isdigit(lines[i][j])) {
+                            if (digit < 0) digit = lines[i][j] - '0';
+                            else
+                                digit = digit * 10 + lines[i][j] - '0';
+                        }
+                        else {
+                            if (digit != 0)
+                                G.addEdge(from, to, wei == -1 ? -digit : digit, true);
+
+                            wei = -1e7 - 7 - 2006;
+                            digit = -1;
+                            to++;
+                        }
+                    }
+
+                    if (digit != 0)
+                        G.addEdge(from, to, wei == -1 ? -digit : digit, true);
+                }
+
+                if (G.numNodes >= 0) Vertices.text = to_string(G.numNodes);
+                if (G.numEdges >= 0) Edges.text = to_string(G.numEdges);
+            }
+
         }
     }
     else if (Input.isAddedge) {
@@ -805,6 +865,7 @@ void GraphVisual::draw() {
 
 
     loadFileEdges.draw(font);
+    loadFileMatrix.draw(font);
 }
 
 

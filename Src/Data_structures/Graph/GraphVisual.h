@@ -51,7 +51,7 @@ private:
 	Button fileMatrix, fileEdges, Go;
 	Graph G;
 
-	Instruction loadFileEdges;
+	Instruction loadFileEdges, loadFileMatrix;
 	FileLoader readFileEdges;
 	Texture2D switch_off, switch_on;
 
