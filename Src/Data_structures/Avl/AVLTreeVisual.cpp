@@ -1,5 +1,4 @@
-﻿#include "AVLTreeScreen.h"
-#include "AVLTreeScreen.h"
+﻿#include "AVLTreeVisual.h"
 #include "../../UI/Screens/SettingScreen.h"
 
 #include <string>

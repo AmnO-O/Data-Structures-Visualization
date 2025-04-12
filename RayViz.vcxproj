@@ -21,14 +21,14 @@
   <ItemGroup>
     <ClCompile Include="Src\Constants.cpp" />
     <ClCompile Include="Src\Data_structures\Avl\AVL.cpp" />
-    <ClCompile Include="Src\Data_structures\Avl\AVLTreeScreen.cpp" />
+    <ClCompile Include="Src\Data_structures\Avl\AVLTreeVisual.cpp" />
     <ClCompile Include="Src\Data_structures\Avl\Table.cpp" />
     <ClCompile Include="Src\Data_structures\Graph\Graph.cpp" />
     <ClCompile Include="Src\Data_structures\Graph\GraphVisual.cpp" />
-    <ClCompile Include="Src\Data_structures\Hashtable\HashTable.cpp" />
-    <ClCompile Include="Src\Data_structures\Hashtable\HashTableVisual.cpp" />
+    <ClCompile Include="Src\Data_structures\Hash_table\HashTable.cpp" />
+    <ClCompile Include="Src\Data_structures\Hash_table\HashTableVisual.cpp" />
     <ClCompile Include="Src\Data_structures\Linked_list\Linkedlist.cpp" />
-    <ClCompile Include="Src\Data_structures\Linked_list\LinkedListScreen.cpp" />
+    <ClCompile Include="Src\Data_structures\Linked_list\LinkedListVisual.cpp" />
     <ClCompile Include="Src\External\tinyfiledialogs.cpp" />
     <ClCompile Include="Src\main.cpp" />
     <ClCompile Include="Src\UI\Components\Button.cpp" />
@@ -42,14 +42,14 @@
   <ItemGroup>
     <ClInclude Include="Src\Constants.h" />
     <ClInclude Include="Src\Data_structures\Avl\AVL.h" />
-    <ClInclude Include="Src\Data_structures\Avl\AVLTreeScreen.h" />
+    <ClInclude Include="Src\Data_structures\Avl\AVLTreeVisual.h" />
     <ClInclude Include="Src\Data_structures\Avl\Table.h" />
     <ClInclude Include="Src\Data_structures\Graph\Graph.h" />
     <ClInclude Include="Src\Data_structures\Graph\GraphVisual.h" />
-    <ClInclude Include="Src\Data_structures\Hashtable\HashTable.h" />
-    <ClInclude Include="Src\Data_structures\Hashtable\HashTableVisual.h" />
+    <ClInclude Include="Src\Data_structures\Hash_table\HashTable.h" />
+    <ClInclude Include="Src\Data_structures\Hash_table\HashTableVisual.h" />
     <ClInclude Include="Src\Data_structures\Linked_list\LinkedList.h" />
-    <ClInclude Include="Src\Data_structures\Linked_list\LinkedListScreen.h" />
+    <ClInclude Include="Src\Data_structures\Linked_list\LinkedListVisual.h" />
     <ClInclude Include="Src\External\tinyfiledialogs.h" />
     <ClInclude Include="Src\UI\Components\Button.h" />
     <ClInclude Include="Src\UI\Components\TextBox.h" />
