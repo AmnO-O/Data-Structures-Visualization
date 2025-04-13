@@ -40,6 +40,7 @@ void AVLTreeScreen::Init() {
     Nodes = { {270, 350, 90, 30}, "Random" };
 
     toolbar.isPlaying = true;
+    toolbar.isAVL = true;
 
     sparks.clear();
 
@@ -86,8 +87,8 @@ void AVLTreeScreen::Update(int& state) {
     okHovered = CheckCollisionPointRec(mouse, okButton);
 
 
-    if (toolbar.isBack)timer = 1.01f;
-	if (toolbar.isNext)timer = 1.01f;
+    if (toolbar.isBack) timer = 1.01f;
+	if (toolbar.isNext) timer = 1.01f;
 
     // Kiểm tra nút Create
     if (createHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -396,10 +397,10 @@ void AVLTreeScreen::Update(int& state) {
                 CurrAVLtree.PostorderTraversal(PostTraversalValues);
             }
 
-            timer = duration + 0.1f;
+            timer = toolbar.duration + 0.1f;
             entered = !entered;
         }
-        if (timer >= duration) {
+        if (timer >= toolbar.duration) {
             if (toolbar.isBack) {
                 if (CurrAVLtree.currentanimation >= 1) {
                     CurrAVLtree.currentanimation--;
@@ -624,7 +625,7 @@ void AVLTreeScreen::Draw() {
     }
 
     // Gọi vẽ danh sách với progress từ 0 -> 1
-    float animationProgress = timer / duration;
+    float animationProgress = timer / toolbar.duration;
     drawAVLtree(animationProgress, Animationmroot);
     finnishAnimation = true;
 
@@ -742,6 +743,7 @@ void AVLTreeScreen::drawAVLtree(float animationProgress, AVLNode* root) {
         if (fadeProgress <= 0.0f) {
             fadeProgress = 1.0f;
             CurrAVLtree.Clear(); // Xóa danh sách khi hiệu ứng kết thúc
+            InTraversalValues = PreTraversalValues = PostTraversalValues = {};
             isClear = false;
             Animationmroot = NULL;
         }

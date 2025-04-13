@@ -9,7 +9,6 @@
 #include <unordered_set>
 const float nodeSpacing = 50.0f;
 
-
 struct AVLNode {
     struct AnimationStep {
         Vector2 position;           // Thay thế queuexy

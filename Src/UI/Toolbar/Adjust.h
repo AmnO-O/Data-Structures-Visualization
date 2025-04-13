@@ -20,6 +20,7 @@ public:
     bool isNext = false;
     bool isOpen = false;
     bool isPlaying = false;
+    bool isAVL = false;
     float speed;
     float duration;
 
