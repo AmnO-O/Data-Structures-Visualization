@@ -3,9 +3,13 @@
 #include "AVL.h"
 #include "../../UI/Components/TextBox.h"
 #include "../../External/tinyfiledialogs.h"
+#include "../../UI/Screens/SettingScreen.h"
+#include "../../Src/Constants.h"
 #include "Table.h"
 #include <stack>
 #include <string>
+
+
 
 enum SelectedButtonAVL {
 	NONEAVL,
@@ -60,7 +64,7 @@ private:
 	int RomovevCaseInfo = 7;
 
 	int NULLCase = 2;
-	int ThisValueCase = 3;
+	int ThisValueCase = -1;
 	int SmallerCase = 4;
 	int LargerCase = 5;
 
@@ -77,6 +81,7 @@ private:
 	bool postorderHovered = false;
 	bool undoHovered = false;
 	bool redoHovered = false;
+	bool pauseHovered = false;
 
 	// Vị trí của Panel
 	Rectangle createButton = { PANEL_PADDING + 8, 330, 130, 40 };
@@ -92,8 +97,10 @@ private:
 	// Undo, Redo 
 	Vector2 Undoposition = { 700, 840 };
 	Vector2 Redoposition = { 800, 840 };
+	Vector2 Pauseposition = { 750, 840 };
 	Rectangle undoRect = { Undoposition.x, Undoposition.y, 50, 50 };
 	Rectangle redoRect = { Redoposition.x, Redoposition.y, 50, 50 };
+	Rectangle pause = { Pauseposition.x, Pauseposition.y, 50, 50 };
 
 	// Kiểm tra trang hiện tại người dùng đang sử dụng
 	int AVLtreeState;
@@ -103,14 +110,14 @@ private:
 	int ClearState = 6;
 	int CreateState = 7;
 	int FileState = 8;
-	int UndoState = 7;
-	int RedoState = 8;
+
 
 	SelectedButtonAVL currentButton; // Xác định operation đang sử dụng
 
 	// TextBox Value và Index 
 	TextBox Value;
 	TextBoxCenter Nodes;
+
 	Vector2 mouse;
 	AVLtree CurrAVLtree;
 
@@ -121,6 +128,9 @@ private:
 	bool isClear = false;
 	bool isCreateRandom = false;
 	bool isCreateFile = false;
+	bool isPause = false;
+	bool isUndo = false;
+	bool isRedo = false;
 
 	bool entered = false;
 	bool animating = false;   // Đang chạy animation hay không
@@ -133,11 +143,9 @@ private:
 	int valueNodes;
 
 	AVLNode* SearchNode;
-	AVLNode* currentSearchNode;
 
 	bool findingSmallestRightSubTree = false;
 
-	bool SearchAnimationFinished = true;
 	int ValueSearchAnimation;
 
 	bool showFileInfoPopup = false;   // Hiển thị bảng thông báo khi ấn vào Browse File 
@@ -173,19 +181,19 @@ private:
 	std::vector<Spark> sparks;
 
 
-	// Dùng để vẽ cây một cách tĩnh, không có animation khi bấm Undo, Redo 
-	bool isUndo = false;
-	bool isRedo = false;
-	// Ảnh icon Redo, Undo 
-	Image imageRedo;
-	Image imageUndo;
-	Image imageRedoHovered;
-	Image imageUndoHovered;
-	// Chuyển sang Texture 
-	Texture2D textureRedo;
-	Texture2D textureUndo;
-	Texture2D textureUndoHovered;
-	Texture2D textureRedoHovered;
+	//// Ảnh icon Redo, Undo 
+	//Image imageRedo;
+	//Image imageUndo;
+	//Image imageRedoHovered;
+	//Image imageUndoHovered;
+	//// Chuyển sang Texture 
+	//Texture2D textureRedo;
+	//Texture2D textureUndo;
+	//Texture2D textureUndoHovered;
+	//Texture2D textureRedoHovered;
+
+	Toolbar toolbar;
+
 
 	TraversalTable myTable;
 public:
@@ -200,8 +208,6 @@ public:
 
 	// Giải phóng tài nguyên màn hình AVL
 	void Unload();
-
-	void SearchAnimation(int key);
 
 	// Vẽ bảng điều khiển trong AVL Screen
 	void DrawOperationsPanel();

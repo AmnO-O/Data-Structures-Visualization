@@ -1,5 +1,4 @@
 ﻿#include "AVL.h"
-#include <unordered_set>
 
 int AVLtree::height(AVLNode* node) {
     if (node == NULL) return 0;
@@ -42,64 +41,73 @@ AVLNode* AVLtree::rightRotate(AVLNode* x) {
 }
 
 AVLNode* AVLtree::insert(AVLNode*& root, int key, float Ox, float Oy) {
+
     //if node is null insert new node 
     if (!root) {
-        root = new AVLNode(key, Ox, Oy);
+        root = new AVLNode(key, Ox, Oy, previousanimation);
+        set.insert(root);
         subcase = 7;
         return root;
     }
-
+    root->currentstate = 2;
+    PushAnimation(m_root, 900.0, 200.0, subcase);
+    previousanimation++;
     // choose subtree to insert
+    AVLNode* cur;
     if (key < root->val) {
-        AVLNode* cur = root->left;
+        cur = root->left;
         root->left = insert(root->left, key, root->x - nodeSpacing / 2.0, root->y + nodeSpacing);
-        if (cur != root->left) {
-            PushAnimation(m_root, 900.0, 200.0, subcase);
-            waitinganimation++;
+        if (cur) {
+            cur->currentstate = 1;
         }
     }
     else if (key > root->val) {
-        AVLNode* cur = root->right;
+        cur = root->right;
         root->right = insert(root->right, key, root->x + nodeSpacing / 2.0, root->y + nodeSpacing);
-        if (cur != root->right) {
-            PushAnimation(m_root, 900.0, 200.0, subcase);
-            waitinganimation++;
+        if (cur) {
+            cur->currentstate = 1;
         }
     }
-    else return root;
-
-
+    else {
+        root->currentstate = 1;
+        return root;
+    }
+    if (!root) return root;
     // update height of current node 
     root->height = 1 + max(height(root->left), height(root->right));
-
     // get the difference of height between left and right subtree
-    int dif = difference(root);
+    root->dif = difference(root);
     int leftdif = difference(root->left);
     int rightdif = difference(root->right);
+    if (cur != root->left && cur != root->right) {
+        UpdateDistance(m_root, 900.0, 200.0, subcase);
+    }
+    else PushAnimation(m_root, 900.0, 200.0, subcase);
+    previousanimation++;
     // left left problem
-    if (dif > 1 && leftdif > 0) {
+    if (root->dif > 1 && leftdif > 0) {
         subcase = 2;
         return rightRotate(root);
     }
     // right right problem
-    else if (dif < -1 && rightdif < 0) {
+    else if (root->dif < -1 && rightdif < 0) {
         subcase = 4;
         return leftRotate(root);
     }
     // left right problem
-    else if (dif > 1 && leftdif < 0) {
+    else if (root->dif > 1 && leftdif < 0) {
         root->left = leftRotate(root->left);
         subcase = 3;
-        PushAnimation(m_root, 900.0, 200.0, subcase);
-        waitinganimation++;
+        UpdateDistance(m_root, 900.0, 200.0, subcase);
+        previousanimation++;
         return rightRotate(root);
     }
     //right left problem
-    else if (dif < -1 && rightdif > 0) {
+    else if (root->dif < -1 && rightdif > 0) {
         root->right = rightRotate(root->right);
         subcase = 5;
-        PushAnimation(m_root, 900.0, 200.0, subcase);
-        waitinganimation++;
+        UpdateDistance(m_root, 900.0, 200.0, subcase);
+        previousanimation++;
         return leftRotate(root);
     }
     return root;
@@ -114,83 +122,104 @@ int AVLtree::difference(AVLNode* node) {
 
 AVLNode* AVLtree::Search(AVLNode* root, int key) {
     if (!root) return NULL;
-    if (root->val == key) return root;
-    if (root->val > key) return Search(root->left, key);
-    else return Search(root->right, key);
+    root->currentstate = root->val == key ? 3 : 2;
+    PushAnimation(m_root, 900.0, 200.0, subcase);
+    if (root->val == key) {
+        return root;
+    }
+    else if (root->val > key) {
+        AVLNode* cur = Search(root->left, key);
+        root->currentstate = 1;
+        PushAnimation(m_root, 900.0, 200.0, subcase);
+        return cur;
+    }
+    else {
+        AVLNode* cur = Search(root->right, key);
+        root->currentstate = 1;
+        PushAnimation(m_root, 900.0, 200.0, subcase);
+        return cur;
+    }
 }
 
 AVLNode* AVLtree::DeleteNode(AVLNode*& root, int key) {
     if (!root)
         return root;
-
     // Search for the node to delete
+    AVLNode* cur;
     if (key < root->val) {
-        AVLNode* cur = root->left;
+        cur = root->left;
+        root->currentstate = 2;
+        PushAnimation(m_root, 900.0, 200.0, subcase);
         root->left = DeleteNode(root->left, key);
-        if (cur != root->left || cur->val != root->left->val) {
-            PushAnimation(m_root, 900.0, 200.0, subcase);
-            waitinganimation++;
-        }
+
     }
 
     else if (key > root->val) {
-        AVLNode* cur = root->right;
+        cur = root->right;
+        root->currentstate = 2;
+        PushAnimation(m_root, 900.0, 200.0, subcase);
         root->right = DeleteNode(root->right, key);
-        if (cur != root->right || cur->val != root->right->val) {
-            PushAnimation(m_root, 900.0, 200.0, subcase);
-            waitinganimation++;
-        }
     }
     else {
+        root->currentstate = 3;
+        PushAnimation(m_root, 900.0, 200.0, subcase);
+        cur = root->right;
         // Node with only one child or no child
         if (!root->left || !root->right) {
+            if (deletenode) {
+                deletenode->val = root->val;
+            }
             AVLNode* temp = root->left ? root->left : root->right;
 
             if (!temp) {
                 // No child case
-                temp = root;
                 root = nullptr;
             }
             else {
                 // One child case
-                *root = *temp; // Copy contents
+                root = temp; // Copy contents
             }
-
-            delete temp;
             subcase = 7;
         }
         // Node with two children
         else {
+            deletenode = root;
             AVLNode* temp = root->right;
             while (temp->left)
                 temp = temp->left;
-            root->val = temp->val;
             root->right = DeleteNode(root->right, temp->val);
-            PushAnimation(m_root, 900.0, 200.0, subcase);
-            waitinganimation++;
         }
     }
 
     if (!root) return root; // If tree had only one node
+    if (cur) {
+        cur->currentstate = 1;
+    }
 
     // Update height
     root->height = 1 + max(height(root->left), height(root->right));
 
     // Get balance factor
     int balance = difference(root);
+    root->dif = balance;
+    if (cur != root->left && cur != root->right) {
+        UpdateDistance(m_root, 900.0, 200.0, subcase);
+    }
+    else PushAnimation(m_root, 900.0, 200.0, subcase);
 
     // Left-Left Case
     if (balance > 1 && difference(root->left) >= 0) {
-        return rightRotate(root);
         subcase = 2;
+        return rightRotate(root);
+
     }
 
     // Left-Right Case
     if (balance > 1 && difference(root->left) < 0) {
         root->left = leftRotate(root->left);
         subcase = 3;
-        PushAnimation(m_root, 900.0, 200.0, subcase);
-        waitinganimation++;
+        UpdateDistance(m_root, 900.0, 200.0, subcase);
+
         return rightRotate(root);
     }
 
@@ -205,8 +234,8 @@ AVLNode* AVLtree::DeleteNode(AVLNode*& root, int key) {
     if (balance < -1 && difference(root->right) > 0) {
         root->right = rightRotate(root->right);
         subcase = 5;
-        PushAnimation(m_root, 900.0, 200.0, subcase);
-        waitinganimation++;
+        UpdateDistance(m_root, 900.0, 200.0, subcase);
+
         return leftRotate(root);
     }
 
@@ -230,74 +259,116 @@ void AVLtree::Clear(AVLNode* root) {
 void AVLtree::Clear() {
     Clear(m_root);
     m_root = NULL;
+    mroot = { {nullptr, 0} };
+    currentanimation = 0;
+    set.clear();
 }
 
 AVLNode* AVLtree::Search(int key) {
     return Search(m_root, key);
 }
 
+void AVLtree::UpdateBalance(AVLNode* root) {
+    if (root == nullptr) return;
+    if (root->left) UpdateBalance(root->left);
+    if (root->right) UpdateBalance(root->right);
+    root->dif = difference(root);
+}
+
 void AVLtree::Insert(int key) {
     AVLNode* cur = m_root;
+    previousanimation = 0;
     m_root = insert(m_root, key, 900, 200);
-    if (cur != m_root) {
-        PushAnimation(m_root, 900.0, 200.0, subcase);
-        waitinganimation++;
-    }
-    waitinganimation++;
+    if (cur)cur->currentstate = 1;
+    previousanimation = 0;
+    UpdateBalance(m_root);
+    UpdateDistance(m_root, 900.0, 200.0, subcase);
 }
 
 void AVLtree::Delete(int key) {
     AVLNode* cur = m_root;
+    deletenode = NULL;
     m_root = DeleteNode(m_root, key);
-    if (cur != m_root) {
-        PushAnimation(m_root, 900.0, 200.0, subcase);
-        waitinganimation++;
-    }
-    waitinganimation++;
+    if (cur)cur->currentstate = 1;
+    UpdateBalance(m_root);
+    UpdateDistance(m_root, 900.0, 200.0, subcase);
+    deletenode = NULL;
+
 }
 
-void AVLtree::PushAnimation(AVLNode* root, float target_x, float target_y, int subcase) {
+void AVLtree::UpdateDistance(AVLNode* root, float target_x, float target_y, int subcase) {
     if (root == nullptr) return;
-    root->queuexy.push_back({ target_x, target_y });
-    root->QueueChildren.push_back({ root->left, root->right });
-    if (root == m_root) mroot.push_back({ root , subcase });
-
-    int maxleaf = root->height > 1 ? root->height - 1 : 0;
+    root->animationSteps.push_back({ { target_x, target_y } , { root->left, root->right } , root->val , root->currentstate , root->dif });
+    if (root == m_root) mroot.push_back({ m_root , subcase });
+    int maxleaf = root->height > 1 ? root->height - 2 : 0;
     maxleaf = 1 << maxleaf;
     if (root->left) {
         float newox = target_x - maxleaf * nodeSpacing / 2.0;
         float newoy = target_y + nodeSpacing;
-        PushAnimation(root->left, newox, newoy, subcase);
+        UpdateDistance(root->left, newox, newoy, subcase);
     }
     if (root->right) {
         float newox = target_x + maxleaf * nodeSpacing / 2.0;
         float newoy = target_y + nodeSpacing;
+        UpdateDistance(root->right, newox, newoy, subcase);
+    }
+}
+void AVLtree::PushAnimation(AVLNode* root, float target_x, float target_y, int subcase) {
+    if (root == nullptr) return;
+    root->animationSteps.push_back({ { target_x, target_y } , { root->left, root->right } , root->val , root->currentstate , root->dif });
+    if (root == m_root) mroot.push_back({ m_root , subcase });
+    if (root->left) {
+        float newox, newoy;
+        if (root->left->animationSteps.size() >= 1) {
+            newox = root->left->animationSteps.back().position.x;
+            newoy = root->left->animationSteps.back().position.y;
+        }
+        else
+        {
+            newox = target_x - nodeSpacing / 2.0;
+            newoy = target_y + nodeSpacing;
+        }
+
+        PushAnimation(root->left, newox, newoy, subcase);
+    }
+    if (root->right) {
+        float newox, newoy;
+        if (root->right->animationSteps.size() >= 1) {
+            newox = root->right->animationSteps.back().position.x;
+            newoy = root->right->animationSteps.back().position.y;
+        }
+        else
+        {
+            newox = target_x + nodeSpacing / 2.0;
+            newoy = target_y + nodeSpacing;
+        }
         PushAnimation(root->right, newox, newoy, subcase);
     }
 }
 
+void AVLtree::UpdateOrderPos(int step) {
+    for (auto& x : set) x->currentAnimationNode += step;
+}
+
 void AVLtree::UpdatePos(AVLNode* root) {
     if (root == nullptr) return;
-    if (root->firstAnimationFinished) {
-        root->x = root->newx;
-        root->y = root->newy;
+    if (root->currentAnimationNode >= 0 && root->currentAnimationNode < root->animationSteps.size()) {
+        auto x = root->animationSteps[root->currentAnimationNode];
+        root->val = x.value;
+        root->left = x.children.first;
+        root->right = x.children.second;
+        root->currentstate = x.state;
+        root->dif = x.dif;
+        if (root->newx > 0)root->x = root->newx;
+        if (root->newy > 0)root->y = root->newy;
+        root->newx = x.position.x;
+        root->newy = x.position.y;
     }
-    else root->firstAnimationFinished = true;
-    if (!root->queuexy.empty()) {
-        Vector2 nextXY = root->queuexy.front();
-        root->queuexy.pop_front();
-        auto x = root->QueueChildren.front();
-        root->QueueChildren.pop_front();
-        root->left = x.first;
-        root->right = x.second;
-        root->newx = nextXY.x;
-        root->newy = nextXY.y;
-    }
+
 
     if (root->left) UpdatePos(root->left);
     if (root->right) UpdatePos(root->right);
 }
-
 
 void AVLtree::CreateRandomAVL(int nodeCount, int minValue, int maxValue) {
     Clear(); // Xóa cây hiện tại trước khi tạo mới
@@ -306,9 +377,10 @@ void AVLtree::CreateRandomAVL(int nodeCount, int minValue, int maxValue) {
     while (usedValues.size() < nodeCount) {
         int value = GetRandomValue(minValue, maxValue);
         if (usedValues.insert(value).second) { // Chỉ insert nếu chưa tồn tại
-            Insert(value);
+            m_root = insertNoAnimation(m_root, value, 900, 200);
         }
     }
+    UpdateDistance(m_root, 900.0, 200.0, subcase);
 }
 
 void AVLtree::readNumbersFromFile(const std::string& filename) {
@@ -326,9 +398,10 @@ void AVLtree::readNumbersFromFile(const std::string& filename) {
     while (file >> value) {
         // Kiểm tra xem giá trị đã được thêm vào chưa
         if (usedValues.insert(value).second) { // Chỉ thêm vào cây nếu giá trị chưa có trong set
-            Insert(value);  // Thực hiện chèn giá trị vào cây
+            m_root = insertNoAnimation(m_root, value, 900, 200);;  // Thực hiện chèn giá trị vào cây
         }
     }
+    UpdateDistance(m_root, 900.0, 200.0, subcase);
 
     file.close();
 }
@@ -376,32 +449,41 @@ void AVLtree::GetInOrderHelper(AVLNode* node, std::vector<int>& result) {
     GetInOrderHelper(node->right, result);
 }
 
-AVLNode* AVLtree::clone(AVLNode* root) {
-    if (root == nullptr) return nullptr;
-
-    AVLNode* newNode = new AVLNode(root->val);
-    newNode->height = root->height;
-    newNode->left = clone(root->left);
-    newNode->right = clone(root->right);
-    return newNode;
-}
-
-void AVLtree::Undo() {
-    if (undoStack.empty()) return;
-
-    AVLNode* newAVLNode = clone(m_root);
-    redoStack.push(newAVLNode);
-    Clear();
-    m_root = undoStack.top();
-    undoStack.pop();
-}
-
-void AVLtree::Redo() {
-    if (redoStack.empty()) return;
-
-    AVLNode* newAVLNode = clone(m_root);
-    undoStack.push(newAVLNode);
-    Clear();
-    m_root = redoStack.top();
-    redoStack.pop();
+AVLNode* AVLtree::insertNoAnimation(AVLNode*& root, int key, float Ox, float Oy) {
+    //if node is null insert new node 
+    if (!root) {
+        root = new AVLNode(key, Ox, Oy);
+        set.insert(root);
+        return root;
+    }
+    // choose subtree to insert
+    if (key < root->val)         root->left = insertNoAnimation(root->left, key, root->x - nodeSpacing / 1.0, root->y + nodeSpacing);
+    else if (key > root->val)        root->right = insertNoAnimation(root->right, key, root->x + nodeSpacing / 1.0, root->y + nodeSpacing);
+    else      return root;
+    if (!root) return root;
+    // update height of current node 
+    root->height = 1 + max(height(root->left), height(root->right));
+    // get the difference of height between left and right subtree
+    root->dif = difference(root);
+    int leftdif = difference(root->left);
+    int rightdif = difference(root->right);
+    // left left problem
+    if (root->dif > 1 && leftdif > 0) {
+        return rightRotate(root);
+    }
+    // right right problem
+    else if (root->dif < -1 && rightdif < 0) {
+        return leftRotate(root);
+    }
+    // left right problem
+    else if (root->dif > 1 && leftdif < 0) {
+        root->left = leftRotate(root->left);
+        return rightRotate(root);
+    }
+    //right left problem
+    else if (root->dif < -1 && rightdif > 0) {
+        root->right = rightRotate(root->right);
+        return leftRotate(root);
+    }
+    return root;
 }

@@ -1,4 +1,5 @@
-﻿#include "AVLTreeVisual.h"
+﻿
+#include "AVLTreeVisual.h"
 #include "../../UI/Screens/SettingScreen.h"
 
 #include <string>
@@ -38,19 +39,21 @@ void AVLTreeScreen::Init() {
     Value = { {270, 350, 90, 30} };
     Nodes = { {270, 350, 90, 30}, "Random" };
 
+    toolbar.isPlaying = true;
+
     // Tải ảnh undo, redo 
-    imageRedo = LoadImage("Assets/Images/Redo.png");
-    imageUndo = LoadImage("Assets/Images/Undo.png");
-    imageRedoHovered = LoadImage("Assets/Images/RedoHovered.png");
-    imageUndoHovered = LoadImage("Assets/Images/UndoHovered.png");
-    ImageResize(&imageRedo, 50, 50);
-    ImageResize(&imageUndo, 50, 50);
-    ImageResize(&imageRedoHovered, 50, 50);
-    ImageResize(&imageUndoHovered, 50, 50);
-    textureRedo = LoadTextureFromImage(imageRedo);
-    textureUndo = LoadTextureFromImage(imageUndo);
-    textureUndoHovered = LoadTextureFromImage(imageUndoHovered);
-    textureRedoHovered = LoadTextureFromImage(imageRedoHovered);
+    //imageRedo = LoadImage("Assets/Images/Redo.png");
+    //imageUndo = LoadImage("Assets/Images/Undo.png");
+    //imageRedoHovered = LoadImage("Assets/Images/RedoHovered.png");
+    //imageUndoHovered = LoadImage("Assets/Images/UndoHovered.png");
+    //ImageResize(&imageRedo, 50, 50);
+    //ImageResize(&imageUndo, 50, 50);
+    //ImageResize(&imageRedoHovered, 50, 50);
+    //ImageResize(&imageUndoHovered, 50, 50);
+    //textureRedo = LoadTextureFromImage(imageRedo);
+    //textureUndo = LoadTextureFromImage(imageUndo);
+    //textureUndoHovered = LoadTextureFromImage(imageUndoHovered);
+    //textureRedoHovered = LoadTextureFromImage(imageRedoHovered);
 
     sparks.clear();
 
@@ -73,6 +76,7 @@ void AVLTreeScreen::Update(int& state) {
     }
 
     myTable.Update();
+	toolbar.Update();
 
     // Kiểm tra hover vào nút "Insert"
     insertHovered = CheckCollisionPointRec(mouse, insertButton);
@@ -95,19 +99,9 @@ void AVLTreeScreen::Update(int& state) {
     // Kiểm tra hover vào nút "OK"
     okHovered = CheckCollisionPointRec(mouse, okButton);
 
-    // Kiểm tra hover vào nút "Undo"
-    undoHovered = CheckCollisionPointRec(mouse, undoRect);
 
-    // Kiểm tra hover vào nút "Redo"
-    redoHovered = CheckCollisionPointRec(mouse, redoRect);
-
-    if (undoHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        //CurrAVLtree.Undo();
-    }
-
-    if (redoHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-        //CurrAVLtree.Redo();
-    }
+    if (toolbar.isBack)timer = 1.01f;
+	if (toolbar.isNext)timer = 1.01f;
 
     // Kiểm tra nút Create
     if (createHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -125,6 +119,7 @@ void AVLTreeScreen::Update(int& state) {
         SearchNode = nullptr;
 
     }
+
 
     // Kiểm tra nút Insert
     if (insertHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -160,7 +155,7 @@ void AVLTreeScreen::Update(int& state) {
     }
 
     // Kiểm tra nút Clear
-    if (clearHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    if (clearHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && CurrAVLtree.m_root != NULL) {
         isCreateFile = false;
         isCreateRandom = false;
         AVLtreeState = ClearState;
@@ -178,31 +173,33 @@ void AVLTreeScreen::Update(int& state) {
     if (okHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && AVLtreeState == CreateState) {
         Nodes.isClickedEnter = true;
     }
-
     if (AVLtreeState == InsertState) {
         Value.update();
         if (Value.isEnter && Value.outputMessage != "") {
+            for (auto x : CurrAVLtree.set) {
+                if (x->currentstate == 3) {
+                    x->currentstate = 1;
+                }
+            }
             valueInsert = stoi(Value.outputMessage);
-            Value.isEnter = false;
+            Value.isEnter = false; // Reset trạng thái ENTER 
             Value.outputMessage = "";
 
             // Kích hoạt animation sau mỗi lần thay đổi
             isInsert = true;
             timer = 0.0f;
             entered = true;
-
-            //SearchAnimation
-            if (CurrAVLtree.m_root != NULL) {
-                currentSearchNode = CurrAVLtree.m_root;
-                SearchAnimationFinished = false;
-                ValueSearchAnimation = valueInsert;
-            }
         }
         if (Value.isClickedEnter) {
             Value.getMessage();
             if (Value.outputMessage != "") {
+                for (auto x : CurrAVLtree.set) {
+                    if (x->currentstate == 3) {
+                        x->currentstate = 1;
+                    }
+                }
                 valueInsert = stoi(Value.outputMessage);
-                Value.isEnter = false;
+                Value.isEnter = false; // Reset trạng thái ENTER 
                 Value.outputMessage = "";
 
                 // Kích hoạt animation sau mỗi lần thay đổi
@@ -210,12 +207,6 @@ void AVLTreeScreen::Update(int& state) {
                 timer = 0.0f;
                 entered = true;
 
-                //SearchAnimation
-                if (CurrAVLtree.m_root != NULL) {
-                    currentSearchNode = CurrAVLtree.m_root;
-                    SearchAnimationFinished = false;
-                    ValueSearchAnimation = valueInsert;
-                }
             }
             Value.isClickedEnter = false;
         }
@@ -223,43 +214,42 @@ void AVLTreeScreen::Update(int& state) {
     else if (AVLtreeState == DeleteState) {
         Value.update();
         if (Value.isEnter && Value.outputMessage != "") {
+            for (auto x : CurrAVLtree.set) {
+                if (x->currentstate == 3) {
+                    x->currentstate = 1;
+                }
+            }
             valueDelete = stoi(Value.outputMessage);
-            Value.isEnter = false;
+            Value.isEnter = false; // Reset trạng thái ENTER 
             Value.outputMessage = "";
-
             //SearchAnimation
             if (CurrAVLtree.m_root != NULL) {
-                currentSearchNode = CurrAVLtree.m_root;
-                SearchAnimationFinished = false;
                 ValueSearchAnimation = valueDelete;
             }
-
-            if (CurrAVLtree.Search(valueDelete)) {
-                // Kích hoạt animation sau mỗi lần thay đổi
-                isDeleting = true;
-                timer = 0.0f;
-                entered = true;
-            }
+            isDeleting = true;
+            timer = 0.0f;
+            entered = true;
         }
         else if (Value.isClickedEnter) {
             Value.getMessage();
             if (Value.outputMessage != "") {
+                for (auto x : CurrAVLtree.set) {
+                    if (x->currentstate == 3) {
+                        x->currentstate = 1;
+                    }
+                }
                 valueDelete = stoi(Value.outputMessage);
-                Value.isEnter = false;
+                Value.isEnter = false; // Reset trạng thái ENTER 
                 Value.outputMessage = "";
 
                 // SearchAnimation
                 if (CurrAVLtree.m_root != NULL) {
-                    currentSearchNode = CurrAVLtree.m_root;
-                    SearchAnimationFinished = false;
                     ValueSearchAnimation = valueDelete;
                 }
-                if (CurrAVLtree.Search(valueDelete)) {
-                    // Kích hoạt animation sau mỗi lần thay đổi
-                    isDeleting = true;
-                    timer = 0.0f;
-                    entered = true;
-                }
+                // Kích hoạt animation sau mỗi lần thay đổi
+                isDeleting = true;
+                timer = 0.0f;
+                entered = true;
                 Value.isClickedEnter = false;
             }
         }
@@ -268,30 +258,38 @@ void AVLTreeScreen::Update(int& state) {
     else if (AVLtreeState == SearchState) {
         Value.update();
         if (Value.isEnter && Value.outputMessage != "") {
+            for (auto x : CurrAVLtree.set) {
+                if (x->currentstate == 3) {
+                    x->currentstate = 1;
+                }
+            }
+            SubCaseInfo = 0;
             valueSearch = stoi(Value.outputMessage);
-            Value.isEnter = false;
+            Value.isEnter = false; // Reset trạng thái ENTER 
             Value.outputMessage = "";
 
             // Kích hoạt animation sau mỗi lần thay đổi
-            SearchNode = nullptr;
-            currentSearchNode = CurrAVLtree.m_root;
-            SearchAnimationFinished = false;
+            if (SearchNode)SearchNode->currentstate = 1;
             isSearch = true;
             timer = 0.0f;
             entered = true;
             ValueSearchAnimation = valueSearch;
         }
         else if (Value.isClickedEnter) {
+            for (auto x : CurrAVLtree.set) {
+                if (x->currentstate == 3) {
+                    x->currentstate = 1;
+                }
+            }
+            SubCaseInfo = 0;
             Value.getMessage();
             if (Value.outputMessage != "") {
                 valueSearch = stoi(Value.outputMessage);
-                Value.isEnter = false;
+                Value.isEnter = false; // Reset trạng thái ENTER 
                 Value.outputMessage = "";
 
                 // Kích hoạt animation sau mỗi lần thay đổi
-                SearchNode = nullptr;
-                currentSearchNode = CurrAVLtree.m_root;
-                SearchAnimationFinished = false;
+                if (SearchNode)SearchNode->currentstate = 1;
                 isSearch = true;
                 timer = 0.0f;
                 entered = true;
@@ -304,7 +302,7 @@ void AVLTreeScreen::Update(int& state) {
         Nodes.update();
         if (Nodes.isEnter && Nodes.outputMessage != "") {
             valueNodes = stoi(Nodes.outputMessage);
-            Nodes.isEnter = false;
+            Nodes.isEnter = false; // Reset trạng thái ENTER 
             Nodes.outputMessage = "";
 
             if (valueNodes > 0) {
@@ -318,8 +316,6 @@ void AVLTreeScreen::Update(int& state) {
 
             //SearchAnimation
             if (CurrAVLtree.m_root != NULL) {
-                currentSearchNode = CurrAVLtree.m_root;
-                SearchAnimationFinished = false;
                 ValueSearchAnimation = valueNodes;
             }
         }
@@ -327,7 +323,7 @@ void AVLTreeScreen::Update(int& state) {
             Nodes.getMessage();
             if (Nodes.outputMessage != "") {
                 valueNodes = stoi(Nodes.outputMessage);
-                Nodes.isEnter = false;
+                Nodes.isEnter = false; // Reset trạng thái ENTER 
                 Nodes.outputMessage = "";
 
                 if (valueNodes > 0) {
@@ -341,8 +337,6 @@ void AVLTreeScreen::Update(int& state) {
 
                 //SearchAnimation
                 if (CurrAVLtree.m_root != NULL) {
-                    currentSearchNode = CurrAVLtree.m_root;
-                    SearchAnimationFinished = false;
                     ValueSearchAnimation = valueNodes;
                 }
             }
@@ -357,19 +351,19 @@ void AVLTreeScreen::Update(int& state) {
             timer = 0.0f;
             entered = true;
 
-            //SearchAnimation
-            if (CurrAVLtree.m_root != NULL) {
-                currentSearchNode = CurrAVLtree.m_root;
-                SearchAnimationFinished = false;
-            }
         }
     }
     else if (AVLtreeState == ClearState) {}
+    /*   if (Animationmroot) {
+           DrawCircleV({ Animationmroot->displayX ,Animationmroot->displayY }, 30, BLACK);
+           if (Animationmroot->right)                DrawCircleV({ Animationmroot->right->displayX ,Animationmroot->right->displayY }, 30, RED);
+           if (Animationmroot->left)                DrawCircleV({ Animationmroot->left->displayX ,Animationmroot->left->displayY }, 30, BLUE);
+       }*/
 
-    //Cập nhật tiến trình animation
-    if (isInsert || isDeleting || isSearch || isClear || isCreateRandom || isCreateFile) {
+       //Cập nhật tiến trình animation
+    if (isInsert || isDeleting || isSearch || isClear || isCreateRandom || isCreateFile || !toolbar.isBack || toolbar.isBack) {
         timer += 1.0f / 60.0f;
-        if (entered && SearchAnimationFinished) {
+        if (entered && CurrAVLtree.currentanimation == CurrAVLtree.mroot.size() - 1 && ((!toolbar.isPlaying && toolbar.isBack) || (!toolbar.isPlaying && !toolbar.isBack) || (!toolbar.isPlaying && CurrAVLtree.currentanimation == CurrAVLtree.mroot.size() - 1) || !!toolbar.isPlaying || isCreateRandom || isCreateFile)) {
             if (isInsert && AVLtreeState == InsertState) {
                 CurrAVLtree.Insert(valueInsert);
                 InTraversalValues.clear();
@@ -417,32 +411,55 @@ void AVLTreeScreen::Update(int& state) {
             }
 
             timer = duration + 0.1f;
-            currentSearchNode = NULL;
             entered = !entered;
         }
         if (timer >= duration) {
-            if (!SearchAnimationFinished) {
-                SubCaseInfo = 1;
-                if (isInsert)  SearchAnimation(valueInsert);
-                else if (isDeleting) SearchAnimation(valueDelete);
-                else if (isSearch) SearchAnimation(valueSearch);
-                timer = 0.0f;
-            }
-            else if (CurrAVLtree.waitinganimation == 0) {
-                if (isInsert || isDeleting || isCreateRandom || isCreateFile) SubCaseInfo = -1;
-                isInsert = isDeleting = isSearch = false;
-                timer = 0.0f;
-            }
-            else if (CurrAVLtree.waitinganimation > 0) {
-                CurrAVLtree.waitinganimation--;
-                if (!CurrAVLtree.mroot.empty()) {
-                    auto step = CurrAVLtree.mroot.front();
+            if (toolbar.isBack) {
+                if (CurrAVLtree.currentanimation >= 1) {
+                    CurrAVLtree.currentanimation--;
+                    //stop search animation
+                    //undo
+                    auto step = CurrAVLtree.mroot[CurrAVLtree.currentanimation];
                     SubCaseInfo = step.second;
                     Animationmroot = step.first;
-                    CurrAVLtree.mroot.pop_front();
+                    //update Pos
+                    CurrAVLtree.UpdateOrderPos(-1);
+                    CurrAVLtree.UpdatePos(Animationmroot);
+                    //reset time
+                    toolbar.isPlaying = false;
                 }
+                toolbar.isBack = false;
+                timer = 0.0f;
+            }
+            else if (toolbar.isNext) {
+                if (CurrAVLtree.currentanimation < CurrAVLtree.mroot.size() - 1) {
+                    CurrAVLtree.currentanimation++;
+                    //stop search animation
+                    //redo
+                    auto step = CurrAVLtree.mroot[CurrAVLtree.currentanimation];
+                    SubCaseInfo = step.second;
+                    Animationmroot = step.first;
+                    //update Pos
+                    CurrAVLtree.UpdateOrderPos(1);
+                    CurrAVLtree.UpdatePos(Animationmroot);
+                    //reset time
+                    toolbar.isPlaying = false;
+                }
+                toolbar.isNext = false;
+                timer = 0.0f;
+            }
+            else if (!!toolbar.isPlaying && CurrAVLtree.currentanimation < CurrAVLtree.mroot.size() - 1) {
+                ++CurrAVLtree.currentanimation;
+                auto step = CurrAVLtree.mroot[CurrAVLtree.currentanimation];
+                SubCaseInfo = step.second;
+                Animationmroot = step.first;
+                CurrAVLtree.UpdateOrderPos(1);
                 CurrAVLtree.UpdatePos(Animationmroot);
                 timer = 0.0f;
+            }
+            else if (CurrAVLtree.currentanimation == CurrAVLtree.mroot.size() - 1) {
+                SubCaseInfo = -1;
+                isInsert = isDeleting = isSearch = isCreateRandom = isCreateFile = false;
             }
         }
     }
@@ -585,6 +602,7 @@ void AVLTreeScreen::DrawOperationsPanel() {
             18, 2, DARKBLUE);
     }
     else if (AVLtreeState == ClearState) {}
+
 }
 
 void AVLTreeScreen::Draw() {
@@ -604,8 +622,9 @@ void AVLTreeScreen::Draw() {
             continue;
         }
 
-        spark.alpha = spark.lifetime / 0.5f;
-        spark.scale = 1.0f - spark.alpha;
+        // Tính toán alpha và scale dựa trên lifetime
+        spark.alpha = spark.lifetime / 0.5f; 
+        spark.scale = 1.0f - spark.alpha; 
 
         // Vẽ đốm sáng
         int radius = 25 * spark.scale;
@@ -614,7 +633,7 @@ void AVLTreeScreen::Draw() {
             (int)spark.position.y,
             radius,
             { 243, 15, 21, (unsigned char)(255 * spark.alpha) },
-            { 243, 15, 21, 0 }
+            { 243, 15, 21, 0 } 
         );
     }
 
@@ -625,6 +644,7 @@ void AVLTreeScreen::Draw() {
 
     myTable.SetData(InTraversalValues, PreTraversalValues, PostTraversalValues);
     myTable.Draw();
+	toolbar.Draw();
 
     mouse = GetMousePosition();
     if (showFileInfoPopup) {
@@ -698,88 +718,46 @@ void AVLTreeScreen::Draw() {
 void AVLTreeScreen::drawAVLtree(float animationProgress, AVLNode* root) {
     if (!root) return;
     // Interpolate positions using animation progress
-
     root->displayX = root->x * (1.0f - animationProgress) + root->newx * animationProgress;
     root->displayY = root->y * (1.0f - animationProgress) + root->newy * animationProgress;
+    if (animationProgress >= 0.9f) {
+        root->x = root->newx;
+        root->y = root->newy;
+    }
     // Draw edges
-    if (root->left) {
+    if (root->left && root->left->currentAnimationNode >= 0) {
         DrawLine(root->displayX, root->displayY, root->left->displayX, root->left->displayY, BLACK);
         drawAVLtree(animationProgress, root->left);
     }
-    if (root->right) {
+    if (root->right && root->right->currentAnimationNode >= 0) {
         DrawLine(root->displayX, root->displayY, root->right->displayX, root->right->displayY, BLACK);
         drawAVLtree(animationProgress, root->right);
     }
 
     // Draw node
-    if (root == SearchNode)DrawCircleV({ root->displayX,root->displayY }, 20, ORANGE);
-    else if (root == currentSearchNode)DrawCircleV({ root->displayX,root->displayY }, 20, RED);
+    if (root->currentstate == 3)DrawCircleV({ root->displayX,root->displayY }, 20, ORANGE);
+    else if (root->currentstate == 2)DrawCircleV({ root->displayX,root->displayY }, 20, RED);
     else DrawCircleV({ root->displayX,root->displayY }, 20, WHITE);
     string nodeText = TextFormat("%d", root->val);
     Vector2 textSize = MeasureTextEx(myFont, nodeText.c_str(), 25, 1.25);
 
-    Vector2 textPos = { root->displayX - textSize.x / 2,  root->displayY - textSize.y / 2 };
+    Vector2 textPos = { root->displayX - textSize.x / 2,  root->displayY - textSize.y / 2 }; // Căn giữa Node 
     DrawTextEx(myFont, nodeText.c_str(), textPos, 25, 1.25, Fade(BLACK, fadeProgress));
 
+    if (root && (root->currentstate == 3 || root->currentstate == 2)) {
+        nodeText = TextFormat("%d", root->dif);
+        textSize = MeasureTextEx(myFont, nodeText.c_str(), 15, 1.25);
+
+        textPos = { root->displayX - textSize.x / 2 - 27,  root->displayY - textSize.y / 2 };
+        DrawTextEx(myFont, nodeText.c_str(), textPos, 15, 1.25, Fade(BLACK, fadeProgress));
+    }
     if (isClear) {
         fadeProgress -= GetFrameTime();
         if (fadeProgress <= 0.0f) {
             fadeProgress = 1.0f;
-            CurrAVLtree.Clear();
-            InTraversalValues = PreTraversalValues = PostTraversalValues = {};
+            CurrAVLtree.Clear(); // Xóa danh sách khi hiệu ứng kết thúc
             isClear = false;
             Animationmroot = NULL;
-        }
-    }
-}
-
-void AVLTreeScreen::SearchAnimation(int key) {
-    if (currentSearchNode->val == key || findingSmallestRightSubTree) {
-        if (isDeleting && currentSearchNode->val == key &&
-            !findingSmallestRightSubTree &&
-            currentSearchNode->left && currentSearchNode->right) {
-            SubCaseInfo = 6;
-            SearchNode = currentSearchNode;
-            currentSearchNode = currentSearchNode->right;
-            findingSmallestRightSubTree = true;
-        }
-        else if (isDeleting && findingSmallestRightSubTree) {
-            if (currentSearchNode->left) {
-                currentSearchNode = currentSearchNode->left;
-                SubCaseInfo = 6;
-            }
-            else {
-                SearchAnimationFinished = true;
-                findingSmallestRightSubTree = false;
-            }
-        }
-        else {
-            SearchAnimationFinished = true;
-            if (isSearch) SubCaseInfo = 3;
-        }
-    }
-    else {
-        if (ValueSearchAnimation < currentSearchNode->val) {
-            SubCaseInfo = 1;
-            if (!currentSearchNode->left) {
-                if (isSearch) SubCaseInfo = NULLCase;
-                SearchAnimationFinished = true;
-            }
-            else {
-                if (isSearch) SubCaseInfo = SmallerCase;
-                currentSearchNode = currentSearchNode->left;
-            }
-        }
-        else {
-            SubCaseInfo = 1;
-            if (!currentSearchNode->right) {
-                if (isSearch) SubCaseInfo = NULLCase;
-                SearchAnimationFinished = true;
-            }
-            else {
-                if (isSearch) SubCaseInfo = LargerCase;
-                currentSearchNode = currentSearchNode->right;
-            }
         }
     }
 }
@@ -855,7 +833,7 @@ void AVLTreeScreen::DrawInfo() {
         textY += lineSpacing;
         posY += lineSpacing;
 
-        if (SubCaseInfo == RightLeftRotationCaseInfo) DrawRectangle(posX, posY, rectWidth, 20, RED);
+        if (SubCaseInfo == RightLeftRotationCaseInfo) DrawRectangle(posX, posY, rectWidth, 35, RED);
         DrawTextEx(IN4Font, "       case4: this.right.rotateRight, this.rotateLeft", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
         textY += lineSpacing;
         posY += lineSpacing;
