@@ -8,7 +8,6 @@ Visualizer::Visualizer() {
 void Visualizer::Process() {
 	SetConfigFlags(FLAG_MSAA_4X_HINT);
 	InitWindow(Screen_w, Screen_h, "RayViz - Data Visualization");
-	SetTargetFPS(60);
 
 	Image icon = LoadImage((pathImage + "IconWin.png").c_str());
 	SetWindowIcon(icon);

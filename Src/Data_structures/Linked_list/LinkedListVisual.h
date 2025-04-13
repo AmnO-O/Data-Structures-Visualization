@@ -3,8 +3,10 @@
 #include "LinkedList.h"
 #include "../../UI/Components/Textbox.h"
 #include "../../UI/Toolbar/Adjust.h"
+#include "../../External/tinyfiledialogs.h"
 #include <unordered_set>
 #include <string>
+
 
 enum SelectedButton {
 	NONE,
@@ -15,6 +17,8 @@ enum SelectedButton {
 	SEARCH,
 	CLEAN,
 	OK,
+	CREATE,
+	FILELINKEDLIST,
 };
 
 struct Command {
@@ -44,25 +48,30 @@ private:
 	bool insertAtTailHovered = false;
 	bool insertPosHovered = false;
 	bool okHovered = false;
+	bool createHovered = false;
+	bool fileHovered = false;
+	bool fileokHovered = false;
 
 	float insertHeadAlpha = 1.0f;  // Alpha của nút Head
 	float insertTailAlpha = 1.0f;  // Alpha của nút Tail
 	float insertPosAlpha = 1.0f;   // Alpha của nút Pos
 
 	// Vị trí của Panel
-	Rectangle insertButton = { PANEL_PADDING + 8, 330, 130, 40 };
-	Rectangle deleteButton = { PANEL_PADDING + 8, 390, 130, 40 };
-	Rectangle searchButton = { PANEL_PADDING + 8, 450, 130, 40 };
-	Rectangle cleanButton = { PANEL_PADDING + 8, 510, 130, 40 };
+	Rectangle createButton = { PANEL_PADDING + 8, 330, 130, 40 };
+	Rectangle insertButton = { PANEL_PADDING + 8, 380, 130, 40 };
+	Rectangle deleteButton = { PANEL_PADDING + 8, 440, 130, 40 };
+	Rectangle searchButton = { PANEL_PADDING + 8, 500, 130, 40 };
+	Rectangle cleanButton = { PANEL_PADDING + 8, 560, 130, 40 };
 
 	// Nút con của Insert
-	Rectangle insertHeadButton = { PANEL_PADDING + 37, 350, 100, 30 };
-	Rectangle insertTailButton = { PANEL_PADDING + 37, 390, 100, 30 };
-	Rectangle insertPosButton = { PANEL_PADDING + 37, 430, 100, 30 };
+	Rectangle insertHeadButton = { PANEL_PADDING + 37, 410, 100, 30 };
+	Rectangle insertTailButton = { PANEL_PADDING + 37, 350, 100, 30 };
+	Rectangle insertPosButton = { PANEL_PADDING + 37, 490, 100, 30 };
 
 	// Nút OK dưới textBox
 	Rectangle okButton = { PANEL_PADDING + 217, 470, 90, 30 };
 
+	Rectangle fileButton = { 270, 400, 90, 30 };
 	// Nút undo, redo 
 	Vector2 Undoposition = { 700, 840 };
 	Vector2 Redoposition = { 800, 840 };
@@ -80,12 +89,24 @@ private:
 	int ClearState = 6;
 	int UndoState = 7;
 	int RedoState = 8;
+	int CreateState = 9;
+	int FileState = 10;
+	
+	Vector2 mouse;
 
 	SelectedButton currentButton; // Xác định operation đang sử dụng
 
 	// TextBox Value và Index 
 	TextBox Value;
 	TextBox Index;
+
+	TextBoxCenter Nodes;
+
+	int valueNodes;
+
+	bool showFileInfoPopup = false;   // Hiển thị bảng thông báo khi ấn vào Browse File 
+	const char* filePath;
+	bool cont = false;
 
 	LinkedList linkedList;
 
@@ -96,6 +117,8 @@ private:
 	bool isDeleting = false;
 	bool isSearch = false;
 	bool isClean = false;
+	bool isCreateRandom = false;
+	bool isCreateFile = false;
 
 	bool entered = false;
 	bool animating = false;   // Đang chạy animation hay không

@@ -4,7 +4,6 @@
 #include "../../UI/Components/TextBox.h"
 #include "../../External/tinyfiledialogs.h"
 #include "../../UI/Screens/SettingScreen.h"
-#include "../../Src/Constants.h"
 #include "Table.h"
 #include <stack>
 #include <string>

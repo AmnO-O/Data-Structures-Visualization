@@ -41,20 +41,6 @@ void AVLTreeScreen::Init() {
 
     toolbar.isPlaying = true;
 
-    // Tải ảnh undo, redo 
-    //imageRedo = LoadImage("Assets/Images/Redo.png");
-    //imageUndo = LoadImage("Assets/Images/Undo.png");
-    //imageRedoHovered = LoadImage("Assets/Images/RedoHovered.png");
-    //imageUndoHovered = LoadImage("Assets/Images/UndoHovered.png");
-    //ImageResize(&imageRedo, 50, 50);
-    //ImageResize(&imageUndo, 50, 50);
-    //ImageResize(&imageRedoHovered, 50, 50);
-    //ImageResize(&imageUndoHovered, 50, 50);
-    //textureRedo = LoadTextureFromImage(imageRedo);
-    //textureUndo = LoadTextureFromImage(imageUndo);
-    //textureUndoHovered = LoadTextureFromImage(imageUndoHovered);
-    //textureRedoHovered = LoadTextureFromImage(imageRedoHovered);
-
     sparks.clear();
 
     myTable.Init(Screen_w - 700, Screen_h - 310, 290, 310);
@@ -362,7 +348,7 @@ void AVLTreeScreen::Update(int& state) {
 
        //Cập nhật tiến trình animation
     if (isInsert || isDeleting || isSearch || isClear || isCreateRandom || isCreateFile || !toolbar.isBack || toolbar.isBack) {
-        timer += 1.0f / 60.0f;
+        timer += GetFrameTime();
         if (entered && CurrAVLtree.currentanimation == CurrAVLtree.mroot.size() - 1 && ((!toolbar.isPlaying && toolbar.isBack) || (!toolbar.isPlaying && !toolbar.isBack) || (!toolbar.isPlaying && CurrAVLtree.currentanimation == CurrAVLtree.mroot.size() - 1) || !!toolbar.isPlaying || isCreateRandom || isCreateFile)) {
             if (isInsert && AVLtreeState == InsertState) {
                 CurrAVLtree.Insert(valueInsert);

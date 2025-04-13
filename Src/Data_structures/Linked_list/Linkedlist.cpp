@@ -160,3 +160,26 @@ void LinkedList::DeleteAtPosition(int position) {
         delete temp;
     }
 }
+
+void LinkedList::CreateRandom(int count) {
+    ClearList(); // Xóa danh sách cũ nếu có
+    for (int i = 0; i < count; ++i) {
+        int value = GetRandomValue(0, 99); // Hàm có sẵn của Raylib
+        InsertAtTail(value); // Bạn có thể InsertAtHead nếu muốn ngược lại
+    }
+}
+
+bool LinkedList::CreateFromFile(const std::string& fileName) {
+    std::ifstream file(fileName);
+    if (!file.is_open()) return false;
+
+    ClearList(); // Xóa danh sách cũ
+
+    int value;
+    while (file >> value) {
+        InsertAtTail(value); // Chèn vào cuối danh sách
+    }
+
+    file.close();
+    return true;
+}

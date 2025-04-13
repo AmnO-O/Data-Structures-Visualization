@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_set>
 
+
 void LinkedListScreen::handleButtonClick(SelectedButton newButton, TextBox& textBox) {
     if (currentButton != newButton) {
         textBox.text = ""; // Reset lại nội dung trong textBox 
@@ -112,6 +113,8 @@ void LinkedListScreen::Init() {
 
     Value = { {270, 350, 90, 30} };
     Index = { {270, 400, 90, 30} };
+
+    Nodes = { {270, 350, 90, 30}, "Random" };
 }
 
 float LinkedListScreen::Clamp(float value, float minValue, float maxValue) {
@@ -126,7 +129,7 @@ float LinkedListScreen::SmoothStep(float a, float b, float t) {
 }
 
 void LinkedListScreen::Update(int& state) {
-    Vector2 mouse = GetMousePosition();
+    mouse = GetMousePosition();
 
     // Kiểm tra hover vào nút "Insert"
     insertHovered = CheckCollisionPointRec(mouse, insertButton);
@@ -149,8 +152,28 @@ void LinkedListScreen::Update(int& state) {
     // Kiểm tra hover vào nút "Insert Pos"
     insertPosHovered = CheckCollisionPointRec(mouse, insertPosButton);
 
+    // Kiểm tra hover vào nút "Create"
+    createHovered = CheckCollisionPointRec(mouse, createButton);
+
+    // Kiểm tra hover vào nút "File"
+    fileHovered = CheckCollisionPointRec(mouse, fileButton);
+
     // Kiểm tra hover vào nút "OK"
     okHovered = CheckCollisionPointRec(mouse, okButton);
+
+    // Kiểm tra nút Create 
+    if (createHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (toolbar.isOpen == true) toolbar.isOpen = false;
+        linkedlistState = CreateState;
+        currentButton = CREATE;
+    }
+
+    // Kiểm tra nút "File"
+    if (linkedlistState == CreateState && fileHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        showFileInfoPopup = true; // Hiển thị bảng thông báo
+        linkedlistState = FileState;
+        currentButton = FILELINKEDLIST;
+    }
 
     // Kiểm tra nút Insert
     if (insertHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -159,12 +182,15 @@ void LinkedListScreen::Update(int& state) {
     }
 
     // Xử lý sự kiện khi nhấn vào nút "OK"
-    if (okHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    if (okHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && linkedlistState != CreateState) {
         Value.isClickedEnter = true;
+    }
+    if (okHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && linkedlistState == CreateState) {
+        Nodes.isClickedEnter = true;
     }
 
     toolbar.Update();
-    if (toolbar.isPlaying && !isHeadInserting && !isTailInserting && !isPosInserting && !isDeleting && !isSearch) {
+    if (toolbar.isPlaying && !isHeadInserting && !isTailInserting && !isPosInserting && !isDeleting && !isSearch && !isCreateRandom && !isCreateFile) {
         toolbar.isPlaying = false;
     }
 
@@ -189,9 +215,9 @@ void LinkedListScreen::Update(int& state) {
         insertTailButton.y = insertButton.y + 80;
         insertPosButton.y = insertButton.y + 115;
 
-        deleteButton.y = 380 + insertOptionsOffset;
-        searchButton.y = 430 + insertOptionsOffset;
-        cleanButton.y = 480 + insertOptionsOffset;
+        deleteButton.y = 430 + insertOptionsOffset;
+        searchButton.y = 480 + insertOptionsOffset;
+        cleanButton.y = 530 + insertOptionsOffset;
 
         // Nếu Insert đang mở, kiểm tra các nút con
         if (CheckCollisionPointRec(mouse, insertHeadButton) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -223,9 +249,9 @@ void LinkedListScreen::Update(int& state) {
         insertOptionsOffset = SmoothStep(insertOptionsOffset, 0.0f, 0.03f); // Menu sẽ thu lại khi đóng
 
         // Nếu menu đã đóng xong, reset lại các nút khác
-        deleteButton.y = 380 + insertOptionsOffset;
-        searchButton.y = 430 + insertOptionsOffset;
-        cleanButton.y = 480 + insertOptionsOffset;
+        deleteButton.y = 430 + insertOptionsOffset;
+        searchButton.y = 480 + insertOptionsOffset;
+        cleanButton.y = 530 + insertOptionsOffset;
     }
 
     // Kiểm tra nút Delete
@@ -258,11 +284,16 @@ void LinkedListScreen::Update(int& state) {
             Value.isEnter = false; // Reset trạng thái ENTER 
             Value.outputMessage = "";
 
-            // Kích hoạt animation sau mỗi lần thay đổi
-            toolbar.isPlaying = true;
-            isHeadInserting = true;
-            timer = 0.0f;
-            entered = true;
+            if (linkedList.getSize() == 33) {
+                infoMessage = "The number of nodes has an upper limit\n of 33. Please do it again!";
+            }
+            else {
+                // Kích hoạt animation sau mỗi lần thay đổi
+                toolbar.isPlaying = true;
+                isHeadInserting = true;
+                timer = 0.0f;
+                entered = true;
+            }
         }
         if (Value.isClickedEnter) {
             Value.getMessage();
@@ -271,11 +302,16 @@ void LinkedListScreen::Update(int& state) {
                 infoMessage = "Inserting " + to_string(valueInsert) + " at Head of Linked List.";  // Cập nhật infoMessage
                 Value.outputMessage = "";
 
-                // Kích hoạt animation sau mỗi lần thay đổi
-                toolbar.isPlaying = true;
-                isHeadInserting = true;
-                timer = 0.0f;
-                entered = true;
+                if (linkedList.getSize() == 33) {
+                    infoMessage = "The number of nodes has an upper limit\n of 33. Please do it again!";
+                }
+                else {
+                    // Kích hoạt animation sau mỗi lần thay đổi
+                    toolbar.isPlaying = true;
+                    isHeadInserting = true;
+                    timer = 0.0f;
+                    entered = true;
+                }
             }
             Value.isClickedEnter = false;
         }
@@ -288,11 +324,16 @@ void LinkedListScreen::Update(int& state) {
             Value.isEnter = false; // Reset trạng thái ENTER 
             Value.outputMessage = "";
 
-            // Kích hoạt animation sau mỗi lần thay đổi
-            toolbar.isPlaying = true;
-            isTailInserting = true;
-            timer = 0.0f;
-            entered = true;
+            if (linkedList.getSize() == 33) {
+                infoMessage = "The number of nodes has an upper limit\n of 33. Please do it again!";
+            }
+            else {
+                // Kích hoạt animation sau mỗi lần thay đổi
+                toolbar.isPlaying = true;
+                isTailInserting = true;
+                timer = 0.0f;
+                entered = true;
+            }
         }
         if (Value.isClickedEnter) {
             Value.getMessage();
@@ -301,11 +342,16 @@ void LinkedListScreen::Update(int& state) {
                 infoMessage = "Inserting " + to_string(valueInsert) + " at Tail of Linked List.";  // Cập nhật infoMessage
                 Value.outputMessage = "";
 
-                // Kích hoạt animation sau mỗi lần thay đổi
-                toolbar.isPlaying = true;
-                isTailInserting = true;
-                timer = 0.0f;
-                entered = true;
+                if (linkedList.getSize() == 33) {
+                    infoMessage = "The number of nodes has an upper limit\n of 33. Please do it again!";
+                }
+                else {
+                    // Kích hoạt animation sau mỗi lần thay đổi
+                    toolbar.isPlaying = true;
+                    isTailInserting = true;
+                    timer = 0.0f;
+                    entered = true;
+                }
             }
             Value.isClickedEnter = false;
         }
@@ -335,11 +381,16 @@ void LinkedListScreen::Update(int& state) {
             Value.outputMessage = "";
             Index.outputMessage = "";
 
-            // Kích hoạt animation sau mỗi lần thay đổi
-            toolbar.isPlaying = true;
-            isPosInserting = true;
-            timer = 0.0f;
-            entered = true;
+            if (linkedList.getSize() == 33) {
+                infoMessage = "The number of nodes has an upper limit\n of 33. Please do it again!";
+            }
+            else {
+                // Kích hoạt animation sau mỗi lần thay đổi
+                toolbar.isPlaying = true;
+                isPosInserting = true;
+                timer = 0.0f;
+                entered = true;
+            }
         }
         if (Value.isClickedEnter) {
             Index.isClickedEnter = true;
@@ -361,11 +412,16 @@ void LinkedListScreen::Update(int& state) {
                 Value.outputMessage = "";
                 Index.outputMessage = "";
 
-                // Kích hoạt animation sau mỗi lần thay đổi
-                toolbar.isPlaying = true;
-                isPosInserting = true;
-                timer = 0.0f;
-                entered = true;
+                if (linkedList.getSize() == 33) {
+                    infoMessage = "The number of nodes has an upper limit\n of 33. Please do it again!";
+                }
+                else {
+                    // Kích hoạt animation sau mỗi lần thay đổi
+                    toolbar.isPlaying = true;
+                    isPosInserting = true;
+                    timer = 0.0f;
+                    entered = true;
+                }
             }
             Value.isClickedEnter = false;
             Index.isClickedEnter = false;
@@ -444,12 +500,67 @@ void LinkedListScreen::Update(int& state) {
         isClean = true;
         infoMessage = "Clearing the Linked List...";
     }
+    else if (linkedlistState == CreateState && !isCreateFile) {
+        Nodes.update();
+        if (Nodes.isEnter && Nodes.outputMessage != "") {
+            valueNodes = stoi(Nodes.outputMessage);
+            Nodes.isEnter = false;
+            Nodes.outputMessage = "";
+
+            if (valueNodes > 33) {
+                infoMessage = "The number of nodes has an upper limit\n of 33. Please do it again!";
+            }
+
+            if (valueNodes > 0 && valueNodes <= 33) {
+                isCreateRandom = true;
+            }
+
+            // Kích hoạt animation sau mỗi lần thay đổi
+            toolbar.isPlaying = true;
+            timer = 0.0f;
+            entered = true;
+        }
+        else if (Nodes.isClickedEnter) {
+            Nodes.getMessage();
+            if (Nodes.outputMessage != "") {
+
+                valueNodes = stoi(Nodes.outputMessage);
+                Nodes.isEnter = false;
+                Nodes.outputMessage = "";
+
+                if (valueNodes > 33) {
+                    infoMessage = "The number of nodes has an upper limit\n of 33. Please do it again!";
+                }
+
+                if (valueNodes > 0 && valueNodes <= 33) {
+                    isCreateRandom = true;
+                }
+
+                // Kích hoạt animation sau mỗi lần thay đổi
+                toolbar.isPlaying = true;
+                timer = 0.0f;
+                entered = true;
+            }
+            Nodes.isClickedEnter = false;
+        }
+    }
+    else if (linkedlistState == FileState && isCreateFile) {
+        if (cont == true) {
+            // Kích hoạt animation sau mỗi lần thay đổi
+            toolbar.isPlaying = true;
+            cont = false;
+            isCreateFile = true;
+            timer = 0.0f;
+            entered = true;
+        }
+    }
 
     if (linkedlistState != SearchState)   SearchNode = nullptr;
 
     // Cập nhật tiến trình animation
-    if ((isHeadInserting || isTailInserting || isPosInserting || isDeleting || isSearch) && toolbar.isPlaying) {
+    if ((isHeadInserting || isTailInserting || isPosInserting || isDeleting || isSearch || isCreateFile || isCreateRandom) && toolbar.isPlaying) {
         timer += GetFrameTime();
+
         if (entered) {
             if (isHeadInserting) {
                 SaveStateForUndo(SelectedButton::INSERTHEAD, valueInsert);
@@ -467,6 +578,14 @@ void LinkedListScreen::Update(int& state) {
                 SearchNode = linkedList.SearchNode(valueSearch);
                 currentSearchNode = linkedList.head;
             }
+            else if (isCreateFile) {
+                linkedList.CreateFromFile(filePath);
+                timer = 0.0f;
+            }
+            else if (isCreateRandom) {
+                linkedList.CreateRandom(valueNodes);
+            }
+
             entered = !entered;
         }
         if (timer >= toolbar.duration) {
@@ -480,7 +599,7 @@ void LinkedListScreen::Update(int& state) {
             }
             else {
                 toolbar.isPlaying = false;
-                isHeadInserting = isTailInserting = isPosInserting = isDeleting = isSearch = false;
+                isHeadInserting = isTailInserting = isPosInserting = isDeleting = isSearch = isCreateRandom = isCreateFile = false;
                 timer = 0.0f;  // Reset lại bộ đếm thời gian
             }
         }
@@ -491,19 +610,20 @@ void LinkedListScreen::Update(int& state) {
 
 void LinkedListScreen::DrawOperationsPanel() {
     int panelMargin = 250;
+    float offset = 30.0f;
     float roundness = 0.15f;  // Độ bo góc
     int segments = 20;        // Độ mượt của bo góc
 
     Color panelColor = isDarkMode ? Color{ 229, 229, 229, 255 } : Color{ 189, 224, 254, 255 };
     Color panelColorFade = Fade(panelColor, 0.8f);
 
-    Rectangle leftPanel = { 0, (float)panelMargin, (float)PANEL_WIDTH, (float)(Screen_h - 2 * panelMargin) };
+    Rectangle leftPanel = { 0, (float)(panelMargin - offset), (float)PANEL_WIDTH, (float)(Screen_h - 2 * panelMargin + offset * 2) };
     DrawRectangleRounded(leftPanel, roundness, segments, panelColorFade);
 
     Color panelColorx = isDarkMode ? Color{ 94, 172, 240, 180 } : Color{ 94, 172, 240, 180 };
     Color panelColorxFade = Fade(panelColorx, 0.8f);
 
-    Rectangle rightPanel = { (float)PANEL_WIDTH, (float)panelMargin, (float)PANEL_WIDTH, (float)(Screen_h - 2 * panelMargin) };
+    Rectangle rightPanel = { (float)PANEL_WIDTH, (float)(panelMargin - offset), (float)PANEL_WIDTH, (float)(Screen_h - 2 * panelMargin + offset * 2) };
     DrawRectangleRounded(rightPanel, roundness, segments, panelColorxFade);
 
     // Vẽ nền bảng cho [INFO]
@@ -522,6 +642,18 @@ void LinkedListScreen::DrawOperationsPanel() {
     // Tiêu đề
     Color operationColor = isDarkMode ? DARKBLUE : DARKBLUE;
     DrawTextEx(myFont, "Operations", { PANEL_PADDING + 10, 280 }, 26, 2, operationColor);
+
+    // Vẽ nút Create
+    Color CreateColor = createHovered ? LIGHTGRAY : RAYWHITE;
+    if (currentButton == CREATE) CreateColor = { 250, 228, 49, 255 };
+    DrawRectangleRounded(createButton, 0.2f, 4, CreateColor);
+    DrawRectangleRoundedLinesEx(createButton, 0.2f, 4, 2.0f, GRAY);
+
+    Vector2 createSize = MeasureTextEx(myFont, "Create", 20, 2);
+    DrawTextEx(myFont, "Create",
+        { createButton.x + (createButton.width - createSize.x) / 2,
+        createButton.y + (createButton.height - createSize.y) / 2 },
+        20, 2, DARKBLUE);
 
     // Vẽ nút Insert
     Color InsertColor = insertHovered ? LIGHTGRAY : RAYWHITE;
@@ -653,6 +785,41 @@ void LinkedListScreen::DrawOperationsPanel() {
               okButton.y + (okButton.height - okSize.y) / 2 },
             18, 2, DARKBLUE);
     }
+    else if (linkedlistState == CreateState) {
+        int fontSize = 24;
+        float spacing = 1.0f;
+
+        int textWidth = MeasureTextEx(myFont, "Nodes", fontSize, 1.f).x;
+        DrawTextEx(myFont, "Nodes", { 200, 350 }, fontSize, spacing, BLACK);
+        if (Nodes.text == "") Nodes.text = "Random";
+        Nodes.draw();
+
+        // Vẽ nút "File"
+        int textWidth2 = MeasureTextEx(myFont, "File", fontSize, 1.f).x;
+        DrawTextEx(myFont, "File", { 200, 400 }, fontSize, spacing, BLACK);
+
+        Color fileColor = isDarkMode ? Color{ 244, 162, 83, 210 } : RAYWHITE;
+        DrawRectangleRounded(fileButton, 0.2f, 4, fileColor);
+        DrawRectangleRoundedLinesEx(fileButton, 0.2f, 4, 2.0f, DARKGRAY);
+
+        Vector2 fileSize = MeasureTextEx(myFont, "Browse...", 18, 2);
+        DrawTextEx(myFont, "Browse...",
+            { fileButton.x + (fileButton.width - fileSize.x) / 2,
+              fileButton.y + (fileButton.height - fileSize.y) / 2 },
+            18, 2, BLACK);
+
+        // Vẽ nút "OK"
+        Color okColor = okHovered ? LIGHTGRAY : RAYWHITE;
+        if (currentButton == OK) okColor = { 250, 228, 49, 255 };
+        DrawRectangleRounded(okButton, 0.2f, 4, okColor);
+        DrawRectangleRoundedLinesEx(okButton, 0.2f, 4, 2.0f, GRAY);
+
+        Vector2 okSize = MeasureTextEx(myFont, "GO!", 18, 2);
+        DrawTextEx(myFont, "GO!",
+            { okButton.x + (okButton.width - okSize.x) / 2,
+              okButton.y + (okButton.height - okSize.y) / 2 },
+            18, 2, DARKBLUE);
+    }
     else if (linkedlistState == ClearState) {}
 }
 
@@ -666,6 +833,74 @@ void LinkedListScreen::Draw() {
     // Gọi vẽ danh sách với progress từ 0 -> 1
     float animationProgress = timer / toolbar.duration;
     drawLinkedList(animationProgress);
+
+    mouse = GetMousePosition();
+    if (showFileInfoPopup) {
+        DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.6f));
+
+        // Kích thước và vị trí popup
+        float popupWidth = 600;
+        float popupHeight = 300;
+        float popupX = (GetScreenWidth() - popupWidth) / 2;  // Căn giữa màn hình
+        float popupY = (GetScreenHeight() - popupHeight) / 2;
+        Rectangle popupRect = { popupX, popupY, popupWidth, popupHeight };
+
+        // Vẽ nền bảng thông báo với góc bo tròn
+        DrawRectangleRounded(popupRect, 0.2, 10, WHITE);
+        DrawRectangleRoundedLines(popupRect, 0.2, 10, DARKGRAY);
+
+        // Tiêu đề
+        const char* titleText = "File Format Requirement";
+        float titleWidth = MeasureTextEx(myFont, titleText, 27, 2).x;
+        Vector2 titlePos = { popupX + (popupWidth - titleWidth) / 2, popupY + 20 };
+        DrawTextEx(myFont, titleText, titlePos, 27, 2, PURPLE);
+
+        // Nội dung
+        const char* text =
+            "* The file must have a .txt extension.\n"
+            "* The numbers on each line must be separated by space.\n"
+            "* The numbers represent the nodes to be inserted into \nthe Linked List in the order they appear in the file.\n\n"
+            "Example:\n"
+            "   29 4 99 23 100 32 55 34 66 82 42\n"
+            "   22 4 32 34 55 77\n";
+
+        Vector2 textPos = { popupRect.x + 20, popupRect.y + 60 };
+        DrawTextEx(myFont, text, textPos, 21, 2, BLACK);
+
+        // Vẽ nút OK 
+        // Kích thước và vị trí nút OK
+        float buttonWidth = 100;
+        float buttonHeight = 40;
+        float buttonX = popupRect.x + popupRect.width / 2 - buttonWidth / 2;  // Căn giữa
+        float buttonY = popupRect.y + popupRect.height - 60;
+        Rectangle fileokButton = { buttonX, buttonY, buttonWidth, buttonHeight };
+        float radius = 10.0f;  // Độ bo góc
+
+        // Vẽ nút OK
+        fileokHovered = CheckCollisionPointRec(mouse, fileokButton);
+        Color fileokColor = fileokHovered ? Color{ 250, 228, 49, 255 } : LIGHTGRAY;
+        DrawRectangleRounded(fileokButton, radius, 16, fileokColor);
+
+        // Căn giữa chữ "OK"
+        Vector2 fileokTextSize = MeasureTextEx(myFont, "OK", 22, 2);
+        Vector2 fileokTextPos = { fileokButton.x + (fileokButton.width - fileokTextSize.x) / 2, fileokButton.y + (fileokButton.height - fileokTextSize.y) / 2 };
+        DrawTextEx(myFont, "OK", fileokTextPos, 22, 2, BLUE);
+
+        // Xử lý sự kiện khi nhấn OK
+        if (fileokHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            showFileInfoPopup = false; // Đóng popup
+
+            // **Mở hộp thoại chọn file**
+            const char* filterPatterns[1] = { "*.txt" };
+            filePath = tinyfd_openFileDialog("Choose file .txt ", "", 1, filterPatterns, NULL, 0);
+
+            if (filePath) {
+                printf("File which was choose: %s\n", filePath);
+                isCreateFile = true;
+                cont = true;
+            }
+        }
+    }
 }
 
 void LinkedListScreen::drawLinkedList(float animationProgress) {
@@ -680,6 +915,13 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
 
     while (current != nullptr) {
         Vector2 targetPos = TargetPos(index);
+
+        // Hiệu ứng chụm lại rồi bật ra cho Create Random
+        if (isCreateRandom || isCreateFile) {
+            Vector2 centerPos = startPos;
+            targetPos.x = centerPos.x * (1.0f - animationProgress) + targetPos.x * animationProgress;
+            targetPos.y = centerPos.y * (1.0f - animationProgress) + targetPos.y * animationProgress;
+        }
 
         if (isHeadInserting) {
             // Node mới chèn vào đầu linked list

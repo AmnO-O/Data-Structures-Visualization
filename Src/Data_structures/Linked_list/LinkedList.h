@@ -1,6 +1,10 @@
 ﻿#pragma once
 
 #include <vector>
+#include <string>
+#include <ctime>
+#include <fstream>
+#include <stack>
 
 struct LLNode {
     int value;
@@ -25,4 +29,6 @@ public:
     void DeleteAtHead();
     void DeleteAtPosition(int position);
     void DeleteAtTail();
+    void CreateRandom(int count);
+    bool CreateFromFile(const std::string& fileName);
 };
