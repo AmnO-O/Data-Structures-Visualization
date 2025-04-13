@@ -258,7 +258,8 @@ int HashTableVisual::handleEvent() {
                 animation.currentPathIndex--;
             }
 
-            animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+            if(animation.currentPathIndex < animation.pathIndices.size()) 
+                animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
         }
 
         if (animation.active && toolbar.isNext && popActive == false) {
@@ -285,7 +286,8 @@ int HashTableVisual::handleEvent() {
                     popScale = 0.0f;
                 }
 
-                animation.currentPos = H.getCenter(animation.pathIndices.back());
+                if(animation.pathIndices.size())
+                    animation.currentPos = H.getCenter(animation.pathIndices.back());
             }
         }
 
@@ -356,6 +358,7 @@ int HashTableVisual::handleEvent() {
                 popActive = false;
                 animation.active = false;
                 toolbar.isPlaying = false;
+                Input.hide = false; 
             }
         }
     }
@@ -415,7 +418,8 @@ int HashTableVisual::handleEvent() {
                 animation.currentPathIndex--;
             }
 
-            animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+            if (animation.currentPathIndex < animation.pathIndices.size())
+                animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
         }
 
         if (animation.active && toolbar.isNext && shrinkActive == false) {
@@ -447,7 +451,10 @@ int HashTableVisual::handleEvent() {
         if (toolbar.isBack && shrinkActive == true) {
             if (animation.currentPathIndex > 0)
                 animation.currentPathIndex--;
-            animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+
+            if (animation.currentPathIndex < animation.pathIndices.size())    
+                animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+
             animation.active = true;
             shrinkActive = false;
             popElapsedTime = 0.0f;
@@ -508,6 +515,8 @@ int HashTableVisual::handleEvent() {
                     animation.active = 0;
                     H.rem(animation.key);
                     toolbar.isPlaying = false;
+                    Input.hide = false;
+
                 }
             }
         }
@@ -570,8 +579,8 @@ int HashTableVisual::handleEvent() {
             if (animation.currentPathIndex > 0) {
                 animation.currentPathIndex--;
             }
-
-            animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
+            if (animation.currentPathIndex < animation.pathIndices.size())
+                animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
         }
 
         if (animation.active && toolbar.isNext && searchActive == false) {
@@ -656,6 +665,7 @@ int HashTableVisual::handleEvent() {
                 searchActive = false;
                 animation.active = false;
                 toolbar.isPlaying = false;
+                Input.hide = false;
             }
         }
     }

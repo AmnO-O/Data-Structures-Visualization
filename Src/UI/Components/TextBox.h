@@ -280,7 +280,7 @@ struct TextBoxCenter { /// put the cursor in the center
         int textHeight = MeasureTextEx(font, text.c_str(), fontSize, 1).y;
         DrawTextEx(font, text.c_str(), { bounds.x + (bounds.width - textWidth) / 2, bounds.y + (bounds.height - textHeight) / 2 }, fontSize, 1, textColor);
 
-        if (focused && ((framesCounter / 20) % 2 == 0)) {
+        if (focused && ((framesCounter / 50) % 2 == 0)) {
             std::string textBeforeCaret = text.substr(0, pos);
             int textWidth = MeasureTextEx(font, textBeforeCaret.c_str(), fontSize, 1).x;
             int textFull = MeasureTextEx(font, text.c_str(), fontSize, 1).x;
@@ -484,7 +484,7 @@ struct TextBoxEdge {
         DrawTextEx(font, displayText.c_str(), { textX, textY }, fontSize, 1, textColor);
 
         // If focused, draw the blinking caret
-        if (focused && ((framesCounter / 30) % 2 == 0)) {
+        if (focused && ((framesCounter / 60) % 2 == 0)) {
             // Build a string containing the non-editable "(" plus the text before the caret
             std::string caretSubstr = "( " + text.substr(0, pos);
             // Measure its width
