@@ -112,6 +112,7 @@ void Visualizer::Process() {
 
 			bool isHovered = CheckCollisionPointRec(mousePos, Rectangle{ 580, 20, 40, 40 }); /// check if mouse pos is in backto
 			DrawRectangleRounded(Rectangle{ 580, 20, 40, 40 }, 0.5f, 6, isHovered ? GRAY : WHITE); /// Draw for back to
+			DrawRectangleRounded(Rectangle{ 635, 17, 329, 46 }, 2.2f, 25, BLACK); /// Draw for title bar
 
 			if (isHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) Program_state = Menu_state;
 
