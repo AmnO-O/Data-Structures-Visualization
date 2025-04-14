@@ -21,27 +21,63 @@ void AboutScreen::Update(int& state) {
     Vector2 mouse = GetMousePosition();
 }
 
-void AboutScreen::Draw() {
-    ClearBackground(isDarkMode ? darkmode : lightmode); // Sử dụng màu nền theo chế độ hiện tại
+std::vector<std::string> WrapText(const std::string& text, Font font, float maxWidth, int fontSize, float spacing) {
+    std::vector<std::string> lines;
+    std::string currentLine;
+    std::string word;
+    for (char c : text) {
+        if (c == ' ') {
+            Vector2 wordSize = MeasureTextEx(font, (currentLine + word).c_str(), fontSize, spacing);
+            if (wordSize.x > maxWidth) {
+                lines.push_back(currentLine);
+                currentLine = word + " ";
+            }
+            else {
+                currentLine += word + " ";
+            }
+            word.clear();
+        }
+        else {
+            word += c;
+        }
+    }
+    if (!word.empty()) {
+        currentLine += word;
+    }
+    if (!currentLine.empty()) {
+        lines.push_back(currentLine);
+    }
+    return lines;
+}
 
-    // Hiển thị tiêu đề "About"
+void AboutScreen::Draw() {
+    ClearBackground(isDarkMode ? darkmode : lightmode);
+
+    // Tiêu đề "About"
     int fontSize = 50;
     float spacing = 3.0f;
     Vector2 titleSize = MeasureTextEx(aboutFont, "About", fontSize, spacing);
-
     float titleX = (Screen_w - titleSize.x) / 2;
-    float titleY = 80; // Đưa tiêu đề lên cao hơn
+    float titleY = 80;
+    //DrawTextEx(aboutFont, "About", { titleX, titleY }, fontSize, spacing, DARKBLUE);
 
-    // Thêm nội dung về nhóm và ứng dụng
-    int textFontSize = 25;
+    // Cài đặt văn bản
+    int textFontSize = 20;
+    int subtitleFontSize = 26;
     float textSpacing = 1.5f;
+    float padding = 30.0f;
+    Color subtitleColor = Color{ 253, 111, 59, 255 };
+    // Danh sách thành viên và thông tin lớp
+    std::vector<std::string> teamMembers = {
+        "- Pham Huu Nam (Student ID: 24125015) - Leader",
+        "- Dang Tran Tuan Khoi (Student ID: 24125034) - UI designer",
+        "- Tran Dang Le Huy (Student ID: 24125057) - Developer",
+        "- Vo Quoc Linh (Student ID: 24125065) - Developer"
+    };
+    std::string classInfo = "All members are from class 24A01, APCS K24, University of Science, Ho Chi Minh City.";
 
-    // Thông tin nhóm và nội dung ứng dụng
-    // Lưu ý: mảng có 9 dòng, trong đó dòng cuối chứa email cần được tách riêng
+    // Thông tin ứng dụng và liên hệ
     const char* teamInfo[] = {
-        "This application was developed by the LNKH team, consisting of Pham Huu Nam, Dang Tran Tuan Khoi, Vo Quoc Linh,",
-        "and Tran Dang Le Huy from class 24A01, APCS K24, University of Science, Ho Chi Minh City.",
-        "",
         "The app enables users to work with data structures such as Linked Lists, AVL Trees, Hash Tables, and Graphs.",
         "Our goal is to create a user-friendly and intuitive tool that facilitates learning and interacting with algorithms",
         "and data structures.",
@@ -51,72 +87,119 @@ void AboutScreen::Draw() {
     };
     int teamInfoCount = sizeof(teamInfo) / sizeof(teamInfo[0]);
 
-    // Tìm chiều rộng của dòng văn bản dài nhất
+    // Tính chiều rộng tối đa
     float maxWidth = 0;
+    for (const auto& member : teamMembers) {
+        Vector2 textSize = MeasureTextEx(font, member.c_str(), textFontSize, textSpacing);
+        if (textSize.x > maxWidth) maxWidth = textSize.x;
+    }
+    Vector2 classInfoSize = MeasureTextEx(font, classInfo.c_str(), textFontSize, textSpacing);
+    if (classInfoSize.x > maxWidth) maxWidth = classInfoSize.x;
     for (int i = 0; i < teamInfoCount; ++i) {
-        // Nếu là dòng chứa email (index 8), tách thành 2 phần
-        if (i == 8) {
-            const char* textBefore = "suggestions or feedback, please contact us at: ";
-            const char* emailText = "lnkh.apcs24@gmail.com";
-            Vector2 textBeforeSize = MeasureTextEx(myFont, textBefore, textFontSize, textSpacing);
-            Vector2 emailSize = MeasureTextEx(myFont, emailText, textFontSize, textSpacing);
-            float totalWidth = textBeforeSize.x + emailSize.x;
-            if (totalWidth > maxWidth) {
-                maxWidth = totalWidth;
-            }
+        Vector2 textSize = MeasureTextEx(font, teamInfo[i], textFontSize, textSpacing);
+        if (textSize.x > maxWidth) maxWidth = textSize.x;
+    }
+    Vector2 subtitleSize = MeasureTextEx(aboutFont, "LNKH Team:", subtitleFontSize, textSpacing);
+    if (subtitleSize.x > maxWidth) maxWidth = subtitleSize.x;
+    subtitleSize = MeasureTextEx(aboutFont, "About the App:", subtitleFontSize, textSpacing);
+    if (subtitleSize.x > maxWidth) maxWidth = subtitleSize.x;
+    subtitleSize = MeasureTextEx(aboutFont, "Contact:", subtitleFontSize, textSpacing);
+    if (subtitleSize.x > maxWidth) maxWidth = subtitleSize.x;
+
+    // Xuống hàng cho teamInfo
+    std::vector<std::vector<std::string>> wrappedTeamInfo;
+    for (int i = 0; i < teamInfoCount; ++i) {
+        if (teamInfo[i][0] != '\0') {
+            wrappedTeamInfo.push_back(WrapText(teamInfo[i], font, maxWidth, textFontSize, textSpacing));
         }
         else {
-            Vector2 textSize = MeasureTextEx(myFont, teamInfo[i], textFontSize, textSpacing);
-            if (textSize.x > maxWidth) {
-                maxWidth = textSize.x;
-            }
+            wrappedTeamInfo.push_back({ "" });
         }
     }
 
-    float padding = 20.0f;
+    // Tính tổng chiều cao
+    float totalHeight = 0;
+    float subtitleHeight = subtitleSize.y;
+
+    // Phần 1: Development Team
+    totalHeight += subtitleHeight + 10;
+    for (const auto& member : teamMembers) {
+        totalHeight += MeasureTextEx(font, member.c_str(), textFontSize, textSpacing).y + 5;
+    }
+    totalHeight += 10 + classInfoSize.y + 10;
+
+    // Phần 2: About the App
+    totalHeight += subtitleHeight + 10;
+    for (int i = 0; i < 3; ++i) {
+        for (const auto& line : wrappedTeamInfo[i]) {
+            totalHeight += MeasureTextEx(font, line.c_str(), textFontSize, textSpacing).y + 5;
+        }
+        totalHeight += 10;
+    }
+
+    // Phần 3: Contact
+    totalHeight += subtitleHeight + 10;
+    for (int i = 4; i < 5; ++i) {
+        for (const auto& line : wrappedTeamInfo[i]) {
+            totalHeight += MeasureTextEx(font, line.c_str(), textFontSize, textSpacing).y + 5;
+        }
+    }
+
+    // Vẽ hình chữ nhật bo góc làm nền
     float initialContentY = titleY + titleSize.y + 100;
-
-    float totalTextHeight = 0;
-    for (int i = 0; i < teamInfoCount; ++i) {
-        float lineHeight;
-        if (i == 8) {
-            const char* textBefore = "suggestions or feedback, please contact us at: ";
-            Vector2 textBeforeSize = MeasureTextEx(myFont, textBefore, textFontSize, textSpacing);
-            lineHeight = textBeforeSize.y;
-        }
-        else {
-            Vector2 textSize = MeasureTextEx(myFont, teamInfo[i], textFontSize, textSpacing);
-            lineHeight = textSize.y;
-        }
-        totalTextHeight += lineHeight + 10;
-    }
-    totalTextHeight -= 10; // Loại bỏ khoảng cách dư sau dòng cuối cùng
-
     float rectX = (Screen_w - maxWidth) / 2 - padding;
     float rectY = initialContentY - padding;
     float rectWidth = maxWidth + 2 * padding;
-    float rectHeight = totalTextHeight + 2 * padding;
-
+    float rectHeight = totalHeight + 2 * padding;
     DrawRectangleRounded({ rectX, rectY, rectWidth, rectHeight }, 0.2f, 4, WHITE);
 
+    // Vẽ nội dung
     float contentY = initialContentY;
-    for (int i = 0; i < teamInfoCount; ++i) {
-        float lineHeight;
-        float x = (Screen_w - maxWidth) / 2; // Căn giữa
-        if (i == 8) {
-            const char* textBefore = "suggestions or feedback, please contact us at: ";
-            const char* emailText = "lnkh.apcs24@gmail.com";
-            Vector2 textBeforeSize = MeasureTextEx(myFont, textBefore, textFontSize, textSpacing);
-            DrawTextEx(myFont, textBefore, { x, contentY }, textFontSize, textSpacing, DARKBLUE);
-            DrawTextEx(myFont, emailText, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, RED);
-            lineHeight = textBeforeSize.y;
+    float x = (Screen_w - maxWidth) / 2;
+
+    // Phần 1: Development Team
+    DrawTextEx(aboutFont, "LNKH Team:", { x, contentY }, subtitleFontSize, textSpacing, subtitleColor);
+    contentY += subtitleHeight + 10;
+    for (const auto& member : teamMembers) {
+        Vector2 textSize = MeasureTextEx(font, member.c_str(), textFontSize, textSpacing);
+        DrawTextEx(font, member.c_str(), { x + 20, contentY }, textFontSize, textSpacing, DARKBLUE);
+        contentY += textSize.y + 5;
+    }
+    contentY += 10;
+    DrawTextEx(font, classInfo.c_str(), { x + 20, contentY }, textFontSize, textSpacing, DARKBLUE);
+    contentY += classInfoSize.y + 10;
+
+    // Phần 2: About the App
+    DrawTextEx(aboutFont, "About the App:", { x, contentY }, subtitleFontSize, textSpacing, subtitleColor);
+    contentY += subtitleHeight + 10;
+    for (int i = 0; i < 3; ++i) {
+        for (const auto& line : wrappedTeamInfo[i]) {
+            Vector2 textSize = MeasureTextEx(font, line.c_str(), textFontSize, textSpacing);
+            DrawTextEx(font, line.c_str(), { x, contentY }, textFontSize, textSpacing, DARKBLUE);
+            contentY += textSize.y + 5;
         }
-        else {
-            DrawTextEx(myFont, teamInfo[i], { x, contentY }, textFontSize, textSpacing, DARKBLUE);
-            Vector2 textSize = MeasureTextEx(myFont, teamInfo[i], textFontSize, textSpacing);
-            lineHeight = textSize.y;
+        contentY += 10;
+    }
+
+    // Phần 3: Contact
+    DrawTextEx(aboutFont, "Contact:", { x, contentY }, subtitleFontSize, textSpacing, subtitleColor);
+    contentY += subtitleHeight + 10;
+    for (int i = 4; i <= 5; ++i) {
+        for (const auto& line : wrappedTeamInfo[i]) {
+            if (line.find("lnkh.apcs24@gmail.com") != std::string::npos) {
+                const char* textBefore = "suggestions or feedback, please contact us at: ";
+                const char* emailText = "lnkh.apcs24@gmail.com";
+                Vector2 textBeforeSize = MeasureTextEx(font, textBefore, textFontSize, textSpacing);
+                DrawTextEx(font, textBefore, { x, contentY }, textFontSize, textSpacing, DARKBLUE);
+                DrawTextEx(font, emailText, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, RED);
+                contentY += textBeforeSize.y + 5;
+            }
+            else {
+                Vector2 textSize = MeasureTextEx(font, line.c_str(), textFontSize, textSpacing);
+                DrawTextEx(font, line.c_str(), { x, contentY }, textFontSize, textSpacing, DARKBLUE);
+                contentY += textSize.y + 5;
+            }
         }
-        contentY += lineHeight + 10; // Cập nhật vị trí y cho dòng tiếp theo
     }
 }
 
