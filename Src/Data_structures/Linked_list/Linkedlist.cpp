@@ -37,26 +37,29 @@ void LinkedList::InsertAtPosition(int value, int position) {
 }
 
 void LinkedList::DeleteValue(int value) {
-    // Xóa các node đầu tiên nếu có giá trị cần xóa
-    while (head && head->value == value) {
+    if (!head) return;
+
+    // Trường hợp node đầu tiên là node cần xóa
+    if (head->value == value) {
         LLNode* temp = head;
         head = head->next;
         delete temp;
+        return;
     }
 
-    // Duyệt danh sách và xóa các node có giá trị value
-    LLNode* temp = head;
-    while (temp && temp->next) {
-        if (temp->next->value == value) {
-            LLNode* toDelete = temp->next;
-            temp->next = temp->next->next;
+    // Duyệt danh sách để tìm node có giá trị value
+    LLNode* current = head;
+    while (current->next) {
+        if (current->next->value == value) {
+            LLNode* toDelete = current->next;
+            current->next = current->next->next;
             delete toDelete;
+            return;
         }
-        else {
-            temp = temp->next;
-        }
+        current = current->next;
     }
 }
+
 
 // Đảo ngược danh sách liên kết
 void LinkedList::ReverseList() {
@@ -182,4 +185,13 @@ bool LinkedList::CreateFromFile(const std::string& fileName) {
 
     file.close();
     return true;
+}
+
+LLNode* LinkedList::FindFirstNodeWithValue(int value) {
+    LLNode* current = head;
+    while (current) {
+        if (current->value == value) return current;
+        current = current->next;
+    }
+    return nullptr;
 }

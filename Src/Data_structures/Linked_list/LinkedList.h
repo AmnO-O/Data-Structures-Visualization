@@ -31,4 +31,5 @@ public:
     void DeleteAtTail();
     void CreateRandom(int count);
     bool CreateFromFile(const std::string& fileName);
+    LLNode* FindFirstNodeWithValue(int value);
 };

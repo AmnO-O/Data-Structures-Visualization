@@ -439,7 +439,7 @@ void LinkedListScreen::Update(int& state) {
                 isDeleting = true;
                 timer = 0.0f;
                 entered = true;
-                infoMessage = "Deleting " + to_string(valueDelete) + " of Linked List.";  // Cập nhật infoMessage
+                infoMessage = "Deleting the first node with value\n" + to_string(valueDelete) + " in Linked List.";  // Cập nhật infoMessage
             }
             else {
                 infoMessage = "There is no node with the value\n" + to_string(valueDelete) + " in the current Linked List.";
@@ -454,7 +454,7 @@ void LinkedListScreen::Update(int& state) {
                     toolbar.isPlaying = true;
                     isDeleting = true;
                     timer = 0.0f;
-                    infoMessage = "Deleting " + to_string(valueDelete) + " of Linked List.";  // Cập nhật infoMessage
+                    infoMessage = "Deleting the first node with value\n" + to_string(valueDelete) + " in Linked List.";  // Cập nhật infoMessage
                 }
                 else {
                     infoMessage = "There is no node with the value\n" + to_string(valueDelete) + " in the current Linked List.";
@@ -967,14 +967,27 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
                 else if (index > 22) targetPos.x -= (1.0f - animationProgress) * nodeSpacing;
             }
         }
-        else if (isDeleting && current->value == valueDelete) {
-            numsDelete++;
-            DrawCircle(targetPos.x, targetPos.y, 30, Fade(Color{ 246, 50, 130, 255 }, 1.0f - animationProgress));
-            current = current->next;
+        else if (isDeleting && current->value == valueDelete && numsDelete == 0) {
+            // Đây là node đầu tiên có value == valueDelete
+            numsDelete = 1;
             indexDelete = index;
+
+            DrawCircle(targetPos.x, targetPos.y, 30, Fade(Color{ 246, 50, 0, 255 }, 1.0f - animationProgress));
+
+            // Vẽ viền
+            DrawCircle(targetPos.x, targetPos.y, 32, Fade(BLACK, 1.0f - animationProgress));
+
+            // Vẽ giá trị mờ dần
+            string nodeText = TextFormat("%d", current->value);
+            Vector2 textSize = MeasureTextEx(myFont, nodeText.c_str(), 25, 1.25);
+            Vector2 textPos = { targetPos.x - textSize.x / 2, targetPos.y - textSize.y / 2 };
+            DrawTextEx(myFont, nodeText.c_str(), textPos, 25, 1.25, Fade(BLACK, 1.0f - animationProgress));
+
+            current = current->next;
             index++;
             continue;
         }
+
         else if (isDeleting && index > indexDelete) {
             // Vị trí ban đầu của node bên phải node bị xóa
             Vector2 initialPos = TargetPos(index);
