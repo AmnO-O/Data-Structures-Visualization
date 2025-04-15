@@ -70,11 +70,11 @@ void AboutScreen::Draw() {
     // Danh sách thành viên và thông tin lớp
     std::vector<std::string> teamMembers = {
         "- Pham Huu Nam (Student ID: 24125015) - Leader",
-        "- Dang Tran Tuan Khoi (Student ID: 24125034) - UI designer",
+        "- Dang Tran Tuan Khoi (Student ID: 24125034) - UI Designer",
         "- Tran Dang Le Huy (Student ID: 24125057) - Developer",
         "- Vo Quoc Linh (Student ID: 24125065) - Developer"
     };
-    std::string classInfo = "All members are from class 24A01, APCS K24, University of Science, Ho Chi Minh City.";
+    std::string classInfo = "All members are from class 24A01, APCS K24, Falcuty of Information and Technology, University of Science, Ho Chi Minh City.";
 
     // Thông tin ứng dụng và liên hệ
     const char* teamInfo[] = {
@@ -83,7 +83,7 @@ void AboutScreen::Draw() {
         "and data structures.",
         "",
         "Currently, the app is being updated with additional data structures and various improvements. If you have any",
-        "suggestions or feedback, please contact us at: lnkh.apcs24@gmail.com"
+        "suggestions or feedback, please contact us at: khln.apcs@gmail.com"
     };
     int teamInfoCount = sizeof(teamInfo) / sizeof(teamInfo[0]);
 
@@ -99,7 +99,7 @@ void AboutScreen::Draw() {
         Vector2 textSize = MeasureTextEx(font, teamInfo[i], textFontSize, textSpacing);
         if (textSize.x > maxWidth) maxWidth = textSize.x;
     }
-    Vector2 subtitleSize = MeasureTextEx(aboutFont, "LNKH Team:", subtitleFontSize, textSpacing);
+    Vector2 subtitleSize = MeasureTextEx(aboutFont, "KHLN Team:", subtitleFontSize, textSpacing);
     if (subtitleSize.x > maxWidth) maxWidth = subtitleSize.x;
     subtitleSize = MeasureTextEx(aboutFont, "About the App:", subtitleFontSize, textSpacing);
     if (subtitleSize.x > maxWidth) maxWidth = subtitleSize.x;
@@ -158,7 +158,7 @@ void AboutScreen::Draw() {
     float x = (Screen_w - maxWidth) / 2;
 
     // Phần 1: Development Team
-    DrawTextEx(aboutFont, "LNKH Team:", { x, contentY }, subtitleFontSize, textSpacing, subtitleColor);
+    DrawTextEx(aboutFont, "KHLN Team:", { x, contentY }, subtitleFontSize, textSpacing, subtitleColor);
     contentY += subtitleHeight + 10;
     for (const auto& member : teamMembers) {
         Vector2 textSize = MeasureTextEx(font, member.c_str(), textFontSize, textSpacing);
@@ -186,9 +186,9 @@ void AboutScreen::Draw() {
     contentY += subtitleHeight + 10;
     for (int i = 4; i <= 5; ++i) {
         for (const auto& line : wrappedTeamInfo[i]) {
-            if (line.find("lnkh.apcs24@gmail.com") != std::string::npos) {
+            if (line.find("khln.apcs@gmail.com") != std::string::npos) {
                 const char* textBefore = "suggestions or feedback, please contact us at: ";
-                const char* emailText = "lnkh.apcs24@gmail.com";
+                const char* emailText = "khln.apcs@gmail.com";
                 Vector2 textBeforeSize = MeasureTextEx(font, textBefore, textFontSize, textSpacing);
                 DrawTextEx(font, textBefore, { x, contentY }, textFontSize, textSpacing, DARKBLUE);
                 DrawTextEx(font, emailText, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, RED);
