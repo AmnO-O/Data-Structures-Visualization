@@ -19,6 +19,7 @@ enum SelectedButton {
 	OK,
 	CREATE,
 	FILELINKEDLIST,
+	UPDATE,
 };
 
 struct Command {
@@ -51,13 +52,15 @@ private:
 	bool createHovered = false;
 	bool fileHovered = false;
 	bool fileokHovered = false;
+	bool updateHovered = false;
 
 	float insertHeadAlpha = 1.0f;  // Alpha của nút Head
 	float insertTailAlpha = 1.0f;  // Alpha của nút Tail
 	float insertPosAlpha = 1.0f;   // Alpha của nút Pos
 
 	// Vị trí của Panel
-	Rectangle createButton = { PANEL_PADDING + 8, 330, 130, 40 };
+	Rectangle updateButton = { PANEL_PADDING + 8, 330, 130, 40 };
+	Rectangle createButton = { PANEL_PADDING + 8, 280, 130, 40 };
 	Rectangle insertButton = { PANEL_PADDING + 8, 380, 130, 40 };
 	Rectangle deleteButton = { PANEL_PADDING + 8, 440, 130, 40 };
 	Rectangle searchButton = { PANEL_PADDING + 8, 500, 130, 40 };
@@ -91,7 +94,8 @@ private:
 	int RedoState = 8;
 	int CreateState = 9;
 	int FileState = 10;
-	
+	int UpdateState = 11;
+
 	Vector2 mouse;
 
 	SelectedButton currentButton; // Xác định operation đang sử dụng
@@ -119,6 +123,7 @@ private:
 	bool isClean = false;
 	bool isCreateRandom = false;
 	bool isCreateFile = false;
+	bool isUpdate = false;
 
 	bool entered = false;
 	bool animating = false;   // Đang chạy animation hay không
@@ -129,6 +134,8 @@ private:
 	int valueDelete;
 	int indexInsert;
 	int valueSearch;
+	int valueUpdate;
+	int indexUpdate;
 
 	int indexAnimation;
 	int indexSearch;   //  index của Node được search

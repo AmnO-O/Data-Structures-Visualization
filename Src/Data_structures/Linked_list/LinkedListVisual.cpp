@@ -58,7 +58,7 @@ void LinkedListScreen::Undo() {
 
         infoMessage = "Undo performed.";
         isUndo = true;
-        isHeadInserting = isTailInserting = isPosInserting = isDeleting = isSearch = false;
+        isHeadInserting = isTailInserting = isPosInserting = isDeleting = isUpdate = isSearch = false;
         timer = 0.0f;
     }
     else {
@@ -88,7 +88,7 @@ void LinkedListScreen::Redo() {
 
         infoMessage = "Redo performed.";
         isRedo = true;
-        isHeadInserting = isTailInserting = isPosInserting = isDeleting = isSearch = false;
+        isHeadInserting = isTailInserting = isPosInserting = isDeleting = isSearch = isUpdate = false;
         timer = 0.0f;
     }
     else {
@@ -158,6 +158,9 @@ void LinkedListScreen::Update(int& state) {
     // Kiểm tra hover vào nút "Create"
     createHovered = CheckCollisionPointRec(mouse, createButton);
 
+    // Kiểm tra hover vào nút "Update"
+    updateHovered = CheckCollisionPointRec(mouse, updateButton);
+
     // Kiểm tra hover vào nút "File"
     fileHovered = CheckCollisionPointRec(mouse, fileButton);
 
@@ -168,6 +171,12 @@ void LinkedListScreen::Update(int& state) {
     if (createHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         linkedlistState = CreateState;
         currentButton = CREATE;
+    }
+
+    // Kiểm tra nút Update 
+    if (updateHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        linkedlistState = UpdateState;
+        currentButton = UPDATE;
     }
 
     // Kiểm tra nút "File"
@@ -191,23 +200,27 @@ void LinkedListScreen::Update(int& state) {
     }
 
     toolbar.Update();
-    if (toolbar.isPlaying && !isHeadInserting && !isTailInserting  && !isCreateRandom && !isCreateFile && linkedlistState != DeleteState && linkedlistState != SearchState && linkedlistState != InsertPosState ) {
+    if (toolbar.isPlaying && !isHeadInserting && !isTailInserting && !isCreateRandom && !isCreateFile && linkedlistState != DeleteState && linkedlistState != SearchState && linkedlistState != InsertPosState && linkedlistState != UpdateState) {
         toolbar.isPlaying = false;
     }
 
     if (toolbar.isBack) {
         if (!toolbar.isPlaying && stepbystep && indexAnimation >= 0 && indexAnimation <= linkedList.getSize() - 1) {
             if (linkedlistState == SearchState) {
-                if (indexAnimation <= indexSearch)indexAnimation -= 1;
-			}
-			else if (linkedlistState == DeleteState) {
-                if (indexAnimation == indexDelete)Undo();
-				if (indexAnimation <= indexDelete)indexAnimation -= 1;
-			}
-			else if (linkedlistState == InsertPosState) {
-                if (indexAnimation == indexInsert)Undo();
-				if (indexAnimation <= indexInsert)indexAnimation -= 1;
-			}
+                if (indexAnimation <= indexSearch) indexAnimation -= 1;
+            }
+            else if (linkedlistState == DeleteState) {
+                if (indexAnimation == indexDelete) Undo();
+                if (indexAnimation <= indexDelete) indexAnimation -= 1;
+            }
+            else if (linkedlistState == InsertPosState) {
+                if (indexAnimation == indexInsert) Undo();
+                if (indexAnimation <= indexInsert) indexAnimation -= 1;
+            }
+            else if (linkedlistState == UpdateState) {
+                if (indexAnimation == indexUpdate) Undo();
+                if (indexAnimation <= indexUpdate) indexAnimation -= 1;
+            }
             else indexAnimation -= 1;
         }
         else Undo();
@@ -218,15 +231,19 @@ void LinkedListScreen::Update(int& state) {
             if (linkedlistState == SearchState) {
                 if (indexAnimation < indexSearch)indexAnimation += 1;
             }
-			else if (linkedlistState == DeleteState) {
-				if (indexAnimation < indexDelete)indexAnimation += 1;
+            else if (linkedlistState == DeleteState) {
+                if (indexAnimation < indexDelete)indexAnimation += 1;
                 if (indexAnimation == indexDelete)Redo();
 
-			}
-			else if (linkedlistState == InsertPosState) {
-                if (indexAnimation <= indexInsert - 1) indexAnimation += 1;
-                if (indexAnimation == indexInsert )Redo();
-			}
+            }
+            else if (linkedlistState == InsertPosState) {
+                if (indexAnimation < indexInsert) indexAnimation += 1;
+                if (indexAnimation == indexInsert)Redo();
+            }
+            else if (linkedlistState == UpdateState) {
+                if (indexAnimation < indexUpdate) indexAnimation += 1;
+                if (indexAnimation == indexUpdate) Redo();
+            }
             else indexAnimation += 1;
         }
         else Redo();
@@ -235,9 +252,9 @@ void LinkedListScreen::Update(int& state) {
     // Animation:  Điều chỉnh offset khi mở menu Insert
     if (showInsertOptions) {
         // Mở menu, nút Head, Tail, Pos sẽ mất ngay lập tức
-        insertHeadAlpha = SmoothStep(insertHeadAlpha, 0.0f, 0.06f);  // Giảm alpha của Head từ từ
-        insertTailAlpha = SmoothStep(insertTailAlpha, 0.0f, 0.06f);  // Giảm alpha của Tail từ từ
-        insertPosAlpha = SmoothStep(insertPosAlpha, 0.0f, 0.06f);    // Giảm alpha của Pos từ từ
+        insertHeadAlpha = SmoothStep(insertHeadAlpha, 0.0f, 0.06f);
+        insertTailAlpha = SmoothStep(insertTailAlpha, 0.0f, 0.06f);
+        insertPosAlpha = SmoothStep(insertPosAlpha, 0.0f, 0.06f);
         insertOptionsOffset = SmoothStep(insertOptionsOffset, 100.0f, 0.03f);
 
         // Cập nhật vị trí của các nút Delete, Reverse, Clean
@@ -414,7 +431,7 @@ void LinkedListScreen::Update(int& state) {
                 isPosInserting = true;
                 timer = 0.0f;
                 entered = true;
-            } 
+            }
         }
         if (Value.isClickedEnter) {
             Index.isClickedEnter = true;
@@ -458,7 +475,7 @@ void LinkedListScreen::Update(int& state) {
             Value.isEnter = false; // Reset trạng thái ENTER 
             Value.outputMessage = "";
             indexAnimation = 0;
-			indexDelete = linkedList.GetPosition2(valueDelete);
+            indexDelete = linkedList.GetPosition2(valueDelete);
             if (linkedList.SearchNode(valueDelete)) {
                 // Kích hoạt animation sau mỗi lần thay đổi
                 isDeleting = true;
@@ -532,6 +549,77 @@ void LinkedListScreen::Update(int& state) {
         isClean = true;
         infoMessage = "Clearing the Linked List...";
     }
+    else if (linkedlistState == UpdateState) {
+        Value.update();
+        Index.update();
+        if (Value.isEnter) {
+            Index.tt = 1;
+            Index.sss();
+        }
+        if (Index.isEnter) {
+            Value.tt = 1;
+            Value.sss();
+        }
+        if (Value.outputMessage != "" && Index.outputMessage != "" && (Value.isEnter || Index.isEnter)) {
+            valueUpdate = stoi(Value.outputMessage);
+            indexUpdate = stoi(Index.outputMessage);
+            if (indexUpdate < linkedList.getSize() + 1) {
+                infoMessage = "Update the value at position " + to_string(indexUpdate) + " of the\n" + "linked list to " + to_string(valueUpdate);
+                indexAnimation = 0;
+            }
+            else {
+                infoMessage = "The size of Linked List is smaller \nthan the position you need.";
+            }
+            Value.isEnter = false;
+            Index.isEnter = false;
+            Value.outputMessage = "";
+            Index.outputMessage = "";
+
+            if (linkedList.getSize() == 33) {
+                infoMessage = "The number of nodes has an upper limit\n of 33. Please do it again!";
+            }
+            else {
+                // Kích hoạt animation sau mỗi lần thay đổi
+                isUpdate = true;
+                timer = 0.0f;
+                entered = true;
+            }
+        }
+        if (Value.isClickedEnter) {
+            Index.isClickedEnter = true;
+            Value.getMessage();
+            Index.getMessage();
+            Value.text = "";
+            Index.text = "";
+            if (Value.outputMessage != "" && Index.outputMessage != "") {
+                valueUpdate = stoi(Value.outputMessage);
+                indexUpdate = stoi(Index.outputMessage);
+
+                if (indexUpdate < linkedList.getSize() + 1) {
+                    indexAnimation = 0;
+                    infoMessage = "Update the value at position " + to_string(indexUpdate) + " of the\n" "linked list to " + to_string(valueUpdate);  // Cập nhật infoMessage
+                }
+                else {
+                    infoMessage = "The size of Linked List is smaller \nthan the position you need.";
+                }
+
+                Value.outputMessage = "";
+                Index.outputMessage = "";
+
+                if (linkedList.getSize() == 33) {
+                    infoMessage = "The number of nodes has an upper limit\n of 33. Please do it again!";
+                }
+                else {
+                    // Kích hoạt animation sau mỗi lần thay đổi
+                    isUpdate = true;
+                    timer = 0.0f;
+                    entered = true;
+                }
+            }
+            Value.isClickedEnter = false;
+            Index.isClickedEnter = false;
+        }
+    }
     else if (linkedlistState == CreateState && !isCreateFile) {
         Nodes.update();
         if (Nodes.isEnter && Nodes.outputMessage != "") {
@@ -556,7 +644,7 @@ void LinkedListScreen::Update(int& state) {
         else if (Nodes.isClickedEnter) {
             Nodes.getMessage();
             if (Nodes.outputMessage != "") {
-                 indexAnimation = -1;
+                indexAnimation = -1;
                 valueNodes = stoi(Nodes.outputMessage);
                 Nodes.isEnter = false;
                 Nodes.outputMessage = "";
@@ -590,11 +678,11 @@ void LinkedListScreen::Update(int& state) {
 
     if (linkedlistState != SearchState)   SearchNode = nullptr;
 
-    if ((linkedlistState == SearchState || linkedlistState == DeleteState || linkedlistState == InsertPosState) && !toolbar.isPlaying) stepbystep = true;
-	else stepbystep = false;
+    if ((linkedlistState == SearchState || linkedlistState == DeleteState || linkedlistState == InsertPosState || linkedlistState == UpdateState) && !toolbar.isPlaying) stepbystep = true;
+    else stepbystep = false;
 
     // Cập nhật tiến trình animation
-    if ((isHeadInserting || isTailInserting || isPosInserting || isDeleting || isSearch || isCreateFile || isCreateRandom) && (toolbar.isPlaying||stepbystep)) {
+    if ((isHeadInserting || isTailInserting || isPosInserting || isDeleting || isSearch || isCreateFile || isCreateRandom || isUpdate) && (toolbar.isPlaying || stepbystep)) {
         timer += GetFrameTime();
 
         if (entered) {
@@ -618,39 +706,38 @@ void LinkedListScreen::Update(int& state) {
         }
         if (timer >= toolbar.duration) {
             if (isDeleting) {
-				if (indexAnimation < indexDelete && indexAnimation < linkedList.getSize()  ) {
-					if (!stepbystep) indexAnimation++;
+                if (indexAnimation < indexDelete && indexAnimation < linkedList.getSize()) {
+                    if (!stepbystep) indexAnimation++;
                     timer = 0.0f;
                 }
                 else if (indexAnimation >= linkedList.getSize()) {
-					indexAnimation = -1;
-					toolbar.isPlaying = false;
-					isDeleting = false;
+                    indexAnimation = -1;
+                    toolbar.isPlaying = false;
+                    isDeleting = false;
                 }
-                else  {
+                else {
                     SaveStateForUndo(SelectedButton::DELETE, valueDelete, indexDelete);
                     linkedList.DeleteValue(valueDelete);
                     toolbar.isPlaying = false;
-					isDeleting = false;
+                    isDeleting = false;
                 }
             }
-            else if (isPosInserting ) {
-				if (indexAnimation < indexInsert - 1 && indexAnimation < linkedList.getSize() && !stepbystep ) {
-					indexAnimation++;
-					timer = 0.0f;
-				}
-                else if (indexAnimation == indexInsert - 1 && indexAnimation < linkedList.getSize() ) {
+            else if (isPosInserting) {
+                if (indexAnimation < indexInsert - 1 && indexAnimation < linkedList.getSize() && !stepbystep) {
+                    indexAnimation++;
+                    timer = 0.0f;
+                }
+                else if (indexAnimation == indexInsert - 1 && indexAnimation < linkedList.getSize()) {
                     SaveStateForUndo(SelectedButton::INSERTPOS, valueInsert, indexInsert);
                     linkedList.InsertAtPosition(valueInsert, indexInsert);
                     indexAnimation++;
                     timer = 0.0f;
                 }
-				else if (indexAnimation == indexInsert  ) {
+                else if (indexAnimation == indexInsert) {
                     isPosInserting = false;
-					toolbar.isPlaying = false;
-					timer = 0.0f;
-				}
-
+                    toolbar.isPlaying = false;
+                    timer = 0.0f;
+                }
             }
             else if (isSearch && !stepbystep) {
                 if (indexAnimation < indexSearch) {
@@ -662,9 +749,26 @@ void LinkedListScreen::Update(int& state) {
                     toolbar.isPlaying = false;
                 }
             }
-            else if (!stepbystep ){
-				if (linkedlistState != InsertPosState && linkedlistState != DeleteState && linkedlistState != SearchState) toolbar.isPlaying = false;
-                isHeadInserting = isTailInserting = isPosInserting = isDeleting = isSearch = isCreateRandom = isCreateFile = false;
+            else if (isUpdate) {
+                if (indexAnimation < indexUpdate && indexAnimation < linkedList.getSize()) {
+                    if (!stepbystep) indexAnimation++;
+                    timer = 0.0f;
+                }
+                else if (indexAnimation >= linkedList.getSize()) {
+                    indexAnimation = -1;
+                    toolbar.isPlaying = false;
+                    isUpdate = false;
+                }
+                else {
+                    SaveStateForUndo(SelectedButton::UPDATE, valueUpdate, indexUpdate);
+                    linkedList.UpdateValueAtPosition(indexUpdate, valueUpdate);
+                    toolbar.isPlaying = false;
+                    isUpdate = false;
+                }
+            }
+            else if (!stepbystep) {
+                if (linkedlistState != InsertPosState && linkedlistState != DeleteState && linkedlistState != SearchState && linkedlistState != UpdateState) toolbar.isPlaying = false;
+                isHeadInserting = isTailInserting = isPosInserting = isDeleting = isSearch = isCreateRandom = isCreateFile = isUpdate = false;
                 timer = 0.0f;  // Reset lại bộ đếm thời gian
             }
         }
@@ -706,7 +810,19 @@ void LinkedListScreen::DrawOperationsPanel() {
 
     // Tiêu đề
     Color operationColor = isDarkMode ? DARKBLUE : DARKBLUE;
-    DrawTextEx(myFont, "Operations", { PANEL_PADDING + 10, 280 }, 26, 2, operationColor);
+    DrawTextEx(myFont, "Operations", { PANEL_PADDING + 10, 230 }, 26, 2, operationColor);
+
+    // Vẽ nút Update 
+    Color UpdateColor = updateHovered ? LIGHTGRAY : RAYWHITE;
+    if (currentButton == UPDATE) UpdateColor = { 250, 228, 49, 255 };
+    DrawRectangleRounded(updateButton, 0.2f, 4, UpdateColor);
+    DrawRectangleRoundedLinesEx(updateButton, 0.2f, 4, 2.0f, GRAY);
+
+    Vector2 updateSize = MeasureTextEx(myFont, "Upate", 20, 2);
+    DrawTextEx(myFont, "Update",
+        { updateButton.x + (updateButton.width - updateSize.x) / 2,
+        updateButton.y + (updateButton.height - updateSize.y) / 2 },
+        20, 2, DARKBLUE);
 
     // Vẽ nút Create
     Color CreateColor = createHovered ? LIGHTGRAY : RAYWHITE;
@@ -872,6 +988,29 @@ void LinkedListScreen::DrawOperationsPanel() {
             { fileButton.x + (fileButton.width - fileSize.x) / 2,
               fileButton.y + (fileButton.height - fileSize.y) / 2 },
             18, 2, BLACK);
+
+        // Vẽ nút "OK"
+        Color okColor = okHovered ? LIGHTGRAY : RAYWHITE;
+        if (currentButton == OK) okColor = { 250, 228, 49, 255 };
+        DrawRectangleRounded(okButton, 0.2f, 4, okColor);
+        DrawRectangleRoundedLinesEx(okButton, 0.2f, 4, 2.0f, GRAY);
+
+        Vector2 okSize = MeasureTextEx(myFont, "GO!", 18, 2);
+        DrawTextEx(myFont, "GO!",
+            { okButton.x + (okButton.width - okSize.x) / 2,
+              okButton.y + (okButton.height - okSize.y) / 2 },
+            18, 2, DARKBLUE);
+    }
+    else if (linkedlistState == UpdateState) {
+        int fontSize = 24;
+        float spacing = 1.0f;
+
+        int textWidth = MeasureTextEx(myFont, "Value", fontSize, 1.f).x;
+        DrawTextEx(myFont, "Value", { 200, 350 }, fontSize, spacing, BLACK);
+        Value.draw();
+        textWidth = MeasureTextEx(myFont, "Index", fontSize, 1.f).x;
+        DrawTextEx(myFont, "Index", { 200, 400 }, fontSize, spacing, BLACK);
+        Index.draw();
 
         // Vẽ nút "OK"
         Color okColor = okHovered ? LIGHTGRAY : RAYWHITE;
@@ -1062,7 +1201,6 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
             targetPos.y = initialPos.y * (1.0f - animationProgress) + newPos.y * animationProgress;
         }
 
-
         Color nodeColor = (fadeProgress == 1.0f) ? WHITE : Fade(Color{ 246, 50, 130, 255 }, fadeProgress); // Màu mặc định của Node 
         Color borderColor = Fade(BLACK, fadeProgress); // Viền mặc định của Node
         // Vẽ viền (Border)
@@ -1073,10 +1211,14 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
             infoMessage = "The first node with the value " + to_string(valueSearch) + "\nin the Linked List (0-indexed) is at \nthe position " + to_string(index) + '.';
         }
         else if (linkedlistState == DeleteState && index == indexAnimation) {
-            if (indexAnimation == indexDelete ) DrawCircle(targetPos.x, targetPos.y, 30, nodeColor);
+            if (indexAnimation == indexDelete) DrawCircle(targetPos.x, targetPos.y, 30, nodeColor);
             else DrawCircle(targetPos.x, targetPos.y, 30, Color{ 37, 216, 32, 255 });
         }
-        else if ( index == indexAnimation) {
+        else if (linkedlistState == UpdateState && index == indexAnimation) {
+            if (indexAnimation == indexUpdate)  DrawCircle(targetPos.x, targetPos.y, 30, ORANGE);
+            else DrawCircle(targetPos.x, targetPos.y, 30, Color{ 37, 216, 32, 255 });
+        }
+        else if (index == indexAnimation) {
             DrawCircle(targetPos.x, targetPos.y, 30, Color{ 37, 216, 32, 255 });
         }
         else DrawCircle(targetPos.x, targetPos.y, 30, nodeColor);
@@ -1090,14 +1232,15 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
 
         DrawTextEx(myFont, nodeText.c_str(), textPos, 25, 1.25, Fade(BLACK, fadeProgress));
 
-		if (isPosInserting && index == indexAnimation) {
-             nodeText = TextFormat("%d", index);
-             textSize = MeasureTextEx(myFont, nodeText.c_str(), 25, 1.25);
+        if ((isPosInserting || isUpdate || isSearch) && index == indexAnimation) {
+            nodeText = TextFormat("%d", index);
+            textSize = MeasureTextEx(myFont, nodeText.c_str(), 25, 1.25);
 
-             textPos = { targetPos.x - textSize.x / 2, targetPos.y - textSize.y / 2 - 40}; // Căn giữa Node 
+            textPos = { targetPos.x - textSize.x / 2, targetPos.y - textSize.y / 2 - 40 }; // Căn giữa Node 
 
             DrawTextEx(myFont, nodeText.c_str(), textPos, 25, 1.25, Fade(BLACK, fadeProgress));
-		}
+        }
+
         // Vẽ mũi tên (đường nối) giữa các node
         if (prevPos.x != -1) {
             if (index < 11) {
@@ -1259,8 +1402,8 @@ void LinkedListScreen::drawLinkedList(float animationProgress) {
         fadeProgress -= GetFrameTime() / 1.0f;
         if (fadeProgress <= 0.0f) {
             fadeProgress = 0.0f;
-			redoStack.clear(); // Xóa redo stack
-			undoStack.clear(); // Xóa undo stack
+            redoStack.clear(); // Xóa redo stack
+            undoStack.clear(); // Xóa undo stack
             linkedList.ClearList(); // Xóa danh sách khi hiệu ứng kết thúc
             toolbar.isPlaying = false;
             isClean = false;

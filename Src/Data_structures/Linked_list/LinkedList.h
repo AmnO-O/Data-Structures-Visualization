@@ -32,6 +32,6 @@ public:
     void CreateRandom(int count);
     bool CreateFromFile(const std::string& fileName);
     LLNode* FindFirstNodeWithValue(int value);
-	int GetPosition2(int value);
-    void ChangeValue(int a, int b);
+    int GetPosition2(int value);
+    void UpdateValueAtPosition(int position, int newValue);
 };
