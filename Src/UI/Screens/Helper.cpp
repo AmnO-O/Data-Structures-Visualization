@@ -72,6 +72,7 @@ void HelperScreen::Draw() {
     Color titleColor = isDarkMode ? WHITE : DARKBLUE;
     Color subtitleColor = Color{ 253, 111, 59, 255 }; // Highlight color for subtitles
     Color emailColor = RED;                          // Highlight color for email
+    Color greenColor = DARKGREEN;                   // Green color for specific text
 
     DrawTextEx(helperFont, "How to Use",
         { titleX, titleY }, fontSize, spacing, titleColor);
@@ -149,10 +150,16 @@ void HelperScreen::Draw() {
     // Vẽ nội dung
     for (const auto& paragraph : wrappedInstructions) {
         for (const auto& line : paragraph) {
-            // Highlight specific sections
+            // Highlight specific subtitles
             if (line == "Interface Overview:" || line == "Graph Section Special Features:" || line == "Other Features:") {
                 DrawTextEx(myFont, line.c_str(), { x, contentY }, textFontSize, textSpacing, subtitleColor); // Highlight subtitles
             }
+            // Change color for specific green text
+            else if (line.find("Center:") == 0 || line.find("Left Panel:") == 0 || line.find("Right Panel:") == 0 ||
+                line.find("Bottom Toolbar:") == 0 || line.find("Light/Dark Mode:") == 0 || line.find("Background Music:") == 0) {
+                DrawTextEx(myFont, line.c_str(), { x, contentY }, textFontSize, textSpacing, greenColor); // Green color
+            }
+            // Highlight email
             else if (line.find("khln.apcs@gmail.com") != std::string::npos) {
                 const char* textBefore = "For further assistance, feel free to contact us at: ";
                 const char* emailText = "khln.apcs@gmail.com";
@@ -161,6 +168,7 @@ void HelperScreen::Draw() {
                 DrawTextEx(myFont, emailText, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, emailColor); // Highlight email
                 contentY += textBeforeSize.y + 5;
             }
+            // Default text
             else {
                 DrawTextEx(myFont, line.c_str(), { x, contentY }, textFontSize, textSpacing, DARKBLUE);
             }
@@ -180,6 +188,7 @@ void HelperScreen::Draw() {
         { backButton.x + (backButton.width - textSize.x) / 2, backButton.y + (backButton.height - textSize.y) / 2 },
         20, 1, DARKBLUE);
 }
+
 
 
 
