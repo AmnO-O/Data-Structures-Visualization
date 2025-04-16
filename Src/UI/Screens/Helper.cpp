@@ -86,7 +86,7 @@ void HelperScreen::Draw() {
     // Nội dung hướng dẫn
     const char* instructions[] = {
         "The app includes 4 main sections:",
-        "Singly Linked List, Hash Table, AVL Tree, and Graph — each allows you to interact with ",
+        "Singly Linked List, Hash Table, AVL Tree, and Graph, each allows you to interact with ",
         "and visualize the structure in real time.",
         "Interface Overview:",
         "Center: Displays the selected structure and updates live with each action.",
@@ -99,7 +99,7 @@ void HelperScreen::Draw() {
         "Watch animated algorithm execution with visual cues.",
         "Other Features:",
         "Light/Dark Mode: Easily switch between light and dark themes for a comfortable viewing experience.",
-        "Background Music: Turn music on/off to enhance your focus or mood while using the app..",
+        "Background Music: Turn music on/off to enhance your focus or mood while using the app.",
         "For further assistance, feel free to contact us at: khln.apcs@gmail.com"
     };
     int instructionsCount = sizeof(instructions) / sizeof(instructions[0]);
@@ -180,6 +180,7 @@ void HelperScreen::Draw() {
         { backButton.x + (backButton.width - textSize.x) / 2, backButton.y + (backButton.height - textSize.y) / 2 },
         20, 1, DARKBLUE);
 }
+
 
 
 
