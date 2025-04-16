@@ -652,9 +652,15 @@ void LinkedListScreen::Update(int& state) {
 				}
 
             }
-            else if (isSearch && indexAnimation < indexSearch && !stepbystep) {
-                timer = 0.0f;
-                indexAnimation++;
+            else if (isSearch && !stepbystep) {
+                if (indexAnimation < indexSearch) {
+                    timer = 0.0f;
+                    indexAnimation++;
+                }
+                else if (indexAnimation == indexSearch) {
+                    isSearch = false;
+                    toolbar.isPlaying = false;
+                }
             }
             else if (!stepbystep ){
 				if (linkedlistState != InsertPosState && linkedlistState != DeleteState && linkedlistState != SearchState) toolbar.isPlaying = false;

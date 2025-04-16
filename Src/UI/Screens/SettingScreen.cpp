@@ -71,18 +71,6 @@ void SettingScreen::Update(int& state) {
 void SettingScreen::Draw() {
     ClearBackground(isDarkMode ? darkmode : lightmode); // Sử dụng màu nền theo chế độ hiện tại
 
-    // Hiển thị tiêu đề "Settings"
-    int fontSize = 60;
-    float spacing = 3.0f;
-    Vector2 titleSize = MeasureTextEx(settingsFont, "Settings", fontSize, spacing);
-
-    float titleX = (Screen_w - titleSize.x) / 2;
-    float titleY = 80; // Đưa tiêu đề lên cao hơn
-
-    Color titleColor = isDarkMode ? WHITE : DARKBLUE;
-    DrawTextEx(settingsFont, "Settings",
-        { titleX, titleY }, fontSize, spacing, titleColor);
-
     // Vẽ nút "Back"
     Color backColor = backHovered ? LIGHTGRAY : RAYWHITE;
     DrawRectangleRounded(backButton, 0.2f, 4, backColor);
