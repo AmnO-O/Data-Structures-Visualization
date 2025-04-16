@@ -23,6 +23,9 @@ HashTableVisual::HashTableVisual() {
 
     Size = { {270, 350, 90, 30} };
 
+    Index = { {270, 350, 90, 30} };
+    Index.text = "Random";
+
     Value = { {270, 350, 90, 30} };
     valueButton = { { PANEL_PADDING + 100, 440, 80, 30 }, ">Value" };
     valueRect = { -500, -500, 210, 55 };
@@ -32,6 +35,7 @@ HashTableVisual::HashTableVisual() {
 
     File = { { PANEL_PADDING + 200, 470, 130, 40 }, "File" };
     Random = { { PANEL_PADDING + 200, 530, 130, 40 }, "Random" };
+    Go = { { PANEL_PADDING + 200, 530, 130, 40 }, "Go!" };
 
     int rectWidth = 400;
     int rectHeight = 300;
@@ -87,6 +91,16 @@ HashTableVisual::HashTableVisual() {
         "return Not_Found",
     };
 
+    updateCode = {
+        "This function update the value at",
+        "the given slot in the hash table.",
+        "",
+        "if(slot <= 0 || slot >= htable.size)",
+        "       return;",
+        "",
+        "htable[slot] = value;",
+    };
+
     animation.active = false;
     animation.segmentDuration = 0.8f;
     animation.currentPathIndex = 0;
@@ -118,7 +132,7 @@ int HashTableVisual::handleEvent() {
         animation.operationSuccess = true;
         warning = "";
         toolbar.isOpen = toolbar.isPlaying = false;
-
+        Value.text = "";
 
         if (Input.isSearch) {
             Value.bounds.x = -500;
@@ -131,6 +145,12 @@ int HashTableVisual::handleEvent() {
         else if (Input.isRemove) {
             Value.bounds.x = -500;
             Value.bounds.y = Input.cButton[3].rect.y;
+        }
+        else if (Input.isUpdate) {
+            Index = { {276, 340, 90, 30} };
+            Value = { {276, 390, 90, 30} };
+            Index.text = "Random";
+            Value.text = "Random";
         }
     }
 
@@ -258,7 +278,7 @@ int HashTableVisual::handleEvent() {
                 animation.currentPathIndex--;
             }
 
-            if(animation.currentPathIndex < animation.pathIndices.size()) 
+            if (animation.currentPathIndex < animation.pathIndices.size())
                 animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
         }
 
@@ -286,7 +306,7 @@ int HashTableVisual::handleEvent() {
                     popScale = 0.0f;
                 }
 
-                if(animation.pathIndices.size())
+                if (animation.pathIndices.size())
                     animation.currentPos = H.getCenter(animation.pathIndices.back());
             }
         }
@@ -358,7 +378,7 @@ int HashTableVisual::handleEvent() {
                 popActive = false;
                 animation.active = false;
                 toolbar.isPlaying = false;
-                Input.hide = false; 
+                Input.hide = false;
             }
         }
     }
@@ -452,7 +472,7 @@ int HashTableVisual::handleEvent() {
             if (animation.currentPathIndex > 0)
                 animation.currentPathIndex--;
 
-            if (animation.currentPathIndex < animation.pathIndices.size())    
+            if (animation.currentPathIndex < animation.pathIndices.size())
                 animation.currentPos = H.getCenter(animation.pathIndices[animation.currentPathIndex]);
 
             animation.active = true;
@@ -517,6 +537,43 @@ int HashTableVisual::handleEvent() {
                     toolbar.isPlaying = false;
                     Input.hide = false;
 
+                }
+            }
+        }
+    }
+    else if (Input.isUpdate) {
+        Go.update();
+        Index.update();
+        Value.update();
+
+        if (Index.text == "") Index.text = "Random";
+        if (Value.text == "") Value.text = "Random";
+
+        if (Go.isClick || Index.isEnter || Value.isEnter) {
+            int pos = -1, value = -1;
+
+            if (Index.text == "Random")
+                pos = random(0, H.getSize() - 1);
+            else pos = Index.getDigit();
+
+            if (Value.text == "Random")
+                value = random(0, 200);
+            else value = Value.getDigit();
+
+
+            if (pos < 0 || value < 0) {
+                warning = "Index or Value must be a positive integer!";
+                currentLine = 3;
+            }
+            else {
+                warning = "";
+                Index.text = to_string(pos);
+                Value.text = to_string(value);
+
+                if (pos >= H.getSize())  currentLine = 3, warning = "Index must be less than \nsize of the hashtable!";
+                else {
+                    currentLine = 6;
+                    H.ins(pos, value);
                 }
             }
         }
@@ -794,7 +851,7 @@ void HashTableVisual::draw() {
     Color panelColory = isDarkMode ? Color{ 164, 235, 185, 200 } : Color{ 77, 168, 180, 200 };
 
     toolbar.Draw();
-    File.isChose = Random.isChose = 0;
+    File.isChose = Random.isChose = Go.isChose = 0;
 
     if (animation.active == false) H.draw(font);
 
@@ -805,8 +862,8 @@ void HashTableVisual::draw() {
         int fontSize = 24;
         float spacing = 1.0f;
 
-        DrawTextEx(font, "Size: ", { 207, 352 }, fontSize, spacing, BLACK);
-        DrawLineEx(Vector2{ PANEL_WIDTH, 425}, Vector2{ PANEL_WIDTH * 2 , 425}, 2, BLACK);
+        DrawTextEx(font, "Size: ", { 207, 352 }, fontSize, spacing, isDarkMode ? Color{ 255, 196, 46, 255 } : BLACK);
+        DrawLineEx(Vector2{ PANEL_WIDTH, 425 }, Vector2{ PANEL_WIDTH * 2 , 425 }, 2, BLACK);
 
         Size.draw();
         File.draw(smallFont);
@@ -987,6 +1044,35 @@ void HashTableVisual::draw() {
             int scaledTextWidth = MeasureTextEx(font, keyText.c_str(), scaledFontSize, 1).x;
 
             DrawTextEx(font, keyText.c_str(), { center.x - scaledTextWidth / 2, center.y - scaledFontSize / 2 }, scaledFontSize, 1, Fade(WHITE, shrinkScale));
+        }
+    }
+    else if (Input.isUpdate) {
+        DrawRectangleRounded(Rectangle{ PANEL_WIDTH, panelMargin * 1.f, PANEL_WIDTH, Screen_h * 1.f - 2 * panelMargin }, 0.2, 9, panelColorx);
+        drawBackgroundInfo(info.x, info.y, info.width, info.height);
+
+        int fontSize = 23;
+        float spacing = 1.0f;
+
+        DrawTextEx(font, "Index: ", { 202, 342 }, fontSize, spacing, isDarkMode ? Color{ 255, 196, 46, 255 } : BLACK);
+        DrawTextEx(font, "Value: ", { 202, 392 }, fontSize, spacing, isDarkMode ? Color{ 255, 196, 46, 255 } : BLACK);
+        DrawLineEx(Vector2{ PANEL_WIDTH, 475 }, Vector2{ PANEL_WIDTH * 2 , 475 }, 2, BLACK);
+
+        highlightCode(info.x, info.y, info.width, info.height, currentLine);
+
+        if (currentLine == 3)
+            highlightCode(info.x, info.y, info.width, info.height, 4);
+
+        if (currentLine == 0)
+            highlightCode(info.x, info.y, info.width, info.height, 1);
+
+        drawCode(info.x, info.y, info.width, info.height, updateCode);
+
+        Go.draw(font);
+        Value.draw();
+        Index.draw();
+
+        if (warning.size()) {
+            DrawTextEx(font, warning.c_str(), { Value.bounds.x - 40, Value.bounds.y + 40 }, 18, 1, RED);
         }
     }
     else {

@@ -20,13 +20,13 @@ private:
 #define PANEL_WIDTH 188  // Độ rộng bảng
 #define PANEL_PADDING 20 // Khoảng cách lề
 
-    vector <string> insertCode, deleteCode, searchCode;
+    vector <string> insertCode, deleteCode, searchCode, updateCode;
 
     AnimationData animation;
     CommonButton Input;
     Rectangle info, valueRect;
     Button Random, File;
-    TextBoxCenter Size, Value;
+    TextBoxCenter Size, Value, Index;
     Instruction loadFile;
     FileLoader readFile;
     HashTable H;
@@ -34,6 +34,8 @@ private:
     string warning = "";
 
     Button valueButton;
+    Button Go;
+
     float valueTime = 0;
     float valueDuration = 2.f;
     bool valueAnimation = 0;
