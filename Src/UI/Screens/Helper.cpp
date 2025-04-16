@@ -59,32 +59,28 @@ std::vector<std::string> HelperScreen::WrapText(const std::string& text, Font fo
     return lines;
 }
 void HelperScreen::Draw() {
-    ClearBackground(isDarkMode ? darkmode : lightmode); // Sử dụng màu nền theo chế độ hiện tại
+    ClearBackground(isDarkMode ? darkmode : lightmode);
 
-    // Hiển thị tiêu đề "How to Use"
     int fontSize = 50;
     float spacing = 3.0f;
     Vector2 titleSize = MeasureTextEx(helperFont, "How to Use", fontSize, spacing);
 
     float titleX = (Screen_w - titleSize.x) / 2;
-    float titleY = 80; // Đưa tiêu đề lên cao hơn
+    float titleY = 80;
 
     Color titleColor = isDarkMode ? WHITE : DARKBLUE;
-    Color subtitleColor = Color{ 253, 111, 59, 255 }; // Highlight color for subtitles
-    Color emailColor = RED;                          // Highlight color for email
-    Color greenColor = DARKGREEN;                   // Green color for specific text
+    Color subtitleColor = Color{ 253, 111, 59, 255 };
+    Color emailColor = RED;
+    Color greenColor = DARKGREEN;
 
-    DrawTextEx(helperFont, "How to Use",
-        { titleX, titleY }, fontSize, spacing, titleColor);
+    DrawTextEx(helperFont, "How to Use", { titleX, titleY }, fontSize, spacing, titleColor);
 
-    // Highlight and center the welcome message
     const char* welcomeMessage = "Welcome to the RayViz Data Structure Visualization!";
-    Vector2 welcomeSize = MeasureTextEx(myFont, welcomeMessage, 30, 1.5f); // Adjust font size and spacing
-    float welcomeX = (Screen_w - welcomeSize.x) / 2; // Center horizontally
-    float welcomeY = titleY + titleSize.y + 30;      // Adjusted position to move it upward
-    DrawTextEx(myFont, welcomeMessage, { welcomeX, welcomeY }, 30, 1.5f, subtitleColor); // Highlighted in subtitle color
+    Vector2 welcomeSize = MeasureTextEx(myFont, welcomeMessage, 30, 1.5f);
+    float welcomeX = (Screen_w - welcomeSize.x) / 2;
+    float welcomeY = titleY + titleSize.y + 30;
+    DrawTextEx(myFont, welcomeMessage, { welcomeX, welcomeY }, 30, 1.5f, subtitleColor);
 
-    // Nội dung hướng dẫn
     const char* instructions[] = {
         "The app includes 4 main sections:",
         "Singly Linked List, Hash Table, AVL Tree, and Graph, each allows you to interact with ",
@@ -105,7 +101,6 @@ void HelperScreen::Draw() {
     };
     int instructionsCount = sizeof(instructions) / sizeof(instructions[0]);
 
-    // Tính toán chiều rộng tối đa
     int textFontSize = 20;
     float textSpacing = 1.5f;
     float padding = 30.0f;
@@ -116,7 +111,6 @@ void HelperScreen::Draw() {
         if (textSize.x > maxWidth) maxWidth = textSize.x;
     }
 
-    // Xuống hàng cho nội dung
     std::vector<std::vector<std::string>> wrappedInstructions;
     for (int i = 0; i < instructionsCount; ++i) {
         if (instructions[i][0] != '\0') {
@@ -127,18 +121,16 @@ void HelperScreen::Draw() {
         }
     }
 
-    // Tính tổng chiều cao của nội dung
     float totalHeight = 0;
     for (const auto& paragraph : wrappedInstructions) {
         for (const auto& line : paragraph) {
             Vector2 textSize = MeasureTextEx(myFont, line.c_str(), textFontSize, textSpacing);
             totalHeight += textSize.y + 5;
         }
-        totalHeight += 10; // Khoảng cách giữa các đoạn
+        totalHeight += 10;
     }
 
-    // Vẽ hình chữ nhật bo góc làm nền
-    float contentY = welcomeY + welcomeSize.y + 50; // Start below the welcome message
+    float contentY = welcomeY + welcomeSize.y + 50;
     float x = (Screen_w - maxWidth) / 2;
     float rectX = x - padding;
     float rectY = contentY - padding;
@@ -147,38 +139,43 @@ void HelperScreen::Draw() {
 
     DrawRectangleRounded({ rectX, rectY, rectWidth, rectHeight }, 0.2f, 4, WHITE);
 
-    // Vẽ nội dung
     for (const auto& paragraph : wrappedInstructions) {
         for (const auto& line : paragraph) {
-            // Highlight specific subtitles
             if (line == "Interface Overview:" || line == "Graph Section Special Features:" || line == "Other Features:") {
-                DrawTextEx(myFont, line.c_str(), { x, contentY }, textFontSize, textSpacing, subtitleColor); // Highlight subtitles
+                DrawTextEx(myFont, line.c_str(), { x, contentY }, textFontSize, textSpacing, subtitleColor);
             }
-            // Change color for specific green text
             else if (line.find("Center:") == 0 || line.find("Left Panel:") == 0 || line.find("Right Panel:") == 0 ||
                 line.find("Bottom Toolbar:") == 0 || line.find("Light/Dark Mode:") == 0 || line.find("Background Music:") == 0) {
-                DrawTextEx(myFont, line.c_str(), { x, contentY }, textFontSize, textSpacing, greenColor); // Green color
+                std::string prefix;
+                if (line.find("Center:") == 0) prefix = "Center:";
+                else if (line.find("Left Panel:") == 0) prefix = "Left Panel:";
+                else if (line.find("Right Panel:") == 0) prefix = "Right Panel:";
+                else if (line.find("Bottom Toolbar:") == 0) prefix = "Bottom Toolbar:";
+                else if (line.find("Light/Dark Mode:") == 0) prefix = "Light/Dark Mode:";
+                else if (line.find("Background Music:") == 0) prefix = "Background Music:";
+
+                std::string rest = line.substr(prefix.length());
+                Vector2 prefixSize = MeasureTextEx(myFont, prefix.c_str(), textFontSize, textSpacing);
+                DrawTextEx(myFont, prefix.c_str(), { x, contentY }, textFontSize, textSpacing, greenColor);
+                DrawTextEx(myFont, rest.c_str(), { x + prefixSize.x, contentY }, textFontSize, textSpacing, DARKBLUE);
             }
-            // Highlight email
             else if (line.find("khln.apcs@gmail.com") != std::string::npos) {
                 const char* textBefore = "For further assistance, feel free to contact us at: ";
                 const char* emailText = "khln.apcs@gmail.com";
                 Vector2 textBeforeSize = MeasureTextEx(myFont, textBefore, textFontSize, textSpacing);
                 DrawTextEx(myFont, textBefore, { x, contentY }, textFontSize, textSpacing, DARKBLUE);
-                DrawTextEx(myFont, emailText, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, emailColor); // Highlight email
+                DrawTextEx(myFont, emailText, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, emailColor);
                 contentY += textBeforeSize.y + 5;
             }
-            // Default text
             else {
                 DrawTextEx(myFont, line.c_str(), { x, contentY }, textFontSize, textSpacing, DARKBLUE);
             }
             Vector2 textSize = MeasureTextEx(myFont, line.c_str(), textFontSize, textSpacing);
             contentY += textSize.y + 5;
         }
-        contentY += 10; // Khoảng cách giữa các đoạn
+        contentY += 10;
     }
 
-    // Vẽ nút "Back"
     Color backColor = backHovered ? LIGHTGRAY : RAYWHITE;
     DrawRectangleRounded(backButton, 0.2f, 4, backColor);
     DrawRectangleRoundedLinesEx(backButton, 0.2f, 4, 2.0f, GRAY);
@@ -188,7 +185,6 @@ void HelperScreen::Draw() {
         { backButton.x + (backButton.width - textSize.x) / 2, backButton.y + (backButton.height - textSize.y) / 2 },
         20, 1, DARKBLUE);
 }
-
 
 
 
