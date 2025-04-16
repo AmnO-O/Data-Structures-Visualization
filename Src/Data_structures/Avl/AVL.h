@@ -71,7 +71,7 @@ public:
     void UpdateOrderPos(int step);
     void UpdateDistance(AVLNode* root, float target_x, float target_y, int subcase);
 	void UpdateValue( int value , int alterValue);
-
+    int GetSize() const;
 private:
     AVLNode* deletenode = NULL;
     void UpdateBalance(AVLNode* root);
@@ -87,7 +87,7 @@ private:
     void PreorderHelper(AVLNode* node, std::vector<int>& result);
     void PostorderHelper(AVLNode* node, std::vector<int>& result);
     AVLNode* insertNoAnimation(AVLNode*& root, int key, float Ox, float Oy);
-
+    int countNodes(AVLNode* node) const;
 };
 
 

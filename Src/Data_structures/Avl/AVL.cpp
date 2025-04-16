@@ -553,3 +553,12 @@ void AVLtree::UpdateValue(int value, int alterValue) {
     subcase = 5;
     PushAnimation(m_root, 900.0, 200.0, subcase);
 }
+
+int AVLtree::countNodes(AVLNode* node) const {
+    if (!node) return 0;
+    return 1 + countNodes(node->left) + countNodes(node->right);
+}
+
+int AVLtree::GetSize() const {
+    return countNodes(m_root);
+}
