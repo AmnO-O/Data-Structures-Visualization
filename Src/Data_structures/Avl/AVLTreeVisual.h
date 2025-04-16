@@ -9,7 +9,6 @@
 #include <string>
 
 
-
 enum SelectedButtonAVL {
 	NONEAVL,
 	INSERTAVL,
@@ -153,7 +152,7 @@ private:
 	AVLNode* Animationmroot;
 
 	int posX, posY;   // Vị trí của IN4
-	string infoMessage = "";   // Lưu dòng chữ INFO
+	string infoMessage;   // Lưu dòng chữ INFO
 	float fadeProgress = 1.0f;   // Fade AVL khi Clean AVL
 	// Hàm reset lại nội dung trong textBox 
 	void handleButtonClick(SelectedButtonAVL newButton, TextBox& textBox);
@@ -191,7 +190,6 @@ private:
 	//Texture2D textureRedoHovered;
 
 	Toolbar toolbar;
-
 
 	TraversalTable myTable;
 public:

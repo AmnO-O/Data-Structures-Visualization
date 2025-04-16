@@ -45,6 +45,8 @@ void AVLTreeScreen::Init() {
     sparks.clear();
 
     myTable.Init(Screen_w - 700, Screen_h - 310, 290, 310);
+
+    infoMessage = "";
 }
 
 void AVLTreeScreen::Update(int& state) {
@@ -151,6 +153,7 @@ void AVLTreeScreen::Update(int& state) {
         isClear = true;
         fadeProgress = 1.0f;
         SearchNode = nullptr;
+        infoMessage = "";
     }
 
     if (okHovered && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && AVLtreeState != CreateState) {
@@ -172,10 +175,16 @@ void AVLTreeScreen::Update(int& state) {
             Value.isEnter = false; // Reset trạng thái ENTER 
             Value.outputMessage = "";
 
-            // Kích hoạt animation sau mỗi lần thay đổi
-            isInsert = true;
-            timer = 0.0f;
-            entered = true;
+            if (CurrAVLtree.GetSize() < 20) {
+                // Kích hoạt animation sau mỗi lần thay đổi
+                isInsert = true;
+                timer = 0.0f;
+                entered = true;
+                infoMessage = "";
+            }
+            else {
+                infoMessage = "The number of nodes has an upper limit\n of 20. Please do it again!";
+            }
         }
         if (Value.isClickedEnter) {
             Value.getMessage();
@@ -189,11 +198,16 @@ void AVLTreeScreen::Update(int& state) {
                 Value.isEnter = false; // Reset trạng thái ENTER 
                 Value.outputMessage = "";
 
-                // Kích hoạt animation sau mỗi lần thay đổi
-                isInsert = true;
-                timer = 0.0f;
-                entered = true;
-
+                if (CurrAVLtree.GetSize() < 20) {
+                    // Kích hoạt animation sau mỗi lần thay đổi
+                    isInsert = true;
+                    timer = 0.0f;
+                    entered = true;
+                    infoMessage = "";
+                }
+                else {
+                    infoMessage = "The number of nodes has an upper limit\n of 20. Please do it again!";
+                }
             }
             Value.isClickedEnter = false;
         }
@@ -209,6 +223,7 @@ void AVLTreeScreen::Update(int& state) {
             valueDelete = stoi(Value.outputMessage);
             Value.isEnter = false; // Reset trạng thái ENTER 
             Value.outputMessage = "";
+
             //SearchAnimation
             if (CurrAVLtree.m_root != NULL) {
                 ValueSearchAnimation = valueDelete;
@@ -216,6 +231,7 @@ void AVLTreeScreen::Update(int& state) {
             isDeleting = true;
             timer = 0.0f;
             entered = true;
+            infoMessage = "";
         }
         else if (Value.isClickedEnter) {
             Value.getMessage();
@@ -237,6 +253,7 @@ void AVLTreeScreen::Update(int& state) {
                 isDeleting = true;
                 timer = 0.0f;
                 entered = true;
+                infoMessage = "";
                 Value.isClickedEnter = false;
             }
         }
@@ -260,6 +277,7 @@ void AVLTreeScreen::Update(int& state) {
             isSearch = true;
             timer = 0.0f;
             entered = true;
+            infoMessage = "";
             ValueSearchAnimation = valueSearch;
         }
         else if (Value.isClickedEnter) {
@@ -280,6 +298,7 @@ void AVLTreeScreen::Update(int& state) {
                 isSearch = true;
                 timer = 0.0f;
                 entered = true;
+                infoMessage = "";
                 ValueSearchAnimation = valueSearch;
             }
             Value.isClickedEnter = false;
@@ -292,18 +311,22 @@ void AVLTreeScreen::Update(int& state) {
             Nodes.isEnter = false; // Reset trạng thái ENTER 
             Nodes.outputMessage = "";
 
-            if (valueNodes > 0) {
+            if (valueNodes > 0 && valueNodes < 21) {
                 isCreateRandom = true;
+
+                // Kích hoạt animation sau mỗi lần thay đổi
+                isInsert = true;
+                timer = 0.0f;
+                entered = true;
+                infoMessage = "";
+
+                //SearchAnimation
+                if (CurrAVLtree.m_root != NULL) {
+                    ValueSearchAnimation = valueNodes;
+                }
             }
-
-            // Kích hoạt animation sau mỗi lần thay đổi
-            isInsert = true;
-            timer = 0.0f;
-            entered = true;
-
-            //SearchAnimation
-            if (CurrAVLtree.m_root != NULL) {
-                ValueSearchAnimation = valueNodes;
+            else {
+                infoMessage = "The number of nodes has an upper limit\n of 20. Please do it again!";
             }
         }
         else if (Nodes.isClickedEnter) {
@@ -313,18 +336,22 @@ void AVLTreeScreen::Update(int& state) {
                 Nodes.isEnter = false; // Reset trạng thái ENTER 
                 Nodes.outputMessage = "";
 
-                if (valueNodes > 0) {
+                if (valueNodes > 0 && valueNodes < 21) {
                     isCreateRandom = true;
+
+                    // Kích hoạt animation sau mỗi lần thay đổi
+                    isInsert = true;
+                    timer = 0.0f;
+                    entered = true;
+                    infoMessage = "";
+
+                    //SearchAnimation
+                    if (CurrAVLtree.m_root != NULL) {
+                        ValueSearchAnimation = valueNodes;
+                    }
                 }
-
-                // Kích hoạt animation sau mỗi lần thay đổi
-                isInsert = true;
-                timer = 0.0f;
-                entered = true;
-
-                //SearchAnimation
-                if (CurrAVLtree.m_root != NULL) {
-                    ValueSearchAnimation = valueNodes;
+                else {
+                    infoMessage = "The number of nodes has an upper limit\n of 20. Please do it again!";
                 }
             }
             Nodes.isClickedEnter = false;
@@ -337,7 +364,7 @@ void AVLTreeScreen::Update(int& state) {
             isInsert = true;
             timer = 0.0f;
             entered = true;
-
+            infoMessage = "";
         }
     }
     else if (AVLtreeState == ClearState) {}
@@ -590,6 +617,15 @@ void AVLTreeScreen::DrawOperationsPanel() {
     }
     else if (AVLtreeState == ClearState) {}
 
+    int textPadding = 10;
+    Vector2 textSize = MeasureTextEx(GetFontDefault(), infoMessage.c_str(), 20, 1);
+
+    // Tọa độ để căn giữa text theo chiều ngang bảng, và nằm phía trên bảng một chút
+    int textX = posX + (400 - (int)textSize.x) / 2;
+    int textY = posY - (int)textSize.y - textPadding;
+
+    // Vẽ text bằng màu đỏ
+    DrawTextEx(myFont, infoMessage.c_str(), { (float)textX, (float)textY-10 }, 20, 1, RED);
 }
 
 void AVLTreeScreen::Draw() {
@@ -786,11 +822,26 @@ void AVLTreeScreen::DrawInfo() {
         180.0f, 270.0f, 30, panelColory
     );
 
+    int padding = 10;
+    int fontSize = 20;
+    Color textColor = RED;
+
+    Vector2 textSize = MeasureTextEx(myFont, infoMessage.c_str(), fontSize, 1);
+    Vector2 textPos = {
+        posX + (rectWidth - textSize.x) / 2,
+        posY - textSize.y - padding
+    };
+
+    if (fmod(GetTime(), 1.0) < 0.7)
+    {
+        DrawTextEx(myFont, infoMessage.c_str(), textPos, fontSize, 1, textColor);
+    }
+
     if (MainCaseInfo == InertionCaseInfo) {
         // Hiển thị nội dung
         int textX = posX + 10;
         int textY = posY + 10;
-        int lineSpacing = 37; // Tăng khoảng cách dòng để vừa với chiều cao mới
+        int lineSpacing = 37; 
 
         if (SubCaseInfo == FindingtoInsert) DrawRectangle(posX, posY, rectWidth, 35, RED);
         DrawTextEx(IN4Font, "finding v", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
