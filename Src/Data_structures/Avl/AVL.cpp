@@ -121,22 +121,25 @@ int AVLtree::difference(AVLNode* node) {
 };
 
 AVLNode* AVLtree::Search(AVLNode* root, int key) {
-    if (!root) return NULL;
+    if (!root) {
+        subcase = 2;
+        return NULL;
+    }
     root->currentstate = root->val == key ? 3 : 2;
     PushAnimation(m_root, 900.0, 200.0, subcase);
     if (root->val == key) {
         return root;
     }
     else if (root->val > key) {
+        subcase = 5;
         AVLNode* cur = Search(root->left, key);
         root->currentstate = 1;
-        PushAnimation(m_root, 900.0, 200.0, subcase);
         return cur;
     }
     else {
+        subcase = 4;
         AVLNode* cur = Search(root->right, key);
         root->currentstate = 1;
-        PushAnimation(m_root, 900.0, 200.0, subcase);
         return cur;
     }
 }
@@ -265,7 +268,9 @@ void AVLtree::Clear() {
 }
 
 AVLNode* AVLtree::Search(int key) {
-    return Search(m_root, key);
+	AVLNode* cur = Search(m_root, key);
+    PushAnimation(m_root, 900.0, 200.0, subcase);
+    return cur;
 }
 
 void AVLtree::UpdateBalance(AVLNode* root) {
@@ -486,4 +491,65 @@ AVLNode* AVLtree::insertNoAnimation(AVLNode*& root, int key, float Ox, float Oy)
         return leftRotate(root);
     }
     return root;
+}
+
+void AVLtree::UpdateValue(int value, int alterValue) {
+    AVLNode* cur = m_root;
+    AVLNode* parent = NULL;
+    while (cur && cur->val != value) {
+        if (cur->val < value) {
+            parent->currentstate = 1;
+            parent = cur;
+            subcase = 1;
+            cur->currentAnimationNode = 2;
+            PushAnimation(m_root, 900.0, 200.0, subcase);
+            cur = cur->right;
+        }
+        else {
+            parent->currentstate = 1;
+            parent = cur;
+            subcase = 1;
+            cur->currentAnimationNode = 2;
+            PushAnimation(m_root, 900.0, 200.0, subcase);
+            cur = cur->left;
+        }
+    }
+    if (!cur) {
+        subcase = 6;
+        PushAnimation(m_root, 900.0, 200.0, subcase);
+        return;
+    }
+
+    AVLNode* largest = cur->left;
+    while (largest->right) {
+        largest->currentstate = 2;
+        PushAnimation(m_root, 900.0, 200.0, subcase);
+        largest->currentstate = 1;
+        largest = largest->right;
+    }
+    largest->currentstate = 3;
+    PushAnimation(m_root, 900.0, 200.0, subcase);
+    AVLNode* smallest = cur->right;
+    while (smallest->left) {
+        smallest->currentstate = 2;
+        PushAnimation(m_root, 900.0, 200.0, subcase);
+        smallest->currentstate = 1;
+        smallest = smallest->left;
+    }
+    smallest->currentstate = 3;
+    PushAnimation(m_root, 900.0, 200.0, subcase);
+    bool legal = true;
+    if (parent->right == cur) {
+        if (parent->val >= alterValue)             legal = false;
+    }
+    else {
+        if (parent->val <= alterValue)             legal = false;
+    }
+    if (alterValue >= largest->val || alterValue <= smallest->val) {
+        legal = false;
+    }
+
+    if (legal) cur->val = alterValue;
+    subcase = 5;
+    PushAnimation(m_root, 900.0, 200.0, subcase);
 }
