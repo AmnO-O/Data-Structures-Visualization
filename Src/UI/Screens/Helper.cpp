@@ -61,25 +61,14 @@ std::vector<std::string> HelperScreen::WrapText(const std::string& text, Font fo
 void HelperScreen::Draw() {
     ClearBackground(isDarkMode ? darkmode : lightmode);
 
-    int fontSize = 50;
-    float spacing = 3.0f;
-    Vector2 titleSize = MeasureTextEx(helperFont, "How to Use", fontSize, spacing);
-
-    float titleX = (Screen_w - titleSize.x) / 2;
-    float titleY = 80;
-
-    Color titleColor = isDarkMode ? WHITE : DARKBLUE;
     Color subtitleColor = Color{ 253, 111, 59, 255 };
     Color emailColor = RED;
     Color greenColor = DARKGREEN;
 
-    DrawTextEx(helperFont, "How to Use", { titleX, titleY }, fontSize, spacing, titleColor);
-
     const char* welcomeMessage = "Welcome to the RayViz Data Structure Visualization!";
     Vector2 welcomeSize = MeasureTextEx(myFont, welcomeMessage, 30, 1.5f);
     float welcomeX = (Screen_w - welcomeSize.x) / 2;
-    float welcomeY = titleY + titleSize.y + 30;
-    DrawTextEx(myFont, welcomeMessage, { welcomeX, welcomeY }, 30, 1.5f, subtitleColor);
+    float welcomeY = 80;
 
     const char* instructions[] = {
         "The app includes 4 main sections:",
@@ -129,6 +118,12 @@ void HelperScreen::Draw() {
         }
         totalHeight += 10;
     }
+
+    float totalContentHeight = welcomeSize.y + 50 + totalHeight;
+    float contentStartY = (Screen_h - totalContentHeight) / 2;
+
+    welcomeY = contentStartY;
+    DrawTextEx(myFont, welcomeMessage, { welcomeX, welcomeY }, 30, 1.5f, subtitleColor);
 
     float contentY = welcomeY + welcomeSize.y + 50;
     float x = (Screen_w - maxWidth) / 2;
@@ -228,12 +223,13 @@ void HelperScreen::Draw() {
     }
 
     Color backColor = backHovered ? LIGHTGRAY : RAYWHITE;
+    Vector2 textSize = MeasureTextEx(myFont, "<< Back to Menu", 20, 1);
+    float backButtonX = (Screen_w - backButton.width) / 2;
+    backButton.x = backButtonX;
     DrawRectangleRounded(backButton, 0.2f, 4, backColor);
     DrawRectangleRoundedLinesEx(backButton, 0.2f, 4, 2.0f, GRAY);
-
-    Vector2 textSize = MeasureTextEx(myFont, "<< Back to Menu", 20, 1);
     DrawTextEx(myFont, "<< Back to Menu",
-        { backButton.x + (backButton.width - textSize.x) / 2, backButton.y + (backButton.height - textSize.y) / 2 },
+        { backButtonX + (backButton.width - textSize.x) / 2, backButton.y + (backButton.height - textSize.y) / 2 },
         20, 1, DARKBLUE);
 }
 
