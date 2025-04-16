@@ -160,36 +160,55 @@ void HelperScreen::Draw() {
                 DrawTextEx(myFont, rest.c_str(), { x + prefixSize.x, contentY }, textFontSize, textSpacing, DARKBLUE);
             }
             else if (line.find("Singly Linked List") != std::string::npos) {
+                float currentX = x;
                 const char* textBefore = "Singly Linked List";
-                const char* textAfter = ", Hash Table, AVL Tree, and Graph, each allows you to interact with ";
                 Vector2 textBeforeSize = MeasureTextEx(myFont, textBefore, textFontSize, textSpacing);
-                DrawTextEx(myFont, textBefore, { x, contentY }, textFontSize, textSpacing, greenColor);
-                DrawTextEx(myFont, textAfter, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, DARKBLUE);
+                DrawTextEx(myFont, textBefore, { currentX, contentY }, textFontSize, textSpacing, greenColor);
+                currentX += textBeforeSize.x;
+
+                const char* textMiddle1 = ", ";
+                Vector2 textMiddle1Size = MeasureTextEx(myFont, textMiddle1, textFontSize, textSpacing);
+                DrawTextEx(myFont, textMiddle1, { currentX, contentY }, textFontSize, textSpacing, DARKBLUE);
+                currentX += textMiddle1Size.x;
+
+                const char* textMiddle2 = "Hash Table";
+                Vector2 textMiddle2Size = MeasureTextEx(myFont, textMiddle2, textFontSize, textSpacing);
+                DrawTextEx(myFont, textMiddle2, { currentX, contentY }, textFontSize, textSpacing, greenColor);
+                currentX += textMiddle2Size.x;
+
+                const char* textMiddle3 = ", ";
+                Vector2 textMiddle3Size = MeasureTextEx(myFont, textMiddle3, textFontSize, textSpacing);
+                DrawTextEx(myFont, textMiddle3, { currentX, contentY }, textFontSize, textSpacing, DARKBLUE);
+                currentX += textMiddle3Size.x;
+
+                const char* textMiddle4 = "AVL Tree";
+                Vector2 textMiddle4Size = MeasureTextEx(myFont, textMiddle4, textFontSize, textSpacing);
+                DrawTextEx(myFont, textMiddle4, { currentX, contentY }, textFontSize, textSpacing, greenColor);
+                currentX += textMiddle4Size.x;
+
+                const char* textMiddle5 = ", ";
+                Vector2 textMiddle5Size = MeasureTextEx(myFont, textMiddle5, textFontSize, textSpacing);
+                DrawTextEx(myFont, textMiddle5, { currentX, contentY }, textFontSize, textSpacing, DARKBLUE);
+                currentX += textMiddle5Size.x;
+
+                const char* textAfter = "Graph";
+                Vector2 textAfterSize = MeasureTextEx(myFont, textAfter, textFontSize, textSpacing);
+                DrawTextEx(myFont, textAfter, { currentX, contentY }, textFontSize, textSpacing, greenColor);
+                currentX += textAfterSize.x;
+
+                const char* textFinal = ", each allows you to interact with";
+                Vector2 textFinalSize = MeasureTextEx(myFont, textFinal, textFontSize, textSpacing);
+                DrawTextEx(myFont, textFinal, { currentX, contentY }, textFontSize, textSpacing, DARKBLUE);
                 contentY += textBeforeSize.y + 5;
+
+                const char* nextLine = "and visualize the structure in real time.";
+                Vector2 nextLineSize = MeasureTextEx(myFont, nextLine, textFontSize, textSpacing);
+                DrawTextEx(myFont, nextLine, { x, contentY }, textFontSize, textSpacing, DARKBLUE);
+                contentY += nextLineSize.y + 5;
+                continue;
             }
-            else if (line.find("Hash Table") != std::string::npos) {
-                const char* textBefore = "Hash Table";
-                const char* textAfter = ", AVL Tree, and Graph, each allows you to interact with ";
-                Vector2 textBeforeSize = MeasureTextEx(myFont, textBefore, textFontSize, textSpacing);
-                DrawTextEx(myFont, textBefore, { x, contentY }, textFontSize, textSpacing, greenColor);
-                DrawTextEx(myFont, textAfter, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, DARKBLUE);
-                contentY += textBeforeSize.y + 5;
-            }
-            else if (line.find("AVL Tree") != std::string::npos) {
-                const char* textBefore = "AVL Tree";
-                const char* textAfter = ", and Graph, each allows you to interact with ";
-                Vector2 textBeforeSize = MeasureTextEx(myFont, textBefore, textFontSize, textSpacing);
-                DrawTextEx(myFont, textBefore, { x, contentY }, textFontSize, textSpacing, greenColor);
-                DrawTextEx(myFont, textAfter, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, DARKBLUE);
-                contentY += textBeforeSize.y + 5;
-            }
-            else if (line.find("Graph, each allows you to interact with ") != std::string::npos) {
-                const char* textBefore = "Graph";
-                const char* textAfter = ", each allows you to interact with ";
-                Vector2 textBeforeSize = MeasureTextEx(myFont, textBefore, textFontSize, textSpacing);
-                DrawTextEx(myFont, textBefore, { x, contentY }, textFontSize, textSpacing, greenColor);
-                DrawTextEx(myFont, textAfter, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, DARKBLUE);
-                contentY += textBeforeSize.y + 5;
+            else if (line.find("and visualize the structure in real time.") != std::string::npos) {
+                continue;
             }
             else if (line.find("khln.apcs@gmail.com") != std::string::npos) {
                 const char* textBefore = "For further assistance, feel free to contact us at: ";
@@ -217,9 +236,6 @@ void HelperScreen::Draw() {
         { backButton.x + (backButton.width - textSize.x) / 2, backButton.y + (backButton.height - textSize.y) / 2 },
         20, 1, DARKBLUE);
 }
-
-
-
 
 void HelperScreen::Unload() {
     UnloadFont(helperFont);
