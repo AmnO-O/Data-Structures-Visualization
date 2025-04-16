@@ -76,7 +76,7 @@ void HelperScreen::Draw() {
         "and visualize the structure in real time.",
         "Interface Overview:",
         "Center: Displays the selected structure and updates live with each action.",
-        "Left Panel: Control buttons – Initialize, Add, Delete, Update, Search.",
+        "Left Panel: Control buttons with Initialize, Add, Delete, Update, Search.",
         "Right Panel: Shows step-by-step algorithm operations for clear understanding.",
         "Bottom Toolbar: Adjust animation speed, switch between step-by-step or instant run.",
         "Graph Section Special Features:",
