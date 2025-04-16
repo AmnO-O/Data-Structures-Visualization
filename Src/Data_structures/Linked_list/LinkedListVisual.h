@@ -130,6 +130,8 @@ private:
 	int indexInsert;
 	int valueSearch;
 
+	int indexAnimation;
+	int indexSearch;   //  index của Node được search
 	int indexDelete;   //  index của Node bị xóa
 	LLNode* SearchNode;
 	LLNode* currentSearchNode;
@@ -152,6 +154,8 @@ private:
 
 	std::vector<Command> undoStack; // Lưu trữ các thao tác
 	std::vector<Command> redoStack;
+
+	bool stepbystep = false; // use to step by step
 
 	Toolbar toolbar;
 public:
@@ -179,4 +183,5 @@ public:
 
 	void Undo();
 	void Redo();
+
 };

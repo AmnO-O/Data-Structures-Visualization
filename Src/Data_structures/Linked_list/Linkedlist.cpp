@@ -143,6 +143,16 @@ void LinkedList::DeleteAtTail() {
     delete current->next;
     current->next = nullptr;
 }
+void LinkedList::ChangeValue(int a, int b) {
+    LLNode* current = head;
+    while (current) {
+        if (current->value == a) {
+            current->value = b;
+            return;
+        }
+        current = current->next;
+    }
+}
 
 void LinkedList::DeleteAtPosition(int position) {
     if (position < 0 || !head) return;
@@ -194,4 +204,17 @@ LLNode* LinkedList::FindFirstNodeWithValue(int value) {
         current = current->next;
     }
     return nullptr;
+}
+
+int LinkedList::GetPosition2(int value) {
+	LLNode* current = head;
+	int position = 0;
+	while (current) {
+		if (current->value == value) {
+			return position;
+		}
+		current = current->next;
+		position++;
+	}
+	return position; // Không tìm thấy
 }
