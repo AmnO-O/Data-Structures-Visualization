@@ -159,6 +159,38 @@ void HelperScreen::Draw() {
                 DrawTextEx(myFont, prefix.c_str(), { x, contentY }, textFontSize, textSpacing, greenColor);
                 DrawTextEx(myFont, rest.c_str(), { x + prefixSize.x, contentY }, textFontSize, textSpacing, DARKBLUE);
             }
+            else if (line.find("Singly Linked List") != std::string::npos) {
+                const char* textBefore = "Singly Linked List";
+                const char* textAfter = ", Hash Table, AVL Tree, and Graph, each allows you to interact with ";
+                Vector2 textBeforeSize = MeasureTextEx(myFont, textBefore, textFontSize, textSpacing);
+                DrawTextEx(myFont, textBefore, { x, contentY }, textFontSize, textSpacing, greenColor);
+                DrawTextEx(myFont, textAfter, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, DARKBLUE);
+                contentY += textBeforeSize.y + 5;
+            }
+            else if (line.find("Hash Table") != std::string::npos) {
+                const char* textBefore = "Hash Table";
+                const char* textAfter = ", AVL Tree, and Graph, each allows you to interact with ";
+                Vector2 textBeforeSize = MeasureTextEx(myFont, textBefore, textFontSize, textSpacing);
+                DrawTextEx(myFont, textBefore, { x, contentY }, textFontSize, textSpacing, greenColor);
+                DrawTextEx(myFont, textAfter, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, DARKBLUE);
+                contentY += textBeforeSize.y + 5;
+            }
+            else if (line.find("AVL Tree") != std::string::npos) {
+                const char* textBefore = "AVL Tree";
+                const char* textAfter = ", and Graph, each allows you to interact with ";
+                Vector2 textBeforeSize = MeasureTextEx(myFont, textBefore, textFontSize, textSpacing);
+                DrawTextEx(myFont, textBefore, { x, contentY }, textFontSize, textSpacing, greenColor);
+                DrawTextEx(myFont, textAfter, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, DARKBLUE);
+                contentY += textBeforeSize.y + 5;
+            }
+            else if (line.find("Graph, each allows you to interact with ") != std::string::npos) {
+                const char* textBefore = "Graph";
+                const char* textAfter = ", each allows you to interact with ";
+                Vector2 textBeforeSize = MeasureTextEx(myFont, textBefore, textFontSize, textSpacing);
+                DrawTextEx(myFont, textBefore, { x, contentY }, textFontSize, textSpacing, greenColor);
+                DrawTextEx(myFont, textAfter, { x + textBeforeSize.x, contentY }, textFontSize, textSpacing, DARKBLUE);
+                contentY += textBeforeSize.y + 5;
+            }
             else if (line.find("khln.apcs@gmail.com") != std::string::npos) {
                 const char* textBefore = "For further assistance, feel free to contact us at: ";
                 const char* emailText = "khln.apcs@gmail.com";
