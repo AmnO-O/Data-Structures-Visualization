@@ -117,11 +117,16 @@ struct TextBox {
     }
 
     void draw() {
-        Color boxColor = focused ? YELLOW : LIGHTGRAY;
+        Color boxColor = focused ? YELLOW : RAYWHITE;
         int textY = bounds.y + (bounds.height - fontSize) / 2;
 
-        DrawRectangleRec(bounds, boxColor);
-        DrawRectangleLinesEx(bounds, 1, DARKGRAY);
+        float roundness = 0.25f;   // từ 0.0f đến 1.0f, điều chỉnh độ cong
+        int segments = 6;          // số đoạn để vẽ bo góc
+        float outlineThickness = 2.0f;
+
+        DrawRectangleRounded(bounds, roundness, segments, boxColor);
+        DrawRectangleRoundedLinesEx(bounds, roundness, segments, outlineThickness, DARKGRAY);
+
 
         // DrawText(text.c_str(), bounds.x + 5, bounds.y + 5, 20, BLACK);
         string displayText = text;
@@ -142,7 +147,7 @@ struct TextBox {
 
         DrawTextEx(font, displayText.c_str(), { bounds.x + 5, textY / 1.0f }, fontSize, 1, BLACK);
 
-        if (focused && ((framesCounter / 490) % 2 == 0)) {
+        if (focused && ((framesCounter / 400) % 2 == 0)) {
             int cursorX = bounds.x + 5 + MeasureTextEx(font, displayText.substr(0, pos).c_str(), fontSize, 1).x;
             DrawLine(cursorX, textY, cursorX, textY + fontSize, BLACK);
         }

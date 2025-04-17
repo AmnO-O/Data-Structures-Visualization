@@ -824,7 +824,7 @@ void AVLTreeScreen::DrawInfo() {
 
     int padding = 10;
     int fontSize = 20;
-    Color textColor = RED;
+    Color textColor = isDarkMode ? RAYWHITE : RED;
 
     Vector2 textSize = MeasureTextEx(myFont, infoMessage.c_str(), fontSize, 1);
     Vector2 textPos = {
