@@ -1049,7 +1049,79 @@ void AVLTreeScreen::DrawInfo() {
         int textY = posY + 10;
         DrawTextEx(IN4Font, "Clearing the AVLtree...", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
     }
-    
+    else if (MainCaseInfo == UpdateCaseInfo && AVLtreeState == UpdateState) {
+        // Hiển thị nội dung
+        int textX = posX + 10;
+        int textY = posY + 3;
+        int lineSpacing = 22; // Tăng khoảng cách dòng để vừa với chiều cao mới
+
+        DrawTextEx(IN4Font, "while loop to find v", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == findingValueGreater) DrawRectangle(posX, posY, rectWidth, 30, RED);
+        DrawTextEx(IN4Font, "   if (cur->val < v) ", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == findingValueGreater) DrawRectangle(posX, posY, rectWidth, 30, RED);
+        DrawTextEx(IN4Font, "       if((cur-alterValue) * (cur-v)<= 0) fail update ", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == findingValueGreater) DrawRectangle(posX, posY, rectWidth, 30, RED);
+        DrawTextEx(IN4Font, "       else cur = cur->right;", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == findingValueSmaller) DrawRectangle(posX, posY, rectWidth, 30, RED);
+        DrawTextEx(IN4Font, "   else if (cur->val > v) ", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == findingValueSmaller) DrawRectangle(posX, posY, rectWidth, 30, RED);
+        DrawTextEx(IN4Font, "       if((cur-alterValue) * (cur-v)<= 0) fail update ", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == findingValueSmaller) DrawRectangle(posX, posY, rectWidth, 30, RED);
+        DrawTextEx(IN4Font, "       else cur = cur->left; ", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == findingLargest) DrawRectangle(posX, posY, rectWidth, 30, RED);
+        DrawTextEx(IN4Font, "find the largest in leftsubtree ", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == findingLargest) DrawRectangle(posX, posY, rectWidth, 30, RED);
+        DrawTextEx(IN4Font, "   if (largest >= alterValue) fail update ", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == findingSmallest) DrawRectangle(posX, posY, rectWidth, 30, RED);
+        DrawTextEx(IN4Font, "find the smallest in rightsubtree ", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == findingSmallest) DrawRectangle(posX, posY, rectWidth, 30, RED);
+        DrawTextEx(IN4Font, "   if (smallest <= alterValue) fail update ", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == alterSuccess) DrawRectangle(posX, posY, rectWidth, 30, RED);
+        DrawTextEx(IN4Font, "success update", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+        if (SubCaseInfo == unSuccess) DrawRectangle(posX, posY, rectWidth, 30, RED);
+        DrawTextEx(IN4Font, "else unsuccess update", { (float)textX, (float)textY }, 20, 2, isDarkMode ? DARKBLUE : WHITE);
+        textY += lineSpacing;
+        posY += lineSpacing;
+
+
+
+        }
 }
 
 
