@@ -66,7 +66,7 @@ void HelperScreen::Draw() {
     Color greenColor = DARKGREEN;
 
     const char* welcomeMessage = "Welcome to the RayViz Data Structure Visualization!";
-    Vector2 welcomeSize = MeasureTextEx(myFont, welcomeMessage, 30, 1.5f);
+    Vector2 welcomeSize = MeasureTextEx(myFont, welcomeMessage, 50, 1.5f);
     float welcomeX = (Screen_w - welcomeSize.x) / 2;
     float welcomeY = 80;
 
@@ -123,7 +123,7 @@ void HelperScreen::Draw() {
     float contentStartY = (Screen_h - totalContentHeight) / 2;
 
     welcomeY = contentStartY;
-    DrawTextEx(myFont, welcomeMessage, { welcomeX, welcomeY }, 30, 1.5f, subtitleColor);
+    DrawTextEx(myFont, welcomeMessage, { welcomeX, welcomeY }, 50, 1.5f, subtitleColor);
 
     float contentY = welcomeY + welcomeSize.y + 50;
     float x = (Screen_w - maxWidth) / 2;
@@ -137,7 +137,8 @@ void HelperScreen::Draw() {
     for (const auto& paragraph : wrappedInstructions) {
         for (const auto& line : paragraph) {
             if (line == "Interface Overview:" || line == "Graph Section Special Features:" || line == "Other Features:") {
-                DrawTextEx(myFont, line.c_str(), { x, contentY }, textFontSize, textSpacing, subtitleColor);
+                DrawTextEx(myFont, line.c_str(), { x, contentY - 5 }, textFontSize + 10, textSpacing, subtitleColor);
+
             }
             else if (line.find("Center:") == 0 || line.find("Left Panel:") == 0 || line.find("Right Panel:") == 0 ||
                 line.find("Bottom Toolbar:") == 0 || line.find("Light/Dark Mode:") == 0 || line.find("Background Music:") == 0) {
