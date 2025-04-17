@@ -795,14 +795,22 @@ void LinkedListScreen::DrawOperationsPanel() {
     Rectangle rightPanel = { (float)PANEL_WIDTH, (float)(panelMargin - offset), (float)PANEL_WIDTH, (float)(Screen_h - 2 * panelMargin + offset * 2) };
     DrawRectangleRounded(rightPanel, roundness, segments, panelColorxFade);
 
-    // Vẽ nền bảng cho [INFO]
-    Color panelColory = isDarkMode ? Color{ 164, 235, 185, 200 } : Color{ 77, 168, 180, 200 };  // Chọn màu theo chế độ
+    // Vẽ nền bảng INFO 
+    Color panelColory = isDarkMode ? Color{ 164, 235, 185, 200 } : Color{ 77, 168, 180, 200 };
     int rectWidth = 400;
     int rectHeight = 240;
+    int cornerRadius = 20;
     posX = Screen_w - rectWidth;
     posY = Screen_h - rectHeight;
 
-    DrawRectangle(posX, posY, rectWidth, rectHeight, panelColory);
+    DrawRectangle(posX + cornerRadius, posY, rectWidth - cornerRadius, rectHeight, panelColory);
+    DrawRectangle(posX, posY + cornerRadius, cornerRadius, rectHeight - cornerRadius, panelColory);
+
+    DrawCircleSector(
+        { (float)(posX + cornerRadius), (float)(posY + cornerRadius) },
+        (float)cornerRadius, 180, 270, 20, panelColory
+    );
+
 
     // "[INFO]"
     Color IN4Color = isDarkMode ? Color{ 199, 8, 40, 255 } : Color{ 199, 8, 40, 255 };
