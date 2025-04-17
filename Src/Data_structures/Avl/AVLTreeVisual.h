@@ -9,12 +9,14 @@
 #include <string>
 
 
+
 enum SelectedButtonAVL {
 	NONEAVL,
 	INSERTAVL,
 	DELETEAVL,
 	SEARCHAVL,
 	CLEARAVL,
+	UPDATEAVL,
 	CREATEAVL,
 	FILEAVL,
 	OKAVL,
@@ -48,6 +50,7 @@ private:
 	int DeletionCaseInfo = 2;
 	int SearchCaseInfo = 3;
 	int ClearCaseInfo = 4;
+	int UpdateCaseInfo = 5;
 
 	int FindingtoInsert = 1;
 	int InsertingCaseInfo = 7;
@@ -66,12 +69,20 @@ private:
 	int SmallerCase = 4;
 	int LargerCase = 5;
 
+	int findingValueGreater = 3;
+	int findingValueSmaller = 2;
+	int findingSmallest = 4;
+	int findingLargest = 5;
+	int alterSuccess = 7;
+	int unSuccess = 1;
+
 	bool insertHovered = false;
 	bool deleteHovered = false;
 	bool searchHovered = false;
 	bool clearHovered = false;
 	bool okHovered = false;
 	bool createHovered = false;
+	bool updateHovered = false;
 	bool fileHovered = false;
 	bool fileokHovered = false;
 	bool inorderHovered = false;
@@ -82,11 +93,12 @@ private:
 	bool pauseHovered = false;
 
 	// Vị trí của Panel
-	Rectangle createButton = { PANEL_PADDING + 8, 330, 130, 40 };
-	Rectangle insertButton = { PANEL_PADDING + 8, 390, 130, 40 };
-	Rectangle deleteButton = { PANEL_PADDING + 8, 450, 130, 40 };
-	Rectangle searchButton = { PANEL_PADDING + 8, 510, 130, 40 };
-	Rectangle clearButton = { PANEL_PADDING + 8, 570, 130, 40 };;
+	Rectangle createButton = { PANEL_PADDING + 8, 320, 130, 40 };
+	Rectangle insertButton = { PANEL_PADDING + 8, 375, 130, 40 };
+	Rectangle deleteButton = { PANEL_PADDING + 8, 430, 130, 40 };
+	Rectangle searchButton = { PANEL_PADDING + 8, 485, 130, 40 };
+	Rectangle clearButton = { PANEL_PADDING + 8, 540, 130, 40 };
+	Rectangle updateButton = { PANEL_PADDING + 8, 595, 130, 40 };
 	Rectangle fileButton = { 270, 420, 90, 30 };
 
 	// Nút OK dưới textBox
@@ -108,12 +120,14 @@ private:
 	int ClearState = 6;
 	int CreateState = 7;
 	int FileState = 8;
+	int UpdateState = 9;
 
 
 	SelectedButtonAVL currentButton; // Xác định operation đang sử dụng
 
 	// TextBox Value và Index 
 	TextBox Value;
+	TextBox ValueAlter;
 	TextBoxCenter Nodes;
 
 	Vector2 mouse;
@@ -129,6 +143,7 @@ private:
 	bool isPause = false;
 	bool isUndo = false;
 	bool isRedo = false;
+	bool isUpdate = false;
 
 	bool entered = false;
 	bool animating = false;   // Đang chạy animation hay không
@@ -138,6 +153,8 @@ private:
 	int valueDelete;
 	int valueSearch;
 	int valueNodes;
+	int valueAlter;
+	int valueAltered;
 
 	AVLNode* SearchNode;
 
@@ -152,7 +169,7 @@ private:
 	AVLNode* Animationmroot;
 
 	int posX, posY;   // Vị trí của IN4
-	string infoMessage;   // Lưu dòng chữ INFO
+	string infoMessage = "";   // Lưu dòng chữ INFO
 	float fadeProgress = 1.0f;   // Fade AVL khi Clean AVL
 	// Hàm reset lại nội dung trong textBox 
 	void handleButtonClick(SelectedButtonAVL newButton, TextBox& textBox);
@@ -178,18 +195,8 @@ private:
 	std::vector<Spark> sparks;
 
 
-	//// Ảnh icon Redo, Undo 
-	//Image imageRedo;
-	//Image imageUndo;
-	//Image imageRedoHovered;
-	//Image imageUndoHovered;
-	//// Chuyển sang Texture 
-	//Texture2D textureRedo;
-	//Texture2D textureUndo;
-	//Texture2D textureUndoHovered;
-	//Texture2D textureRedoHovered;
-
 	Toolbar toolbar;
+
 
 	TraversalTable myTable;
 public:
