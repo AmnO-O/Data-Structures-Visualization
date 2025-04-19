@@ -140,6 +140,7 @@ public:
     bool isRemove = false;
     bool isMst = true;
     bool hide = false;
+    bool isDijkstra = false;
     vector <Button> cButton;
 
 private:

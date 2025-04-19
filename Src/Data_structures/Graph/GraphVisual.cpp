@@ -12,17 +12,15 @@ GraphVisual::GraphVisual() {
     SetTextureFilter(smallFont.texture, TEXTURE_FILTER_BILINEAR);
 
     Value = { {270, 350, 105, 30} };
+    Source = { {275, 350, 80, 30} };
     valueButton = { { PANEL_PADDING + 100, 440, 80, 30 }, "" };
     valueRect = { -500, -500, 225, 55 };
     Value.fontSize = 21;
 
-    Vertices = { {PANEL_WIDTH + 100, 250 + 60, PANEL_WIDTH / 2 - 10, 30}, "Random" };
-    Edges = { {PANEL_WIDTH + 100, 250 + 100, PANEL_WIDTH / 2 - 10, 30}, "Random" };
+    Vertices = { {PANEL_WIDTH + 100, 250 + 60 - 60, PANEL_WIDTH / 2 - 10, 30}, "Random" };
+    Edges = { {PANEL_WIDTH + 100, 250 + 100 - 60, PANEL_WIDTH / 2 - 10, 30}, "Random" };
 
-    Vertices.textColor = DARKGRAY;
-    Edges.textColor = DARKGRAY;
-
-    Go = { { PANEL_PADDING + 200, 440, 130, 40 }, "Go!" };
+    Go = { { PANEL_PADDING + 200, 440 - 60, 130, 40 }, "Go!" };
 
     fileMatrix = { { PANEL_PADDING + 200, 530, 130, 40 }, "File Matrix" };
     fileEdges = { { PANEL_PADDING + 200, 590, 130, 40 }, "File Edges" };
@@ -105,6 +103,7 @@ int GraphVisual::handleEvent() {
         warning = "";
 
         G.toolbar.isOpen = G.toolbar.isPlaying = false;
+        G.resetDijkstra();
 
         if (Input.isAddedge) {
             Value.bounds.x = -500;
@@ -118,6 +117,15 @@ int GraphVisual::handleEvent() {
             Value.bounds.x = -500;
             Value.bounds.y = Input.cButton[3].rect.y;
         }
+        else if (Input.isDijkstra) {
+            Value.bounds.x = -500;
+            Value.bounds.y = Input.cButton[4].rect.y;
+
+            Source.bounds.x = -500;
+            Source.bounds.y = Input.cButton[4].rect.y;
+
+            G.processDijkstra();
+        }
     }
 
     Vertices.update();
@@ -127,13 +135,13 @@ int GraphVisual::handleEvent() {
 
     if (CheckCollisionPointRec(mousePos, iconDirected) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) G.isDirected ^= 1;
     if (CheckCollisionPointRec(mousePos, iconWeighted) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) G.isWeighted ^= 1, Value.weighted = G.isWeighted, Value.setDefault();
-    if (CheckCollisionPointRec(mousePos, iconStatic) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) G.isStatic ^= 1; 
+    if (CheckCollisionPointRec(mousePos, iconStatic) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) G.isStatic ^= 1;
 
 
     if (Input.isCreate) {
-        Go = { { PANEL_PADDING + 200, 435, 130, 40 }, "Go!" };
+        Go = { { PANEL_PADDING + 200, 435 - 60, 130, 40 }, "Go!" };
 
-        if (Go.update()) {
+        if (Go.update() || Vertices.isEnter || Edges.isEnter) {
             if ((Vertices.text != "Random" && Vertices.getDigit() < 0) || (Edges.text != "Random" && Edges.getDigit() < 0)) {
                 warning = "Vertex and edge counts \nmust be positive integers!";
             }
@@ -146,7 +154,7 @@ int GraphVisual::handleEvent() {
         }
 
         if (fileMatrix.update()) {
-            loadFileMatrix.display = true; 
+            loadFileMatrix.display = true;
         }
 
         if (fileEdges.update()) {
@@ -198,14 +206,14 @@ int GraphVisual::handleEvent() {
             if (!lines.empty()) {
                 G.reset();
 
-                int num = stoll(lines[0]); 
-                while (G.numNodes < num) G.addNode(G.numNodes); 
+                int num = stoll(lines[0]);
+                while (G.numNodes < num) G.addNode(G.numNodes);
 
                 for (int i = 1; i < lines.size(); i++) {
-                    int wei = -1e7 - 7 - 2006; 
-                    int digit = -1; 
-                    int from = i; 
-                    int to = 0; 
+                    int wei = -1e7 - 7 - 2006;
+                    int digit = -1;
+                    int from = i;
+                    int to = 0;
 
                     for (int j = 0; j < lines[i].size(); j++) {
                         if (lines[i][j] == '-') {
@@ -386,7 +394,7 @@ int GraphVisual::handleEvent() {
                 sortingAnimation = true;
 
                 G.toolbar.isPlaying = G.toolbar.isOpen = true;
-                Input.hide = true; 
+                Input.hide = true;
 
                 for (int i = 0; i < tmpEdges.size(); i++) {
                     for (int j = 0; j < sortedEdges.size(); j++) {
@@ -398,6 +406,44 @@ int GraphVisual::handleEvent() {
                 }
             }
         }
+    }
+    else if (Input.isDijkstra) {
+        Go = { { valueRect.x + valueRect.width / 2 - 35 + 7, valueRect.height + valueRect.y + 5, 70, 30 }, "Go!" };
+        Source.update();
+
+        if (Source.isEnter || Go.update()) {
+            int source = Source.getDigit();
+
+            if (source < 0 || source >= G.numNodes) {
+                warning = "Source must be a valid vertex!";
+            }
+            else {
+                G.toolbar.isPlaying = G.toolbar.isOpen = true;
+                G.Dijkstra(source);
+                Input.hide = true;
+            }
+        }
+
+        if (valueAnimation) {
+            valueTime += deltaTime;
+            float t = valueTime / valueDuration;
+            if (t > 1.0f) t = 1.0f;
+            float smoothT = t * t * (3 - 2 * t);
+            Vector2 move = Lerp({ Source.bounds.x, Source.bounds.y }, { 295.5, Input.cButton[4].rect.y + 5 }, smoothT);
+
+            Source.bounds.x = move.x;
+            Source.bounds.y = move.y;
+
+            valueButton.rect.x = move.x - 95;
+            valueButton.rect.y = move.y + 1;
+
+            if (valueTime >= valueDuration) {
+                valueTime = 0;
+                valueAnimation = 0;
+                valueAnimation = 0;
+            }
+        }
+
     }
 
     G.update();
@@ -694,7 +740,7 @@ void GraphVisual::drawMSTWeightPanel(int x, int y, int width, int height, int ms
 
         DrawTextEx(font, "MST's weight:", { (width * 1.f - textwidth) / 2.f, textY }, fontSize, 1, textColor);
 
-        DrawLineEx(Vector2{0, textY - 8}, Vector2{width * 1.f, textY - 8}, 2, BLACK);
+        DrawLineEx(Vector2{ 0, textY - 8 }, Vector2{ width * 1.f, textY - 8 }, 2, BLACK);
 
         string wei = G.isWeighted ? to_string(mstWeight) : "None";
         wei = "\n" + wei;
@@ -716,7 +762,7 @@ void GraphVisual::draw() {
 
     valueButton.text = G.isWeighted ? "(u,v,w):" : "(u,v):";
 
-
+    if (Input.isDijkstra) valueButton.text = "Source:";
 
     if (Input.isCreate == 0) {
         int panelWidth = 180;
@@ -725,13 +771,13 @@ void GraphVisual::draw() {
         int panelY = 20;
 
         if (Input.isMst == 0)
-            drawMSTWeightPanel(0, 100, panelWidth, panelHeight - 40, G.MSTweight);
-        else 
-            drawMSTWeightPanel(0, 100, panelWidth, panelHeight + 20, G.MSTweight);
+            drawMSTWeightPanel(0, 100 - 60, panelWidth, panelHeight - 40, G.MSTweight);
+        else
+            drawMSTWeightPanel(0, 100 - 60, panelWidth, panelHeight + 20, G.MSTweight);
     }
 
     if (Input.isCreate) {
-        DrawRectangleRounded(Rectangle{ PANEL_WIDTH, panelMargin * 1.f, PANEL_WIDTH + 4, Screen_h * 1.f - 2 * panelMargin + 50}, 0.2, 9, panelColorx);
+        DrawRectangleRounded(Rectangle{ PANEL_WIDTH, panelMargin * 1.f - 60, PANEL_WIDTH + 4, Screen_h * 1.f - 2 * panelMargin + 50 + 60 }, 0.2, 9, panelColorx);
 
         if (Vertices.text == "") Vertices.text = "Random";
         if (Edges.text == "") Edges.text = "Random";
@@ -743,11 +789,11 @@ void GraphVisual::draw() {
 
         string text = "Vertices";
         int textwidth = MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
-        DrawTextEx(font, text.c_str(), { PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 60 }, fontSize, spacing, BLACK);
+        DrawTextEx(font, text.c_str(), { PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 60 - 60 }, fontSize, spacing, BLACK);
 
         text = "Edges";
         textwidth = MeasureTextEx(font, text.c_str(), fontSize, spacing).x;
-        DrawTextEx(font, text.c_str(), { PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 100 }, fontSize, spacing, BLACK);
+        DrawTextEx(font, text.c_str(), { PANEL_WIDTH * 1.f + 10 + PANEL_WIDTH * 1.f / 4 - 10 - textwidth / 2, 250 + 100 - 60 }, fontSize, spacing, BLACK);
 
         // other stuff
 
@@ -760,7 +806,7 @@ void GraphVisual::draw() {
         fileEdges.draw(smallFont);
         Go.draw(smallFont);
 
-        DrawLineEx(Vector2{ PANEL_WIDTH, 505 }, Vector2{ PANEL_WIDTH * 2 + 4, 505 }, 2, BLACK);
+        DrawLineEx(Vector2{ PANEL_WIDTH, 505 - 30 }, Vector2{ PANEL_WIDTH * 2 + 4, 505 - 30 }, 2, BLACK);
     }
     else if (Input.isAddedge) {
         valueRect.x = Value.bounds.x - 108;
@@ -839,10 +885,28 @@ void GraphVisual::draw() {
     if (Input.isMst || G.isFindMST || sortingAnimation)
         drawCode(info.x, info.y, info.width, info.height, mstCode);
 
-    DrawRectangleRounded(Rectangle{ 0, panelMargin * 1.f, PANEL_WIDTH, Screen_h * 1.f - 2 * panelMargin + 50 }, 0.2, 9, panelColor);
+    if (Input.isDijkstra && Input.hide == false) {
+        valueRect.x = Source.bounds.x - 108 - 20;
+        valueRect.y = Source.bounds.y - 7 - 5;
+        DrawRectangleRounded(valueRect, 0.2, 8, panelColorx);
+        Go.isChose = 0;
+
+        if (abs(valueTime - valueDuration) < 1 || valueAnimation == 0) {
+            Go.draw(smallFont);
+        }
+
+        valueButton.draw(smallFont);
+        Source.draw();
+
+        if (warning.size() > 0) {
+            DrawTextEx(font, warning.c_str(), { Go.rect.x - 60, valueRect.y + 105 }, 18, 1, RED);
+        }
+    }
+
+    DrawRectangleRounded(Rectangle{ 0, panelMargin * 1.f - 60, PANEL_WIDTH, Screen_h * 1.f - 2 * panelMargin + 50 + 60 }, 0.2, 9, panelColor);
 
     Color operationColor = isDarkMode ? DARKBLUE : DARKBLUE;
-    DrawTextEx(smallFont, "Operations", { PANEL_PADDING + 10, 280 }, 26, 2, operationColor);
+    DrawTextEx(smallFont, "Operations", { PANEL_PADDING + 10, 280 - 60 }, 26, 2, operationColor);
     Input.draw(smallFont);
 
     DrawTextEx(font, "Directed: ", { PANEL_PADDING + 5, 583 }, 20, 1, BLACK);

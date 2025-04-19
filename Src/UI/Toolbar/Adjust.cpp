@@ -22,7 +22,7 @@ const Color CREAMY = { 214, 227, 242, 255 };
 Toolbar::Toolbar() {
     isOpen = false;
     slidePos = 0.0f;
-    speed = 1.0f;
+    speed = 2.0f;
     selectedButtonIndex = -1;
     duration = 0.6f;
     isAVL = false;
@@ -77,14 +77,19 @@ void Toolbar::Update() {
     isBack = isNext = false;
     Vector2 mousePos = GetMousePosition();
 
+    // Menu icon toggle
     if (CheckCollisionPointRec(mousePos, menuIconRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         isOpen = !isOpen;
     }
 
+    // Smooth toolbar sliding animation
     if (isOpen && slidePos < TOOLBAR_WIDTH) slidePos += SLIDE_INCREMENT;
     if (!isOpen && slidePos > 0) slidePos -= SLIDE_INCREMENT;
 
+    // Update toolbar position
     toolbarRect.x = -TOOLBAR_WIDTH + slidePos;
+
+    // Update buttons positions
     buttons[0].x = 70 + slidePos - TOOLBAR_WIDTH;
     for (int i = 1; i < 3; i++) {
         buttons[i].x = buttons[0].x + i * BUTTON_SPACING;
@@ -92,6 +97,7 @@ void Toolbar::Update() {
     speedButtons[0].x = buttons[2].x + BUTTON_SPACING;
     speedButtons[1].x = speedButtons[0].x + 120;
 
+    // Handle toolbar buttons
     if (isOpen) {
         for (int i = 0; i < 3; i++) {
             if (CheckCollisionPointRec(mousePos, buttons[i]) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -101,29 +107,49 @@ void Toolbar::Update() {
                 else {
                     selectedButtonIndex = i;
                 }
+
                 if (i == 1) {
                     isPlaying = !isPlaying;
                 }
-
-                if (i == 0)
-                    isBack = true;
-
-                if (i == 2)
-                    isNext = true;
+                if (i == 0) isBack = true;
+                if (i == 2) isNext = true;
             }
+        }
+
+        // Space key toggle for play/pause
+        if (IsKeyPressed(KEY_SPACE)) {
+            isPlaying = !isPlaying;
         }
     }
 
+    // Calculate the maximum allowed speed
+    float maxSpeed = isAVL ? 2.5f : MAX_SPEED;
 
-    if (CheckCollisionPointRec(mousePos, speedButtons[0]) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && speed > MIN_SPEED) {
+    // Speed control with rate limiting
+    static float lastSpeedChangeTime = 0;
+    float currentTime = GetTime(); // Assuming you're using raylib's GetTime()
+    float speedChangeDelay = 0.15f; // Delay between speed changes in seconds
+
+    // Decrease speed button - with rate limiting
+    if (CheckCollisionPointRec(mousePos, speedButtons[0]) &&
+        speed > MIN_SPEED &&
+        (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) ||
+            (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && currentTime - lastSpeedChangeTime > speedChangeDelay))) {
+
         speed -= SPEED_INCREMENT;
         duration += DURATION_INCREMENT;
+        lastSpeedChangeTime = currentTime;
     }
-    float maxspeed = MAX_SPEED;
-    if (isAVL == true) maxspeed = 2.5f;
-    if (CheckCollisionPointRec(mousePos, speedButtons[1]) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && speed < maxspeed) {
+
+    // Increase speed button - with rate limiting
+    if (CheckCollisionPointRec(mousePos, speedButtons[1]) &&
+        speed < maxSpeed &&
+        (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) ||
+            (IsMouseButtonDown(MOUSE_LEFT_BUTTON) && currentTime - lastSpeedChangeTime > speedChangeDelay))) {
+
         speed += SPEED_INCREMENT;
         duration -= DURATION_INCREMENT;
+        lastSpeedChangeTime = currentTime;
     }
 }
 

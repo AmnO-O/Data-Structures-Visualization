@@ -45,7 +45,7 @@ private:
 	Toolbar toolbar;
 	Rectangle iconWeighted, iconDirected, iconStatic;
 	GraphButton Input;
-	TextBoxCenter Vertices, Edges;
+	TextBoxCenter Vertices, Edges, Source;
 	Font font, infoFont, smallFont;
 	Rectangle info;
 	Button fileMatrix, fileEdges, Go;

@@ -51,18 +51,18 @@ void CommonButton::draw(Font font) {
 
 
 GraphButton::GraphButton() {
-	isAddedge = isRemove = isMst = hide = 0;
+	isAddedge = isRemove = isMst = isDijkstra = hide = 0;
 	isCreate = 1;
 
 
 	rect = { PANEL_PADDING + 8, 330, 130, 40 };
 	color = DARKBLUE;
 
-	cButton.push_back({ { PANEL_PADDING + 8, 330, 130, 40 }, "Create", btnNormal, btnHover, btnClick });
-	cButton.push_back({ { PANEL_PADDING + 8, 390, 130, 40 }, "Add Edge", btnNormal, btnHover, btnClick });
-	cButton.push_back({ { PANEL_PADDING + 8, 450, 130, 40 }, "Delete Edge", btnNormal, btnHover, btnClick });
-	cButton.push_back({ { PANEL_PADDING + 8, 510, 130, 40 }, "MST(Kruskal)", btnNormal, btnHover, btnClick });
-
+	cButton.push_back({ { PANEL_PADDING + 8, 270, 130, 40 }, "Create", btnNormal, btnHover, btnClick });
+	cButton.push_back({ { PANEL_PADDING + 8, 330, 130, 40 }, "Add Edge", btnNormal, btnHover, btnClick });
+	cButton.push_back({ { PANEL_PADDING + 8, 390, 130, 40 }, "Delete Edge", btnNormal, btnHover, btnClick });
+	cButton.push_back({ { PANEL_PADDING + 8, 450, 130, 40 }, "MST(Kruskal)", btnNormal, btnHover, btnClick });
+	cButton.push_back({ { PANEL_PADDING + 8, 510, 130, 40 }, "Dijkstra", btnNormal, btnHover, btnClick });
 
 	cButton[0].isChose = 1;
 }
@@ -70,16 +70,17 @@ GraphButton::GraphButton() {
 bool GraphButton::update() {
 	bool ok = false;
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i <= 4; i++) {
 		if (cButton[i].update()) {
-			for (int j = 0; j < 4; j++) cButton[j].isChose = 0;
+			for (int j = 0; j <= 4; j++) cButton[j].isChose = 0;
 			cButton[i].isChose = 1;
-			isAddedge = isRemove = isMst = isCreate = 0;
+			isAddedge = isRemove = isMst = isCreate = isDijkstra = 0;
 
 			if (i == 0) isCreate = 1;
 			else if (i == 1) isAddedge = 1;
 			else if (i == 2) isRemove = 1;
-			else isMst = 1;
+			else if (i == 3) isMst = 1;
+			else isDijkstra = 1;
 
 			hide = false;
 
@@ -93,7 +94,7 @@ bool GraphButton::update() {
 void GraphButton::draw(Font font) {
 	DrawRectangleRec(rect, color);
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i <= 4; i++) {
 		cButton[i].draw(font);
 
 		//if (cButton[i].isChose) {

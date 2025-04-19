@@ -1,4 +1,5 @@
 #include "Graph.h"
+#include <queue>
 
 Graph::Graph() {
     numNodes = 0;
@@ -33,7 +34,7 @@ void Graph::addNode(int id) {
 }
 
 void Graph::addEdge(int from, int to, int weight, bool dir) {
-    if (from == to) return; 
+    if (from == to) return;
     for (const Edge& edge : edges) {
         if ((edge.from == from && edge.to == to) || (edge.from == to && edge.to == from)) {
             return;
@@ -89,7 +90,7 @@ void Graph::genRandom(int numnodes, int numedges) {
 
     uniform_real_distribution<float> posDist(200.0f, Screen_w - 100.0f);
     uniform_real_distribution<float> posDist2(200.0f, Screen_h - 100.0f);
-    uniform_real_distribution<float> weightDist(1.0f, 50.0f);
+    uniform_int_distribution<int> weightDist(1.0f, 50.0f);
 
     // Determine number of nodes
     if (numnodes == -1)
@@ -536,11 +537,85 @@ void Graph::processMST() {
     timeJoin = timeFind = 0;
 }
 
+void Graph::processDijkstra() {
+    //for (int i = 0; i < numNodes; i++)
+    //    nodes[i].distFromSource = 1e9;
+
+    edgesDijkstra.clear();
+    edgesDijkstra = vector<int>(numEdges, -1);
+}
+
+void Graph::Dijkstra(int source) {
+    for (int i = 0; i < numEdges; i++) {
+        edges[i].reset();
+        edgesDijkstra[i] = -1;
+    }
+
+    for (int i = 0; i < numNodes; i++)
+        nodes[i].distFromSource = 1e9;
+
+    nodes[source].distFromSource = 0;
+
+    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<pair<long long, int>>> q;
+    q.push({ 0, source });
+
+    while (q.size()) {
+        pair <long long, int> top = q.top();
+        long long dist = top.first;
+        int node = top.second;
+        q.pop();
+
+        if (dist > nodes[node].distFromSource) continue;
+
+        for (int i = 0; i < numEdges; i++) {
+            const Edge& edge = edges[i];
+            long long weight = !isWeighted ? 1 : edge.weight;
+
+            if (edge.from == node) {
+                int v = edge.to;
+
+                if (dist + weight < nodes[v].distFromSource) {
+                    nodes[v].distFromSource = dist + weight;
+                    edgesDijkstra[v] = i;
+                    q.push({ dist + weight, v });
+                }
+            }
+            else if (edge.to == node && isDirected == false) {
+                int v = edge.from;
+                if (dist + weight < nodes[v].distFromSource) {
+                    nodes[v].distFromSource = dist + weight;
+                    edgesDijkstra[v] = i;
+                    q.push({ dist + weight, v });
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < numEdges; i++) edges[i].thickness = 0.3f;
+
+    for (int i = 0; i < numNodes; i++) {
+        if (edgesDijkstra[i] >= 0 && edgesDijkstra[i] < numEdges) {
+            edges[edgesDijkstra[i]].highlighted = true;
+        }
+    }
+}
+
+void Graph::resetDijkstra() {
+    for (int i = 0; i < numNodes; i++) {
+        nodes[i].distFromSource = 1e7 + 7 + 2 + 2006;
+        nodes[i].highlighted = false;
+    }
+
+    for (int i = 0; i < numEdges; i++) {
+        edges[i].reset();
+    }
+}
+
 void Graph::update() {
     float deltaTime = GetFrameTime();
 
     toolbar.Update();
-    if(isStatic == 0) 
+    if (isStatic == 0)
         updOld();
 
     Vector2 mousePos = GetMousePosition();
@@ -577,6 +652,8 @@ void Graph::update() {
             e.reset();
             e.directed = isDirected;
 
+            nodes[e.from].highlighted = nodes[e.to].highlighted = false;
+
             edgesMST.push_back(e);
             curMST.pop_back();
 
@@ -597,8 +674,12 @@ void Graph::update() {
                         e.thickness = 0.3f, e.highlighted = 0, e.color = isDarkMode ? WHITE : BLACK, inMST[highlightIndex] = 1;
                     else
                         e.highlighted = true, inMST[highlightIndex] = 2, MSTweight += e.weight, e.color = WHITE;
+
+                    nodes[e.from].highlighted = nodes[e.to].highlighted = false;
                 }
             }
+
+            timeFind = timeJoin = 0.0f;
 
             if (edgesMST.size()) {
                 highlightIndex++;
@@ -610,10 +691,10 @@ void Graph::update() {
                 e.highlighted = false;
                 e.color = RED;
                 e.thickness = 4.f;
+                nodes[e.from].highlighted = nodes[e.to].highlighted = true;
                 curMST.push_back(e);
+                timeFind = -1;
             }
-
-            timeFind = timeJoin = 0.0f;
         }
 
         if (toolbar.isPlaying) {
@@ -629,12 +710,12 @@ void Graph::update() {
                         if (e.color.r == RED.r && e.color.g == RED.g && e.color.b == RED.b) {
                             dsu.save();
 
-                            // cout << "Nodes: " << e.from << ' ' << e.to << ", Root : " << dsu.root(e.from) << ' ' << dsu.root(e.to) << '\n';
-
                             if (dsu.join(e.from, e.to) == 0)
                                 e.thickness = 0.3f, e.highlighted = 0, e.color = isDarkMode ? WHITE : BLACK, inMST[highlightIndex] = 1;
                             else
                                 e.highlighted = true, inMST[highlightIndex] = 2, MSTweight += e.weight, e.color = WHITE;
+
+                            nodes[e.from].highlighted = nodes[e.to].highlighted = false;
                         }
                     }
 
@@ -654,6 +735,8 @@ void Graph::update() {
                     e.color = RED;
                     e.thickness = 4.f;
                     curMST.push_back(e);
+                    nodes[e.from].highlighted = true;
+                    nodes[e.to].highlighted = true;
                 }
 
                 timeFind = -1;
@@ -662,6 +745,8 @@ void Graph::update() {
         }
     }
 }
+
+
 
 bool Graph::isProcessedMST() {
     return !edgesMST.empty();
@@ -686,7 +771,6 @@ void Graph::draw(Font& font) {
         }
 
         for (int i = 0; i < nodes.size(); i++) {
-            nodes[i].highlighted = false;
             nodes[i].draw(deltaTime, font);
         }
 

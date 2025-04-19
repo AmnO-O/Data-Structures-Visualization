@@ -71,6 +71,8 @@ struct GraphNode {
 	bool hovered = false;
 	bool highlighted = false;
 
+	long long distFromSource = (int)(1e7) + 7 + 2 + 2006;
+
 	GraphNode(float x, float y, float r, Color c, std::string label) {
 		this->label = label;
 		position = { x, y };
@@ -162,6 +164,16 @@ struct GraphNode {
 
 		int textWidth = MeasureTextEx(font, label.c_str(), 20, 1).x;
 		DrawTextEx(font, label.c_str(), { position.x - textWidth / 2, position.y - 10 }, 20, 1, WHITE);
+
+
+		Vector2 labelSize = MeasureTextEx(font, label.c_str(), 20, 1);
+		DrawTextEx(font, label.c_str(), { position.x - labelSize.x / 2, position.y - 10 }, 20, 1, WHITE);
+
+		if (distFromSource == 1e7 + 7 + 2 + 2006) return;
+
+		string distText = (distFromSource >= 1e9f) ? "inf" : std::to_string(static_cast<int>(distFromSource));
+		Vector2 distSize = MeasureTextEx(font, distText.c_str(), 20, 1);
+		DrawTextEx(font, distText.c_str(), { position.x - distSize.x / 2, position.y + displayRadius + 10 }, 20, 1, isDarkMode ? WHITE : BLACK);
 	}
 };
 
@@ -215,6 +227,10 @@ public:
 
 	bool isProcessedMST();
 
+	void Dijkstra(int source);
+	void processDijkstra();
+	void resetDijkstra();
+
 	int numNodes, numEdges;
 	int highlightIndex = 0;
 	bool isDirected = false, isWeighted = false, isStatic = false;
@@ -230,6 +246,7 @@ public:
 private:
 	void drawEdge(const Edge& edge, Font& font);
 
+	vector <int> edgesDijkstra;
 	vector <GraphNode> nodes;
 	vector <Edge> curMST;
 
@@ -238,8 +255,8 @@ private:
 	int matrix[1000][1000];
 	Vector2 forces[1000];
 
-	float stepFind = 1.0f;
-	float stepJoin = 1.0f;
+	float stepFind = 0.8f;
+	float stepJoin = 0.8f;
 
 	int selectedNode = -1;
 
