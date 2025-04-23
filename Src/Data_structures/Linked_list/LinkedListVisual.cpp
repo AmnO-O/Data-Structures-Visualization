@@ -229,16 +229,16 @@ void LinkedListScreen::Update(int& state) {
     if (toolbar.isNext) {
         if (!toolbar.isPlaying && stepbystep && indexAnimation >= 0 && indexAnimation <= linkedList.getSize() - 1) {
             if (linkedlistState == SearchState) {
-                if (indexAnimation < indexSearch)indexAnimation += 1;
+                if (indexAnimation < indexSearch) indexAnimation += 1;
             }
             else if (linkedlistState == DeleteState) {
-                if (indexAnimation < indexDelete)indexAnimation += 1;
-                if (indexAnimation == indexDelete)Redo();
+                if (indexAnimation < indexDelete) indexAnimation += 1;
+                if (indexAnimation == indexDelete) Redo();
 
             }
             else if (linkedlistState == InsertPosState) {
                 if (indexAnimation < indexInsert) indexAnimation += 1;
-                if (indexAnimation == indexInsert)Redo();
+                if (indexAnimation == indexInsert) Redo();
             }
             else if (linkedlistState == UpdateState) {
                 if (indexAnimation < indexUpdate) indexAnimation += 1;
@@ -478,12 +478,14 @@ void LinkedListScreen::Update(int& state) {
             indexDelete = linkedList.GetPosition2(valueDelete);
             if (linkedList.SearchNode(valueDelete)) {
                 // Kích hoạt animation sau mỗi lần thay đổi
+                toolbar.isOpen = true;
                 isDeleting = true;
                 timer = 0.0f;
                 entered = true;
                 infoMessage = "Deleting the first node with value\n" + to_string(valueDelete) + " in Linked List.";  // Cập nhật infoMessage
             }
             else {
+                toolbar.isOpen = true;
                 isDeleting = true;
                 timer = 0.0f;
                 infoMessage = "There is no node with the value\n" + to_string(valueDelete) + " in the current Linked List.";
@@ -497,11 +499,13 @@ void LinkedListScreen::Update(int& state) {
                 indexDelete = linkedList.GetPosition2(valueDelete);
                 if (linkedList.SearchNode(valueDelete)) {
                     // Kích hoạt animation sau mỗi lần thay đổi
+                    toolbar.isOpen = true;
                     isDeleting = true;
                     timer = 0.0f;
                     infoMessage = "Deleting the first node with value\n" + to_string(valueDelete) + " in Linked List.";  // Cập nhật infoMessage
                 }
                 else {
+                    toolbar.isOpen = true;
                     isDeleting = true;
                     timer = 0.0f;
                     infoMessage = "There is no node with the value\n" + to_string(valueDelete) + " in the current Linked List.";
@@ -521,6 +525,7 @@ void LinkedListScreen::Update(int& state) {
             indexSearch = linkedList.GetPosition2(valueSearch);
 
             // Kích hoạt animation sau mỗi lần thay đổi
+            toolbar.isOpen = true;
             isSearch = true;
             timer = 0.0f;
             entered = true;
@@ -534,6 +539,7 @@ void LinkedListScreen::Update(int& state) {
                 indexSearch = linkedList.GetPosition2(valueSearch);
 
                 // Kích hoạt animation sau mỗi lần thay đổi
+                toolbar.isOpen = true;
                 isSearch = true;
                 timer = 0.0f;
                 entered = true;
@@ -580,6 +586,7 @@ void LinkedListScreen::Update(int& state) {
             }
             else {
                 // Kích hoạt animation sau mỗi lần thay đổi
+                toolbar.isOpen = true;
                 isUpdate = true;
                 timer = 0.0f;
                 entered = true;
@@ -611,6 +618,7 @@ void LinkedListScreen::Update(int& state) {
                 }
                 else {
                     // Kích hoạt animation sau mỗi lần thay đổi
+                    toolbar.isOpen = true;
                     isUpdate = true;
                     timer = 0.0f;
                     entered = true;
