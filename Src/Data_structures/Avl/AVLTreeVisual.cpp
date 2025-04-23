@@ -816,11 +816,11 @@ void AVLTreeScreen::drawAVLtree(float animationProgress, AVLNode* root) {
     }
     // Draw edges
     if (root->left && root->left->currentAnimationNode >= 0) {
-        DrawLine(root->displayX, root->displayY, root->left->displayX, root->left->displayY, BLACK);
+        DrawLineEx(Vector2{ (float)root->displayX, (float)root->displayY }, Vector2{ (float)root->left->displayX, (float)root->left->displayY }, 2.0f, BLACK);        
         drawAVLtree(animationProgress, root->left);
     }
     if (root->right && root->right->currentAnimationNode >= 0) {
-        DrawLine(root->displayX, root->displayY, root->right->displayX, root->right->displayY, BLACK);
+        DrawLineEx(Vector2{ (float)root->displayX, (float)root->displayY }, Vector2{ (float)root->right->displayX, (float)root->right->displayY }, 2.0f, BLACK);
         drawAVLtree(animationProgress, root->right);
     }
 

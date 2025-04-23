@@ -35,8 +35,8 @@ GraphVisual::GraphVisual() {
     switch_on = LoadTexture("Assets/Images/switch-on.png");
 
     iconDirected = { PANEL_PADDING + 100, 565, 50, 45 };
-    iconWeighted = { PANEL_PADDING + 100, 620, 50, 50 };
-    iconStatic = { PANEL_PADDING + 100, 675, 50, 50 };
+    iconWeighted = { PANEL_PADDING + 100, 610, 50, 45 };
+    iconStatic = { PANEL_PADDING + 100, 660, 50, 35 };
 
     loadFileEdges.show("File Format Requirement",
         " Every line in the file corresponds to one edge.\n"
@@ -418,7 +418,6 @@ int GraphVisual::handleEvent() {
                 warning = "Source must be a valid vertex!";
             }
             else {
-                G.toolbar.isPlaying = G.toolbar.isOpen = true;
                 G.Dijkstra(source);
                 Input.hide = true;
             }
