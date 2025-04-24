@@ -152,5 +152,5 @@ Contributions are welcome! Feel free to submit pull requests, report issues, or 
 
 For questions or support, please reach out via:
 
-- Email: khln.apcs@gmail.comcom
+- Email: khln.apcs@gmail.com
 
