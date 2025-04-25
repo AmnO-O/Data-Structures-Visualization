@@ -172,14 +172,15 @@ int HashTableVisual::handleEvent() {
 
             for (unsigned char c : fileContents) {
                 if (isdigit(c)) {
-                    if (num < 0) num = c + '0';
-                    else num = num * 10 + c + '0';
+                    if (num < 0) num = c - '0';
+                    else num = num * 10 + c - '0';
                 }
                 else {
                     if (num >= 0) H.ins(num);
                     num = -1;
                 }
             }
+            
             if (num >= 0) H.ins(num);
         }
 
